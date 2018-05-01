@@ -16,7 +16,7 @@ void matrix_scan_kb(void)
     matrix_scan_user();
 }
 
-void led_set_kb(uint8_t usb_led) {
+void led_set_user(uint8_t usb_led) {
     if (usb_led & (1<<USB_LED_CAPS_LOCK)) {
       // Turn capslock on
       PORTF |= (1<<1);
@@ -33,8 +33,4 @@ void led_init_ports(void)
 
     // rgb setting
     //DDRF |= _BV(1);
-}
-
-void led_set_kb(uint8_t usb_led) { 
-    led_set_user(usb_led);
 }
