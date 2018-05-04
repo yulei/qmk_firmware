@@ -1,4 +1,4 @@
-#include "wm690.h"
+#include "wm1.h"
 #include "led.h"
 
 void matrix_init_kb(void)

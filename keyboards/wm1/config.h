@@ -1,7 +1,3 @@
-/*
-Copyright 2017 Lei Yu <yuleiz@gmail.com>
-*/
-
 #ifndef CONFIG_H
 #define CONFIG_H
 
@@ -13,8 +9,8 @@ Copyright 2017 Lei Yu <yuleiz@gmail.com>
 #define PRODUCT_ID      0x1949
 #define DEVICE_VER      0x0001
 #define MANUFACTURER    WolfMark 
-#define PRODUCT         WM690
-#define DESCRIPTION     qmk keyboard firmware for wm690 
+#define PRODUCT         WM1
+#define DESCRIPTION     qmk keyboard firmware for wm1
 
 /* key matrix size */
 #define MATRIX_ROWS 8
