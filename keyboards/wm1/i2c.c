@@ -2,7 +2,6 @@
 #include <avr/io.h>
 #include <stdlib.h>
 #include <avr/interrupt.h>
-#include <util/twi.h>
 #include <stdbool.h>
 #include "i2c.h"
 

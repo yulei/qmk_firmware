@@ -3,9 +3,9 @@
 
 #include <stdint.h>
 
-#define IS3236_ADDR           0x78
+#define IS3236_ADDR 0x78
 
-#define IS3236_REG_WORK			 	0x00
+#define IS3236_REG_SHUTDOWN     0x00
 
 #define IS3236_REG_PWM_OUT1 	0x01
 #define IS3236_REG_PWM_OUT2 	0x02
@@ -44,17 +44,17 @@
 #define IS3236_REG_PWM_OUT35 	0x23
 #define IS3236_REG_PWM_OUT36 	0x24
 
-#define	IS3236_REG_DATA_UPDATE	0x25
+#define	IS3236_REG_UPDATE       0x25
 
 #define IS3236_REG_CTRL_OUT1    0x26
-#define IS3236_REG_CTRL_OUT2 	  0x27
-#define IS3236_REG_CTRL_OUT3 	  0x28
-#define IS3236_REG_CTRL_OUT4 	  0x29
-#define IS3236_REG_CTRL_OUT5 	  0x2A
-#define IS3236_REG_CTRL_OUT6 	  0x2B
-#define IS3236_REG_CTRL_OUT7 	  0x2C
-#define IS3236_REG_CTRL_OUT8 	  0x2D
-#define IS3236_REG_CTRL_OUT9 	  0x2E
+#define IS3236_REG_CTRL_OUT2    0x27
+#define IS3236_REG_CTRL_OUT3    0x28
+#define IS3236_REG_CTRL_OUT4    0x29
+#define IS3236_REG_CTRL_OUT5    0x2A
+#define IS3236_REG_CTRL_OUT6    0x2B
+#define IS3236_REG_CTRL_OUT7    0x2C
+#define IS3236_REG_CTRL_OUT8    0x2D
+#define IS3236_REG_CTRL_OUT9    0x2E
 #define IS3236_REG_CTRL_OUT10 	0x2F
 #define IS3236_REG_CTRL_OUT11 	0x30
 #define IS3236_REG_CTRL_OUT12 	0x31
@@ -83,11 +83,13 @@
 #define IS3236_REG_CTRL_OUT35 	0x48
 #define IS3236_REG_CTRL_OUT36 	0x49
 
-#define IS3236_REG_LED_SYNC 	  0x4A
-#define IS3236_REG_RST          0x4F
+#define IS3236_REG_GLOBAL       0x4A
+#define IS3236_REG_RESET        0x4F
 
-void is3236_init();
-void is3236_set_color(int index, uint8_t r, uint8_t g, uint8_t b);
-void is3236_shutdown();
+void is3236_init(void);
+void is3226_set_led_state(int index, uint8_t on, uint8_t cur);
+void is3236_set_led_color(int index, uint8_t r, uint8_t g, uint8_t b);
+void is3236_set_led_pwm(int index, uint8_t pwm);
+void is3236_shutdown(void);
 
 #endif
