@@ -64,3 +64,5 @@ RGBLIGHT_ENABLE = yes # enable rgb led
 MIDI_ENABLE = no # MIDI controls
 UNICODE_ENABLE = no # Unicode
 BLUETOOTH_ENABLE = no # Enable Bluetooth with the Adafruit EZ-Key HID
+
+SRC += TWIlib.c
