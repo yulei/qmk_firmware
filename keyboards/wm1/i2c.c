@@ -5,7 +5,7 @@
 #include <stdbool.h>
 #include "i2c.h"
 
-#ifdef USE_I2C
+//#ifdef USE_I2C
 
 // Limits the amount of we wait for any one i2c transaction.
 // Since were running SCL line 100kHz (=> 10μs/bit), and each transactions is
@@ -158,4 +158,4 @@ ISR(TWI_vect) {
   // Reset everything, so we are ready for the next TWI interrupt
   TWCR |= (1<<TWIE) | (1<<TWINT) | (ack<<TWEA) | (1<<TWEN);
 }
-#endif
+//#endif

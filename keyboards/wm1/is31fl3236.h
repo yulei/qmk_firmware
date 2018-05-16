@@ -87,9 +87,10 @@
 #define IS3236_REG_RESET        0x4F
 
 void is3236_init(void);
-void is3226_set_led_state(int index, uint8_t on, uint8_t cur);
+void is3236_set_led_state(int index, uint8_t on, uint8_t cur);
 void is3236_set_led_color(int index, uint8_t r, uint8_t g, uint8_t b);
 void is3236_set_led_pwm(int index, uint8_t pwm);
+void is3236_update(void);
 void is3236_shutdown(void);
 
 #endif
