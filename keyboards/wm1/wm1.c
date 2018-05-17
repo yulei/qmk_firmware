@@ -21,3 +21,17 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
 
 void led_set_user(uint8_t usb_led) {
 }
+
+static bool rgb_on = false;
+bool process_record_user(uint16_t keycode, keyrecord_t *record) {
+    switch (keycode) { 
+        case RGB_TOG:
+            if (record->event.pressed) {
+                rgb_on = !rgb_on;
+                rgb_set_logo_state(rgb_on?LOGO_STATE_ON:LOGO_STATE_OFF);
+            }
+            return false;
+        default:
+            return true;
+    }
+}

@@ -21,7 +21,7 @@ void is3236_init(void)
     is3236_write_register(IS3236_REG_SHUTDOWN, 0x01);
 }
 
-void is3226_set_led_state(int index, uint8_t on, uint8_t cur)
+void is3236_set_led_state(int index, uint8_t on, uint8_t cur)
 {
     uint8_t state = on ? 0x10 : 0x00;
     is3236_write_register(IS3236_REG_CTRL_OUT1 + 3*(index-1), state);
