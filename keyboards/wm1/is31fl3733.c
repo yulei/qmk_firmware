@@ -3,7 +3,7 @@
  */
 
 #include <avr/io.h>
-#include "i2c.h"
+#include "i2c_master.h"
 #include "is31fl3733.h"
 
 
