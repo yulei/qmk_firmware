@@ -6,8 +6,8 @@
 /* USB Device descriptor parameter */
 
 #define VENDOR_ID       0xBEEF
-#define PRODUCT_ID      0x1949
-#define DEVICE_VER      0x0001
+#define PRODUCT_ID      0x1989
+#define DEVICE_VER      0x0604
 #define MANUFACTURER    WolfMark
 #define PRODUCT         WM1
 #define DESCRIPTION     qmk keyboard firmware for wm1
