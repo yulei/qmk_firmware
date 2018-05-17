@@ -1,5 +1,5 @@
 #include <avr/io.h>
-#include "i2c.h"
+#include "i2c_master.h"
 #include "is31fl3236.h"
 
 static int is3236_write_register(uint8_t reg_addr, uint8_t reg_data);
@@ -51,10 +51,10 @@ void is3236_update(void)
 
 int is3236_write_register(uint8_t reg_addr, uint8_t reg_data)
 {
-    i2c_master_start(IS3236_ADDR|I2C_WRITE);
-    i2c_master_write(reg_addr);
-    i2c_master_write(reg_data);
-    i2c_master_stop();
+    i2c_start(IS3236_ADDR|I2C_WRITE);
+    i2c_write(reg_addr);
+    i2c_write(reg_data);
+    i2c_stop();
     return 0;
 }
 

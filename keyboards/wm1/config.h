@@ -76,6 +76,4 @@
 //#define NO_ACTION_MACRO
 //#define NO_ACTION_FUNCTION
 
-//#define USE_I2C
-
 #endif
