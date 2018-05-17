@@ -8,7 +8,7 @@
 #define VENDOR_ID       0xBEEF
 #define PRODUCT_ID      0x1949
 #define DEVICE_VER      0x0001
-#define MANUFACTURER    WolfMark 
+#define MANUFACTURER    WolfMark
 #define PRODUCT         WM1
 #define DESCRIPTION     qmk keyboard firmware for wm1
 
@@ -18,20 +18,20 @@
 
 // Change this to how you wired your keyboard
 // COLS: Left to right, ROWS: Top to bottom
-#define MATRIX_ROW_PINS { B5, B6, C6, C7, F7, F6, F5, F4}
-#define MATRIX_COL_PINS { D0, D1, D2, D3, D4, D5, D6, D7, B4}
+#define MATRIX_ROW_PINS { B6, C6, C7, F7, F6, F5, F4, B0}
+#define MATRIX_COL_PINS { D2, D3, D4, D5, D6, D7, B4, B5, E6}
 #define UNUSED_PINS
 
 /* COL2ROW or ROW2COL */
 //#define DIODE_DIRECTION COL2ROW
-#define DIODE_DIRECTION ROW2COL 
+#define DIODE_DIRECTION ROW2COL
 
 /* define if matrix has ghost */
 //#define MATRIX_HAS_GHOST
 
 /* number of backlight levels */
-#define BACKLIGHT_PIN F1
-#define BACKLIGHT_LEVELS 3
+//#define BACKLIGHT_PIN F1
+//#define BACKLIGHT_LEVELS 3
 
 /* Set 0 if debouncing isn't needed */
 #define DEBOUNCING_DELAY 5
@@ -46,11 +46,11 @@
     keyboard_report->mods == (MOD_BIT(KC_LSHIFT) | MOD_BIT(KC_RSHIFT)) \
 )
 
- 
+
 // rgb
 #define RGBLIGHT_ANIMATION
-#define RGB_DI_PIN B0
-#define RGBLED_NUM 3
+#define RGB_DI_PIN B7
+#define RGBLED_NUM 12
 //#define RGBLIGHT_HUE_STEP 8
 //#define RGBLIGHT_SAT_STEP 8
 //#define RGBLIGHT_VAL_STEP 8
@@ -75,5 +75,7 @@
 //#define NO_ACTION_ONESHOT
 //#define NO_ACTION_MACRO
 //#define NO_ACTION_FUNCTION
+
+//#define USE_I2C
 
 #endif
