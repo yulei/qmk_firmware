@@ -20,6 +20,10 @@ void rgb_set_logo_state(uint8_t state)
 {
     switch (state) {
     case LOGO_STATE_OFF: 
+        is3236_set_led_state(LOGO_U_INDEX, 0, 0);
+        is3236_set_led_state(LOGO_L_INDEX, 0, 0);
+        is3236_set_led_state(LOGO_R_INDEX, 0, 0);
+        is3236_update();
         break;
     case LOGO_STATE_ON:
         is3236_set_led_state(LOGO_U_INDEX, 1, 0);
