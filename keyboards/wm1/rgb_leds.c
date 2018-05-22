@@ -5,6 +5,7 @@
 #include <avr/io.h>
 #include "rgb_leds.h"
 #include "is31fl3236.h"
+#include "i2c_master.h"
 
 #define LOGO_U_INDEX    6 
 #define LOGO_L_INDEX    7
@@ -13,6 +14,7 @@
 
 void rgb_init(void)
 {
+    i2c_init();
     is3236_init();
 }
 
