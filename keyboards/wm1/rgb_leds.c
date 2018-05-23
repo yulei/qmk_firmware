@@ -3,6 +3,7 @@
  */
 
 #include <avr/io.h>
+#include <print.h>
 #include "rgb_leds.h"
 #include "is31fl3236.h"
 #include "i2c_master.h"
@@ -22,12 +23,14 @@ void rgb_set_logo_state(uint8_t state)
 {
     switch (state) {
     case LOGO_STATE_OFF: 
+        print("set logo off\n");
         is3236_set_led_state(LOGO_U_INDEX, 0, 0);
         is3236_set_led_state(LOGO_L_INDEX, 0, 0);
         is3236_set_led_state(LOGO_R_INDEX, 0, 0);
         is3236_update();
         break;
     case LOGO_STATE_ON:
+        print("set logo on\n");
         is3236_set_led_state(LOGO_U_INDEX, 1, 0);
         is3236_set_led_state(LOGO_L_INDEX, 1, 0);
         is3236_set_led_state(LOGO_R_INDEX, 1, 0);
