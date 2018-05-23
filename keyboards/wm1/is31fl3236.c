@@ -34,7 +34,11 @@ void is3236_set_led_state(int index, uint8_t on, uint8_t cur)
 }
 
 void is3236_set_led_color(int index, uint8_t r, uint8_t g, uint8_t b)
-{}
+{
+    is3236_write_register(IS3236_REG_PWM_OUT1 + 3*(index-1), b);
+    is3236_write_register(IS3236_REG_PWM_OUT1 + 3*(index-1) + 1, r);
+    is3236_write_register(IS3236_REG_PWM_OUT1 + 3*(index-1) + 2, g);
+}
 
 void is3236_set_led_pwm(int index, uint8_t pwm)
 {
