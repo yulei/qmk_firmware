@@ -23,7 +23,6 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
         case KC_W:
             if (record->event.pressed) {
                 rgb_on = !rgb_on;
-                
                 rgb_set_logo_state(rgb_on?LOGO_STATE_ON:LOGO_STATE_OFF);
             }
             return false;
