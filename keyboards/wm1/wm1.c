@@ -4,7 +4,7 @@
 void matrix_init_kb(void)
 {
     matrix_init_user();
-    rgb_init();
+  //  rgb_init();
 }
 
 bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
@@ -16,7 +16,7 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
 
 void led_set_user(uint8_t usb_led) {
 }
-
+/*
 static bool rgb_on = false;
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     switch (keycode) { 
@@ -29,4 +29,4 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
         default:
             return true;
     }
-}
+}*/
