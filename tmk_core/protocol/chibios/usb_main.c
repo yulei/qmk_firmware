@@ -194,7 +194,7 @@ typedef struct {
     /* The pointer to the states will be filled during initialization */ \
     .in_state = NULL, \
     .out_state = NULL, \
-    .ep_buffers = 2, \
+    .in_multiplier = 0, \
     .setup_buf = NULL \
   }, \
   .out_ep_config = { \
@@ -207,7 +207,7 @@ typedef struct {
     /* The pointer to the states will be filled during initialization */ \
     .in_state = NULL, \
     .out_state = NULL, \
-    .ep_buffers = 2, \
+    .in_multiplier = 0, \
     .setup_buf = NULL, \
   }, \
   .int_ep_config = { \
@@ -220,7 +220,7 @@ typedef struct {
     /* The pointer to the states will be filled during initialization */ \
     .in_state = NULL, \
     .out_state = NULL, \
-    .ep_buffers = 2, \
+    .in_multiplier = 0, \
     .setup_buf = NULL, \
   }, \
   .config = { \
