@@ -32,7 +32,7 @@
  * NOTE: LSE not fitted.
  */
 #if !defined(STM32_LSECLK)
-#define STM32_LSECLK                0U
+#define STM32_LSECLK                32768U
 #endif
 
 #if !defined(STM32_HSECLK)
@@ -47,7 +47,7 @@
 #define STM32F405xx
 
 /*
- * MCU voltage 
+ * MCU voltage
  */
 #define STM32_VDD 300
 /*
@@ -255,8 +255,8 @@
  * PA8  - ILED_1
  * PA9  - ILED_2
  * PA10 - ILED_3
- * PA11 - USB_DM                    (alternate 14).
- * PA12 - USB_DP                    (alternate 14).
+ * PA11 - USB_DM                    (alternate 10).
+ * PA12 - USB_DP                    (alternate 10).
  * PA13 - xx
  * PA14 - xx
  * PA15 - xx
@@ -1298,7 +1298,7 @@
  * USB bus activation macro, required by the USB driver.
  */
 // #define usb_lld_connect_bus(usbp)
-//#define usb_lld_connect_bus(usbp) (palSetPadMode(GPIOA, GPIOA_USB_DP, PAL_MODE_ALTERNATE(14)))
+//#define usb_lld_connect_bus(usbp) (palSetPadMode(GPIOA, GPIOA_USB_DP, PAL_MODE_ALTERNATE(10)))
 // #define usb_lld_connect_bus(usbp) palSetPadMode(GPIOA, 12, PAL_MODE_INPUT)
 /*
  * USB bus de-activation macro, required by the USB driver.
