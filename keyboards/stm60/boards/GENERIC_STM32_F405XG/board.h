@@ -26,7 +26,7 @@
  */
 #define BOARD_GENERIC_STM32_F405XG
 #define BOARD_NAME                  "STM32 based 60%"
-
+#define BOARD_OTG_NOVBUSSENS
 /*
  * Board oscillators-related settings.
  * NOTE: LSE not fitted.

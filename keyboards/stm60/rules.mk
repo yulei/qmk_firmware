@@ -36,7 +36,7 @@ USE_FPU = yes
 OPT_DEFS =
 
 # Options to pass to dfu-util when flashing
-DFU_ARGS = -d 0483:df11 -a 0 -s 0x08000000:leave
+#DFU_ARGS = -d 0483:df11 -a 0 -s 0x08000000:leave
 
 # Build Options
 #   comment out to disable the options.
@@ -46,10 +46,11 @@ BOOTMAGIC_ENABLE = yes	# Virtual DIP switch configuration
 ## (Note that for BOOTMAGIC on Teensy LC you have to use a custom .ld script.)
 MOUSEKEY_ENABLE = no # Mouse keys
 EXTRAKEY_ENABLE = no # Audio control and System control
-CONSOLE_ENABLE = yes# Console for debug
+CONSOLE_ENABLE = yes # Console for debug
 COMMAND_ENABLE = no # Commands for debug and configuration
 #SLEEP_LED_ENABLE = yes  # Breathing sleep LED during USB suspend
+BACKLIGHT_ENABLE = yes
 NKRO_ENABLE = no # USB Nkey Rollover
 CUSTOM_MATRIX = yes # Custom matrix file
-AUDIO_ENABLE = no 
+AUDIO_ENABLE = no
 # SERIAL_LINK_ENABLE = yes
