@@ -18,7 +18,7 @@
 #define _BOARD_H_
 
 /*
- * Setup for Clueboard 60% Keyboard
+ * Setup for stm32 based 60% Keyboard
  */
 
 /*
@@ -327,9 +327,9 @@
                                      PIN_PUPDR_PULLUP(GPIOA_PIN5) |   \
                                      PIN_PUPDR_PULLUP(GPIOA_PIN6) |    \
                                      PIN_PUPDR_PULLUP(GPIOA_PIN7) |  \
-                                     PIN_PUPDR_PULLUP(GPIOA_PIN8) |         \
-                                     PIN_PUPDR_PULLUP(GPIOA_PIN9) |         \
-                                     PIN_PUPDR_PULLUP(GPIOA_PIN10) |        \
+                                     PIN_PUPDR_PULLDOWN(GPIOA_PIN8) |         \
+                                     PIN_PUPDR_PULLDOWN(GPIOA_PIN9) |         \
+                                     PIN_PUPDR_PULLDOWN(GPIOA_PIN10) |        \
                                      PIN_PUPDR_FLOATING(GPIOA_USB_DM) |     \
                                      PIN_PUPDR_FLOATING(GPIOA_USB_DP) |     \
                                      PIN_PUPDR_FLOATING(GPIOA_PIN13) |        \
@@ -441,11 +441,11 @@
                                      PIN_PUPDR_PULLUP(GPIOB_PIN2) |         \
                                      PIN_PUPDR_FLOATING(GPIOB_PIN3) |        \
                                      PIN_PUPDR_FLOATING(GPIOB_PIN4) |         \
-                                     PIN_PUPDR_PULLUP(GPIOB_PIN5) |         \
-                                     PIN_PUPDR_PULLUP(GPIOB_PIN6) |   \
-                                     PIN_PUPDR_PULLUP(GPIOB_PIN7) |   \
-                                     PIN_PUPDR_PULLUP(GPIOB_PIN8) |         \
-                                     PIN_PUPDR_PULLUP(GPIOB_PIN9) |         \
+                                     PIN_PUPDR_PULLDOWN(GPIOB_PIN5) |         \
+                                     PIN_PUPDR_PULLDOWN(GPIOB_PIN6) |   \
+                                     PIN_PUPDR_PULLDOWN(GPIOB_PIN7) |   \
+                                     PIN_PUPDR_PULLDOWN(GPIOB_PIN8) |         \
+                                     PIN_PUPDR_PULLDOWN(GPIOB_PIN9) |         \
                                      PIN_PUPDR_PULLUP(GPIOB_PIN10) |        \
                                      PIN_PUPDR_PULLUP(GPIOB_PIN11) |        \
                                      PIN_PUPDR_PULLUP(GPIOB_PIN12) |        \
