@@ -21,10 +21,10 @@ void backlight_set(uint8_t level) {
     #ifdef BACKLIGHT_ENABLE
     if (level == 0) {
         // Turn backlight off
-        palSetPad(GPIOA, 2);
+        palClearPad(GPIOA, 2);
     } else {
         // Turn backlight on
-        palClearPad(GPIOA, 2);
+        palSetPad(GPIOA, 2);
     }
     #endif
 }
