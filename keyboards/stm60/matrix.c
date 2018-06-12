@@ -17,8 +17,8 @@
  * #define MATRIX_ROW_PINS { PB12, PB13, PB14, PB15, PC6, PC7, PC8, PC9}
  * #define MATRIX_COL_PINS { PB11, PB10, PB1, PB0, PC5, PC4, PA7, PA6, PA5}
  *
- * Column pins are input with internal pull-down.
- * Row pins are output and strobe with high.
+ * Row pins are input with internal pull-down.
+ * Column pins are output and strobe with high.
  * Key is high or 1 when it turns on.
  *
  */
@@ -46,7 +46,6 @@ void matrix_scan_kb(void) {
 
 void matrix_init(void) {
     printf("matrix init\n");
-    //debug_matrix = true;
 
     palSetPadMode(GPIOB, 11, PAL_MODE_OUTPUT_PUSHPULL);
     palSetPadMode(GPIOB, 10, PAL_MODE_OUTPUT_PUSHPULL);

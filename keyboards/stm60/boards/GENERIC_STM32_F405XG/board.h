@@ -18,7 +18,7 @@
 #define _BOARD_H_
 
 /*
- * Setup for Clueboard 60% Keyboard
+ * Setup for stm32 based 60% Keyboard
  */
 
 /*
@@ -321,15 +321,15 @@
                                      PIN_OSPEED_HIGH(GPIOA_TDI))
 #define VAL_GPIOA_PUPDR             (PIN_PUPDR_PULLUP(GPIOA_PIN0) |     \
                                      PIN_PUPDR_PULLUP(GPIOA_PIN1) |         \
-                                     PIN_PUPDR_PULLUP(GPIOA_PIN2) |         \
+                                     PIN_PUPDR_PULLDOWN(GPIOA_PIN2) |         \
                                      PIN_PUPDR_PULLUP(GPIOA_PIN3) |         \
                                      PIN_PUPDR_PULLUP(GPIOA_PIN4) |         \
                                      PIN_PUPDR_PULLUP(GPIOA_PIN5) |   \
                                      PIN_PUPDR_PULLUP(GPIOA_PIN6) |    \
                                      PIN_PUPDR_PULLUP(GPIOA_PIN7) |  \
-                                     PIN_PUPDR_PULLUP(GPIOA_PIN8) |         \
-                                     PIN_PUPDR_PULLUP(GPIOA_PIN9) |         \
-                                     PIN_PUPDR_PULLUP(GPIOA_PIN10) |        \
+                                     PIN_PUPDR_PULLDOWN(GPIOA_PIN8) |         \
+                                     PIN_PUPDR_PULLDOWN(GPIOA_PIN9) |         \
+                                     PIN_PUPDR_PULLDOWN(GPIOA_PIN10) |        \
                                      PIN_PUPDR_FLOATING(GPIOA_USB_DM) |     \
                                      PIN_PUPDR_FLOATING(GPIOA_USB_DP) |     \
                                      PIN_PUPDR_PULLUP(GPIOA_TMS) |        \
