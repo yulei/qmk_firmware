@@ -29,7 +29,6 @@
 #define BOARD_OTG_NOVBUSSENS
 /*
  * Board oscillators-related settings.
- * NOTE: LSE not fitted.
  */
 #if !defined(STM32_LSECLK)
 #define STM32_LSECLK                32768U
@@ -424,7 +423,7 @@
                                      PIN_OSPEED_VERYLOW(GPIOB_PIN1) |       \
                                      PIN_OSPEED_VERYLOW(GPIOB_PIN2) |       \
                                      PIN_OSPEED_HIGH(GPIOB_TDO) |           \
-                                     PIN_OSPEED_VERYLOW(GPIOB_NTRST) |       \
+                                     PIN_OSPEED_HIGH(GPIOB_NTRST) |       \
                                      PIN_OSPEED_VERYLOW(GPIOB_PIN5) |       \
                                      PIN_OSPEED_VERYLOW(GPIOB_PIN6) |      \
                                      PIN_OSPEED_VERYLOW(GPIOB_PIN7) |      \
@@ -439,7 +438,7 @@
 #define VAL_GPIOB_PUPDR             (PIN_PUPDR_PULLUP(GPIOB_PIN0) |         \
                                      PIN_PUPDR_PULLUP(GPIOB_PIN1) |         \
                                      PIN_PUPDR_PULLUP(GPIOB_PIN2) |         \
-                                     PIN_PUPDR_PULLUP(GPIOB_TDO) |        \
+                                     PIN_PUPDR_FLOATING(GPIOB_TDO) |        \
                                      PIN_PUPDR_PULLUP(GPIOB_NTRST) |         \
                                      PIN_PUPDR_PULLUP(GPIOB_PIN5) |         \
                                      PIN_PUPDR_PULLUP(GPIOB_PIN6) |   \
