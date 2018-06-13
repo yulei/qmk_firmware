@@ -315,9 +315,9 @@
                                      PIN_OSPEED_VERYLOW(GPIOA_PIN10) |      \
                                      PIN_OSPEED_HIGH(GPIOA_USB_DM) |        \
                                      PIN_OSPEED_HIGH(GPIOA_USB_DP) |     \
-                                     PIN_OSPEED_HIGH(GPIOA_TMS) |         \
-                                     PIN_OSPEED_HIGH(GPIOA_TCK) |         \
-                                     PIN_OSPEED_HIGH(GPIOA_TDI))
+                                     PIN_OSPEED_VERYLOW(GPIOA_TMS) |         \
+                                     PIN_OSPEED_VERYLOW(GPIOA_TCK) |         \
+                                     PIN_OSPEED_VERYLOW(GPIOA_TDI))
 #define VAL_GPIOA_PUPDR             (PIN_PUPDR_PULLUP(GPIOA_PIN0) |     \
                                      PIN_PUPDR_PULLUP(GPIOA_PIN1) |         \
                                      PIN_PUPDR_PULLDOWN(GPIOA_PIN2) |         \
@@ -423,7 +423,7 @@
                                      PIN_OSPEED_VERYLOW(GPIOB_PIN1) |       \
                                      PIN_OSPEED_VERYLOW(GPIOB_PIN2) |       \
                                      PIN_OSPEED_HIGH(GPIOB_TDO) |           \
-                                     PIN_OSPEED_HIGH(GPIOB_NTRST) |       \
+                                     PIN_OSPEED_VERYLOW(GPIOB_NTRST) |       \
                                      PIN_OSPEED_VERYLOW(GPIOB_PIN5) |       \
                                      PIN_OSPEED_VERYLOW(GPIOB_PIN6) |      \
                                      PIN_OSPEED_VERYLOW(GPIOB_PIN7) |      \
