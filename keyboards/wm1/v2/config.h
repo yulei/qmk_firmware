@@ -29,8 +29,8 @@
  *
 */
 /* Note: These are not used for arm boards. They're here purely as documentation.
- * #define MATRIX_ROW_PINS { PB12, PB13, PB14, PB15, PC6, PC7, PC8, PC9}
- * #define MATRIX_COL_PINS { PB11, PB10, PB1, PB0, PC5, PC4, PA7, PA6, PA5}
+ * #define MATRIX_ROW_PINS { PA4, PA5, PA6, PA7, PC4}
+ * #define MATRIX_COL_PINS { PA1, PA0, PC3, PC2, PC13, PB7, PB6, PB5, PD2, PC12, PC11, PC10, PC9, PC8, PC7, PC6}
  * #define UNUSED_PINS
  */
 

@@ -159,55 +159,101 @@
  *   F - Alternate Open Drain output 50MHz.
  * Please refer to the STM32 Reference Manual for details.
  */
+/*
+ * I/O ports initial setup, this configuration is established soon after reset
+ * in the initialization code.
+ * Please refer to the STM32 Reference Manual for details.
+ */
+#define CRL_INPUT(n)             (0U << ((n) * 4U))
+#define CRL_OUTPUT_LOW(n)        (1U << ((n) * 4U))
+#define CRL_OUTPUT_MEDIUM(n)     (2U << ((n) * 4U))
+#define CRL_OUTPUT_HIGH(n)       (3U << ((n) * 4U))
+#define CRL_INPUT_ANOLOG(n)      (0U << (((n) * 4U + 2)))
+#define CRL_INPUT_FLOATING(n)    (1U << (((n) * 4U + 2)))
+#define CRL_INPUT_PULLUPDOWN(n)  (2U << (((n) * 4U + 2)))
+#define CRL_OUTPUT_PUSHPULL(n)   (0U << (((n) * 4U + 2)))
+#define CRL_OUTPUT_OPENDRAIN(n)  (1U << (((n) * 4U + 2)))
+#define CRL_ALT_PUSHPULL(n)      (2U << (((n) * 4U + 2)))
+#define CRL_ALT_OPENDRAIN(n)     (3U << (((n) * 4U + 2)))
+
+#define CRH_INPUT(n)             CRL_INPUT((n-8))
+#define CRH_OUTPUT_LOW(n)        CRL_OUTPUT_LOW((n-8))
+#define CRH_OUTPUT_MEDIUM(n)     CRL_OUTPUT_MEDIUM((n-8))
+#define CRH_OUTPUT_HIGH(n)       CRL_OUTPUT_HIGH((n-8))
+#define CRH_INPUT_ANOLOG(n)      CRL_INPUT_ANOLOG((n-8))
+#define CRH_INPUT_FLOATING(n)    CRL_INPUT_FLOATING((n-8))
+#define CRH_INPUT_PULLUPDOWN(n)  CRL_INPUT_PULLUPDOWN((n-8))
+#define CRH_OUTPUT_PUSHPULL(n)   CRL_OUTPUT_PUSHPULL((n-8))
+#define CRH_OUTPUT_OPENDRAIN(n)  CRL_OUTPUT_OPENDRAIN((n-8))
+#define CRH_ALT_PUSHPULL(n)      CRL_ALT_PUSHPULL((n-8))
+#define CRH_ALT_OPENDRAIN(n)     CRL_ALT_OPENDRAIN((n-8))
+
+#define ODR_INPUT_PULLDOWN(n)     (0U << (n))
+#define ODR_INPUT_PULLUP(n)       (1U << (n))
 
 /*
  * Port A setup.
- * Everything input with pull-up except:
- * PA2  - Alternate output          (GPIOA_ARD_D1, GPIOA_USART2_TX).
- * PA3  - Normal input              (GPIOA_ARD_D0, GPIOA_USART2_RX).
- * PA5  - Push Pull output          (GPIOA_LED_GREEN).
- * PA13 - Pull-up input             (GPIOA_SWDIO).
- * PA14 - Pull-down input           (GPIOA_SWCLK).
+ * Everything input with pull-down except:
+ * PA11 - Alternate output          (USB_DM).
+ * PA12 - Alternate output          (USB_DP).
+ * PA13 - Pull-up input             (TMS)
+ * PA14 - Pull-down input           (TCK)
+ * PA15 - Pull-up input             (TDI)
  */
-#define VAL_GPIOACRL            0x88384B88      /*  PA7...PA0 */
-#define VAL_GPIOACRH            0x88888888      /* PA15...PA8 */
-#define VAL_GPIOAODR            0xFFFFBFDF
+/* PA7...PA0 */
+#define VAL_GPIOACRL            0x88888888
+/* PA15...PA8 */
+#define VAL_GPIOACRH            (CRH_OUTPUT_HIGH(11)|CRH_ALT_PUSHPULL(11) \
+                                | CRH_OUTPUT_HIGH(12)|CRH_ALT_PUSHPULL(12) \
+                                | CRH_INPUT(13) | CRH_INPUT_PULLUPDOWN(13) \
+                                | CRH_INPUT(14) | CRH_INPUT_PULLUPDOWN(13) \
+                                | CRH_INPUT(15) | CRH_INPUT_PULLUPDOWN(13))
+
+#define VAL_GPIOAODR            (ODR_INPUT_PULLUP(13)|ODR_INPUT_PULLDOWN(14)|ODR_INPUT_PULLUP(15))
 
 /*
  * Port B setup.
- * Everything input with pull-up except:
- * PB3  - Pull-up input             (GPIOA_SWO).
+ * Everything input with pull-down except:
+ * PB3  - Pull-up input             (TDO).
  */
-#define VAL_GPIOBCRL            0x88888888      /*  PB7...PB0 */
-#define VAL_GPIOBCRH            0x88888888      /* PB15...PB8 */
-#define VAL_GPIOBODR            0xFFFFFFFF
+/* PB7...PB0 */
+#define VAL_GPIOBCRL            (CRL_INPUT(3)|CRL_INPUT_PULLUPDOWN(3))
+/* PB15...PB8 */
+#define VAL_GPIOBCRH            0x88888888
+#define VAL_GPIOBODR            (ODR_INPUT_PULLUP(3))
 
 /*
  * Port C setup.
- * Everything input with pull-up except:
- * PC13 - Normal input              (GPIOC_BUTTON).
+ * Everything input with pull-down except:
  */
-#define VAL_GPIOCCRL            0x88888888      /*  PC7...PC0 */
-#define VAL_GPIOCCRH            0x88488888      /* PC15...PC8 */
-#define VAL_GPIOCODR            0xFFFFFFFF
+/*  PC7...PC0 */
+#define VAL_GPIOCCRL            0x88888888
+/* PC15...PC8 */
+#define VAL_GPIOCCRH            0x88888888
+
+#define VAL_GPIOCODR            0x00000000
 
 /*
  * Port D setup.
- * Everything input with pull-up except:
- * PD0  - Normal input              (GPIOD_OSC_IN).
- * PD1  - Normal input              (GPIOD_OSC_OUT).
+ * Everything input with pull-down except:
  */
-#define VAL_GPIODCRL            0x88888844      /*  PD7...PD0 */
-#define VAL_GPIODCRH            0x88888888      /* PD15...PD8 */
-#define VAL_GPIODODR            0xFFFFFFFF
+/*  PD7...PD0 */
+#define VAL_GPIODCRL            0x88888888
+/* PD15...PD8 */
+#define VAL_GPIODCRH            0x88888888
+
+#define VAL_GPIODODR            0x00000000
 
 /*
  * Port E setup.
- * Everything input with pull-up except:
+ * Everything input with pull-down except:
  */
-#define VAL_GPIOECRL            0x88888888      /*  PE7...PE0 */
-#define VAL_GPIOECRH            0x88888888      /* PE15...PE8 */
-#define VAL_GPIOEODR            0xFFFFFFFF
+/*  PE7...PE0 */
+#define VAL_GPIOECRL            0x88888888
+/* PE15...PE8 */
+#define VAL_GPIOECRH            0x88888888
+
+#define VAL_GPIOEODR            0x00000000
 
 /*
  * USB bus activation macro, required by the USB driver.
