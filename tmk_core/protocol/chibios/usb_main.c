@@ -181,6 +181,7 @@ typedef struct {
   QMKUSBDriver driver;
 } usb_driver_config_t;
 
+#ifdef STM32_USB_USE_OTG1
 #define QMK_USB_DRIVER_CONFIG(stream, notification, fixedsize) { \
   .queue_capacity_in = stream##_IN_CAPACITY, \
   .queue_capacity_out = stream##_OUT_CAPACITY, \
@@ -194,6 +195,7 @@ typedef struct {
     /* The pointer to the states will be filled during initialization */ \
     .in_state = NULL, \
     .out_state = NULL, \
+    .in_multiplier = 0, \
     .setup_buf = NULL \
   }, \
   .out_ep_config = { \
@@ -206,6 +208,7 @@ typedef struct {
     /* The pointer to the states will be filled during initialization */ \
     .in_state = NULL, \
     .out_state = NULL, \
+    .in_multiplier = 0, \
     .setup_buf = NULL, \
   }, \
   .int_ep_config = { \
@@ -218,6 +221,7 @@ typedef struct {
     /* The pointer to the states will be filled during initialization */ \
     .in_state = NULL, \
     .out_state = NULL, \
+    .in_multiplier = 0, \
     .setup_buf = NULL, \
   }, \
   .config = { \
@@ -234,6 +238,64 @@ typedef struct {
     .ob = (uint8_t[BQ_BUFFER_SIZE(stream##_OUT_CAPACITY,stream##_EPSIZE)]) {}, \
   } \
 }
+#else
+#define QMK_USB_DRIVER_CONFIG(stream, notification, fixedsize) { \
+  .queue_capacity_in = stream##_IN_CAPACITY, \
+  .queue_capacity_out = stream##_OUT_CAPACITY, \
+  .in_ep_config = { \
+    .ep_mode = stream##_IN_MODE, \
+    .setup_cb = NULL, \
+    .in_cb = qmkusbDataTransmitted, \
+    .out_cb = NULL, \
+    .in_maxsize = stream##_EPSIZE, \
+    .out_maxsize = 0, \
+    /* The pointer to the states will be filled during initialization */ \
+    .in_state = NULL, \
+    .out_state = NULL, \
+    .ep_buffers = 1, \
+    .setup_buf = NULL \
+  }, \
+  .out_ep_config = { \
+    .ep_mode = stream##_OUT_MODE, \
+    .setup_cb = NULL, \
+    .in_cb = NULL, \
+    .out_cb = qmkusbDataReceived, \
+    .in_maxsize = 0, \
+    .out_maxsize = stream##_EPSIZE, \
+    /* The pointer to the states will be filled during initialization */ \
+    .in_state = NULL, \
+    .out_state = NULL, \
+    .ep_buffers = 1, \
+    .setup_buf = NULL, \
+  }, \
+  .int_ep_config = { \
+    .ep_mode = USB_EP_MODE_TYPE_INTR, \
+    .setup_cb = NULL, \
+    .in_cb = qmkusbInterruptTransmitted, \
+    .out_cb = NULL, \
+    .in_maxsize = CDC_NOTIFICATION_EPSIZE, \
+    .out_maxsize = 0, \
+    /* The pointer to the states will be filled during initialization */ \
+    .in_state = NULL, \
+    .out_state = NULL, \
+    .ep_buffers = 1, \
+    .setup_buf = NULL, \
+  }, \
+  .config = { \
+    .usbp = &USB_DRIVER, \
+    .bulk_in = stream##_IN_EPNUM, \
+    .bulk_out = stream##_OUT_EPNUM, \
+    .int_in = notification, \
+    .in_buffers = stream##_IN_CAPACITY, \
+    .out_buffers = stream##_OUT_CAPACITY, \
+    .in_size = stream##_EPSIZE, \
+    .out_size = stream##_EPSIZE, \
+    .fixed_size = fixedsize, \
+    .ib = (uint8_t[BQ_BUFFER_SIZE(stream##_IN_CAPACITY, stream##_EPSIZE)]) {}, \
+    .ob = (uint8_t[BQ_BUFFER_SIZE(stream##_OUT_CAPACITY,stream##_EPSIZE)]) {}, \
+  } \
+}
+#endif
 
 typedef struct {
   union {
@@ -670,7 +732,7 @@ void send_keyboard(report_keyboard_t *report) {
        * every iteration - otherwise the system will remain locked,
        * no interrupts served, so USB not going through as well.
        * Note: for suspend, need USB_USE_WAIT == TRUE in halconf.h */
-      //osalThreadSuspendS(&(&USB_DRIVER)->epc[NKRO_IN_EPNUM]->in_state->thread);
+      osalThreadSuspendS(&(&USB_DRIVER)->epc[NKRO_IN_EPNUM]->in_state->thread);
     }
     usbStartTransmitI(&USB_DRIVER, NKRO_IN_EPNUM, (uint8_t *)report, sizeof(report_keyboard_t));
     osalSysUnlock();
@@ -685,7 +747,7 @@ void send_keyboard(report_keyboard_t *report) {
        * every iteration - otherwise the system will remain locked,
        * no interrupts served, so USB not going through as well.
        * Note: for suspend, need USB_USE_WAIT == TRUE in halconf.h */
-      //osalThreadSuspendS(&(&USB_DRIVER)->epc[KEYBOARD_IN_EPNUM]->in_state->thread);
+      osalThreadSuspendS(&(&USB_DRIVER)->epc[KEYBOARD_IN_EPNUM]->in_state->thread);
     }
     usbStartTransmitI(&USB_DRIVER, KEYBOARD_IN_EPNUM, (uint8_t *)report, KEYBOARD_EPSIZE);
     osalSysUnlock();
