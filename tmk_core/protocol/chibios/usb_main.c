@@ -194,7 +194,6 @@ typedef struct {
     /* The pointer to the states will be filled during initialization */ \
     .in_state = NULL, \
     .out_state = NULL, \
-    .in_multiplier = 0, \
     .setup_buf = NULL \
   }, \
   .out_ep_config = { \
@@ -207,7 +206,6 @@ typedef struct {
     /* The pointer to the states will be filled during initialization */ \
     .in_state = NULL, \
     .out_state = NULL, \
-    .in_multiplier = 0, \
     .setup_buf = NULL, \
   }, \
   .int_ep_config = { \
@@ -220,7 +218,6 @@ typedef struct {
     /* The pointer to the states will be filled during initialization */ \
     .in_state = NULL, \
     .out_state = NULL, \
-    .in_multiplier = 0, \
     .setup_buf = NULL, \
   }, \
   .config = { \
@@ -673,7 +670,7 @@ void send_keyboard(report_keyboard_t *report) {
        * every iteration - otherwise the system will remain locked,
        * no interrupts served, so USB not going through as well.
        * Note: for suspend, need USB_USE_WAIT == TRUE in halconf.h */
-      osalThreadSuspendS(&(&USB_DRIVER)->epc[NKRO_IN_EPNUM]->in_state->thread);
+      //osalThreadSuspendS(&(&USB_DRIVER)->epc[NKRO_IN_EPNUM]->in_state->thread);
     }
     usbStartTransmitI(&USB_DRIVER, NKRO_IN_EPNUM, (uint8_t *)report, sizeof(report_keyboard_t));
     osalSysUnlock();
@@ -688,7 +685,7 @@ void send_keyboard(report_keyboard_t *report) {
        * every iteration - otherwise the system will remain locked,
        * no interrupts served, so USB not going through as well.
        * Note: for suspend, need USB_USE_WAIT == TRUE in halconf.h */
-      osalThreadSuspendS(&(&USB_DRIVER)->epc[KEYBOARD_IN_EPNUM]->in_state->thread);
+      //osalThreadSuspendS(&(&USB_DRIVER)->epc[KEYBOARD_IN_EPNUM]->in_state->thread);
     }
     usbStartTransmitI(&USB_DRIVER, KEYBOARD_IN_EPNUM, (uint8_t *)report, KEYBOARD_EPSIZE);
     osalSysUnlock();
