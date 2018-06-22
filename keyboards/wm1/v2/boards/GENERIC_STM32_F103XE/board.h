@@ -51,56 +51,56 @@
 /*
  * IO pins assignments.
  */
-#define GPIOA_PIN0       0U
-#define GPIOA_PIN1       1U
-#define GPIOA_PIN2       2U
-#define GPIOA_PIN3       3U
-#define GPIOA_PIN4       4U
-#define GPIOA_PIN5       5U
-#define GPIOA_PIN6       6U
-#define GPIOA_PIN7       7U
-#define GPIOA_PIN8       8U
-#define GPIOA_PIN9       9U
-#define GPIOA_PIN10      10U
-#define GPIOA_USB_DM     11U
-#define GPIOA_USB_DP     12U
-#define GPIOA_TMS        13U
-#define GPIOA_TCK        14U
-#define GPIOA_TDI        15U
+#define GPIOA_PIN0        0U
+#define GPIOA_PIN1        1U
+#define GPIOA_LED_PWM     2U
+#define GPIOA_RGB_PWM     3U
+#define GPIOA_PIN4        4U
+#define GPIOA_PIN5        5U
+#define GPIOA_PIN6        6U
+#define GPIOA_PIN7        7U
+#define GPIOA_PIN8        8U
+#define GPIOA_USART1_TX   9U
+#define GPIOA_USART1_RX   10U
+#define GPIOA_USB_DM      11U
+#define GPIOA_USB_DP      12U
+#define GPIOA_TMS         13U
+#define GPIOA_TCK         14U
+#define GPIOA_TDI         15U
 
-#define GPIOB_PIN0       0U
-#define GPIOB_PIN1       1U
-#define GPIOB_PIN2       2U
-#define GPIOB_TDO        3U
-#define GPIOB_NTRST      4U
-#define GPIOB_PIN5       5U
-#define GPIOB_PIN6       6U
-#define GPIOB_PIN7       7U
-#define GPIOB_PIN8       8U
-#define GPIOB_PIN9       9U
-#define GPIOB_PIN10      10U
-#define GPIOB_PIN11      11U
-#define GPIOB_PIN12      12U
-#define GPIOB_PIN13      13U
-#define GPIOB_PIN14      14U
-#define GPIOB_PIN15      15U
+#define GPIOB_PIN0        0U
+#define GPIOB_PIN1        1U
+#define GPIOB_PIN2        2U
+#define GPIOB_TDO         3U
+#define GPIOB_NTRST       4U
+#define GPIOB_PIN5        5U
+#define GPIOB_PIN6        6U
+#define GPIOB_PIN7        7U
+#define GPIOB_LOGO_RGB    8U
+#define GPIOB_SET0        9U
+#define GPIOB_PIN10       10U
+#define GPIOB_PIN11       11U
+#define GPIOB_PIN12       12U
+#define GPIOB_ILED_1      13U
+#define GPIOB_ILED_2      14U
+#define GPIOB_ILED_3      15U
 
-#define GPIOC_PIN0       0U
-#define GPIOC_PIN1       1U
-#define GPIOC_PIN2       2U
-#define GPIOC_PIN3       3U
-#define GPIOC_PIN4       4U
-#define GPIOC_PIN5       5U
-#define GPIOC_PIN6       6U
-#define GPIOC_PIN7       7U
-#define GPIOC_PIN8       8U
-#define GPIOC_PIN9       9U
-#define GPIOC_PIN10      10U
-#define GPIOC_PIN11      11U
-#define GPIOC_PIN12      12U
-#define GPIOC_PIN13      13U
-#define GPIOC_PIN14      14U
-#define GPIOC_PIN15      15U
+#define GPIOC_JS_VR1      0U
+#define GPIOC_JS_VR2      1U
+#define GPIOC_PIN2        2U
+#define GPIOC_PIN3        3U
+#define GPIOC_PIN4        4U
+#define GPIOC_JS_SW       5U
+#define GPIOC_PIN6        6U
+#define GPIOC_PIN7        7U
+#define GPIOC_PIN8        8U
+#define GPIOC_PIN9        9U
+#define GPIOC_PIN10       10U
+#define GPIOC_PIN11       11U
+#define GPIOC_PIN12       12U
+#define GPIOC_PIN13       13U
+#define GPIOC_PIN14       14U
+#define GPIOC_PIN15       15U
 
 #define GPIOD_PIN0       0U
 #define GPIOD_PIN1       1U
@@ -194,66 +194,111 @@
 /*
  * Port A setup.
  * Everything input with pull-down except:
- * PA11 - Alternate output          (USB_DM).
- * PA12 - Alternate output          (USB_DP).
+ * PA2 - Pushpull output            (LED PWM)
+ * PA3 - Pushpull output            (RGB PWM)
+ * PA9 - Alternate output           (USART1 TX)
+ * PA10 - Alternate output          (USART1 RX)
+ * PA11 - Alternate output          (USB DM)
+ * PA12 - Alternate output          (USB DP)
  * PA13 - Pull-up input             (TMS)
  * PA14 - Pull-down input           (TCK)
  * PA15 - Pull-up input             (TDI)
  */
 /* PA7...PA0 */
-#define VAL_GPIOACRL            0x88888888
+#define VAL_GPIOA_CRL           (CRL_INPUT(GPIOA_PIN0)|CRL_INPUT_PULLUPDOWN(GPIOA_PIN0) \
+                                |CRL_INPUT(GPIOA_PIN1)|CRL_INPUT_PULLUPDOWN(GPIOA_PIN1) \
+                                |CRL_OUTPUT_HIGH(GPIOA_LED_PWM)|CRL_OUTPUT_PUSHPULL(GPIOA_LED_PWM) \
+                                |CRL_OUTPUT_HIGH(GPIOA_RGB_PWM)|CRL_OUTPUT_PUSHPULL(GPIOA_RGB_PWM) \
+                                |CRL_INPUT(GPIOA_PIN4)|CRL_INPUT_PULLUPDOWN(GPIOA_PIN4) \
+                                |CRL_INPUT(GPIOA_PIN5)|CRL_INPUT_PULLUPDOWN(GPIOA_PIN5) \
+                                |CRL_INPUT(GPIOA_PIN6)|CRL_INPUT_PULLUPDOWN(GPIOA_PIN6) \
+                                |CRL_INPUT(GPIOA_PIN7)|CRL_INPUT_PULLUPDOWN(GPIOA_PIN7))
 /* PA15...PA8 */
-#define VAL_GPIOACRH            (CRH_OUTPUT_HIGH(11)|CRH_ALT_PUSHPULL(11) \
-                                | CRH_OUTPUT_HIGH(12)|CRH_ALT_PUSHPULL(12) \
-                                | CRH_INPUT(13) | CRH_INPUT_PULLUPDOWN(13) \
-                                | CRH_INPUT(14) | CRH_INPUT_PULLUPDOWN(13) \
-                                | CRH_INPUT(15) | CRH_INPUT_PULLUPDOWN(13))
+#define VAL_GPIOA_CRH           (CRH_INPUT(GPIOA_PIN8)|CRH_INPUT_PULLUPDOWN(GPIOA_PIN8) \
+                                |CRH_OUTPUT_HIGH(GPIOA_USART1_TX)|CRH_ALT_PUSHPULL(GPIOA_USART1_TX) \
+                                |CRH_OUTPUT_HIGH(GPIOA_USART1_RX)|CRH_ALT_PUSHPULL(GPIOA_USART1_RX) \
+                                |CRH_OUTPUT_HIGH(GPIOA_USB_DM)|CRH_ALT_PUSHPULL(GPIOA_USB_DM) \
+                                |CRH_OUTPUT_HIGH(GPIOA_USB_DP)|CRH_ALT_PUSHPULL(GPIOA_USB_DP) \
+                                |CRH_INPUT(GPIOA_TMS)|CRH_INPUT_PULLUPDOWN(GPIOA_TMS) \
+                                |CRH_INPUT(GPIOA_TCK)|CRH_INPUT_PULLUPDOWN(GPIOA_TCK) \
+                                |CRH_INPUT(GPIOA_TDI)|CRH_INPUT_PULLUPDOWN(GPIOA_TDI))
 
-#define VAL_GPIOAODR            (ODR_INPUT_PULLUP(13)|ODR_INPUT_PULLDOWN(14)|ODR_INPUT_PULLUP(15))
+#define VAL_GPIOA_ODR           (ODR_INPUT_PULLUP(GPIOA_TMS)|ODR_INPUT_PULLDOWN(GPIOA_TCK)|ODR_INPUT_PULLUP(GPIOA_TDI))
 
 /*
  * Port B setup.
  * Everything input with pull-down except:
- * PB3  - Pull-up input             (TDO).
+ * PB3 - Pull-up input             (TDO)
+ * PB4 - Pull-up input             (nTRST)
+ * PB8 - Pushpull output           (LOGO RGB)
+ * PB9 - Pull-up input             (SET0)
+ * PB13 - Pushpull output          (INDICATE LED 1)
+ * PB14 - Pushpull output          (INDICATE LED 1)
+ * PB15 - Pushpull output          (INDICATE LED 1)
  */
-/* PB7...PB0 */
-#define VAL_GPIOBCRL            (CRL_INPUT(3)|CRL_INPUT_PULLUPDOWN(3))
-/* PB15...PB8 */
-#define VAL_GPIOBCRH            0x88888888
-#define VAL_GPIOBODR            (ODR_INPUT_PULLUP(3))
 
+/* PB7...PB0 */
+#define VAL_GPIOB_CRL           (CRL_INPUT(GPIOB_PIN0)|CRL_INPUT_PULLUPDOWN(GPIOB_PIN0) \
+                                |CRL_INPUT(GPIOB_PIN1)|CRL_INPUT_PULLUPDOWN(GPIOB_PIN1) \
+                                |CRL_INPUT(GPIOB_PIN2)|CRL_INPUT_PULLUPDOWN(GPIOB_PIN2) \
+                                |CRL_INPUT(GPIOB_TDO)|CRL_INPUT_PULLUPDOWN(GPIOB_TDO) \
+                                |CRL_INPUT(GPIOB_NTRST)|CRL_INPUT_PULLUPDOWN(GPIOB_NTRST) \
+                                |CRL_INPUT(GPIOB_PIN5)|CRL_INPUT_PULLUPDOWN(GPIOB_PIN5) \
+                                |CRL_INPUT(GPIOB_PIN6)|CRL_INPUT_PULLUPDOWN(GPIOB_PIN6) \
+                                |CRL_INPUT(GPIOB_PIN7)|CRL_INPUT_PULLUPDOWN(GPIOB_PIN7))
+/* PB15...PB8 */
+#define VAL_GPIOB_CRH           (CRH_OUTPUT_HIGH(GPIOB_LOGO_RGB)|CRH_OUTPUT_PUSHPULL(GPIOB_LOGO_RGB) \
+                                |CRH_INPUT(GPIOB_SET0)|CRH_INPUT_PULLUPDOWN(GPIOB_SET0) \
+                                |CRH_INPUT(GPIOB_PIN10)|CRH_INPUT_PULLUPDOWN(GPIOB_PIN10) \
+                                |CRH_INPUT(GPIOB_PIN11)|CRH_INPUT_PULLUPDOWN(GPIOB_PIN11) \
+                                |CRH_INPUT(GPIOB_PIN12)|CRH_INPUT_PULLUPDOWN(GPIOB_PIN12) \
+                                |CRH_OUTPUT_LOW(GPIOB_ILED_1)|CRH_OUTPUT_PUSHPULL(GPIOB_ILED_1) \
+                                |CRH_OUTPUT_LOW(GPIOB_ILED_2)|CRH_OUTPUT_PUSHPULL(GPIOB_ILED_2) \
+                                |CRH_OUTPUT_LOW(GPIOB_ILED_3)|CRH_OUTPUT_PUSHPULL(GPIOB_ILED_3))
+
+#define VAL_GPIOB_ODR           (ODR_INPUT_PULLUP(GPIOB_TDO)|ODR_INPUT_PULLUP(GPIOB_NTRST)|ODR_INPUT_PULLUP(GPIOB_SET0))
 /*
  * Port C setup.
  * Everything input with pull-down except:
+ * PC0 - ADC input                  (JOYSTICK VR1)
+ * PC1 - ADC input                  (JOYSTICK VR2)
+ * PC5 - Pull-up input              (JOYSTICK SWITCH)
  */
-/*  PC7...PC0 */
-#define VAL_GPIOCCRL            0x88888888
-/* PC15...PC8 */
-#define VAL_GPIOCCRH            0x88888888
 
-#define VAL_GPIOCODR            0x00000000
+/* PC7...PC0 */
+#define VAL_GPIOC_CRL           (CRL_INPUT(GPIOC_JS_VR1)|CRL_INPUT_ANOLOG(GPIOC_JS_VR1) \
+                                |CRL_INPUT(GPIOC_JS_VR2)|CRL_INPUT_ANOLOG(GPIOC_JS_VR2) \
+                                |CRL_INPUT(GPIOC_PIN3)|CRL_INPUT_PULLUPDOWN(GPIOC_PIN3) \
+                                |CRL_INPUT(GPIOC_PIN4)|CRL_INPUT_PULLUPDOWN(GPIOC_PIN4) \
+                                |CRL_INPUT(GPIOC_JS_SW)|CRL_INPUT_PULLUPDOWN(GPIOC_JS_SW) \
+                                |CRL_INPUT(GPIOC_PIN6)|CRL_INPUT_PULLUPDOWN(GPIOC_PIN6) \
+                                |CRL_INPUT(GPIOC_PIN7)|CRL_INPUT_PULLUPDOWN(GPIOC_PIN7))
+/* PC15...PC8 */
+#define VAL_GPIOC_CRH           0x88888888
+
+#define VAL_GPIOC_ODR           (ODR_INPUT_PULLUP(GPIOC_JS_SW))
 
 /*
  * Port D setup.
  * Everything input with pull-down except:
  */
 /*  PD7...PD0 */
-#define VAL_GPIODCRL            0x88888888
+#define VAL_GPIOD_CRL            0x88888888
 /* PD15...PD8 */
-#define VAL_GPIODCRH            0x88888888
+#define VAL_GPIOD_CRH            0x88888888
 
-#define VAL_GPIODODR            0x00000000
+#define VAL_GPIOD_ODR            0x00000000
 
 /*
  * Port E setup.
  * Everything input with pull-down except:
  */
 /*  PE7...PE0 */
-#define VAL_GPIOECRL            0x88888888
+#define VAL_GPIOE_CRL            0x88888888
 /* PE15...PE8 */
-#define VAL_GPIOECRH            0x88888888
+#define VAL_GPIOE_CRH            0x88888888
 
-#define VAL_GPIOEODR            0x00000000
+#define VAL_GPIOE_ODR            0x00000000
 
 /*
  * USB bus activation macro, required by the USB driver.
