@@ -1,5 +1,5 @@
 # project specific files
-SRC = matrix.c led.c
+SRC = matrix.c led.c ws2812.c
 
 ## chip/board settings
 # - the next two should match the directories in
