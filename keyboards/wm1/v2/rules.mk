@@ -40,8 +40,7 @@ OPT_DEFS =
 # Build Options
 #   comment out to disable the options.
 #
-BACKLIGHT_ENABLE = no
-BOOTMAGIC_ENABLE = yes	# Virtual DIP switch configuration
+BOOTMAGIC_ENABLE = no # Virtual DIP switch configuration
 ## (Note that for BOOTMAGIC on Teensy LC you have to use a custom .ld script.)
 MOUSEKEY_ENABLE = no # Mouse keys
 EXTRAKEY_ENABLE = no # Audio control and System control
