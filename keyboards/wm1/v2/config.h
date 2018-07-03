@@ -8,7 +8,7 @@
 
 /* USB Device descriptor parameter */
 #define VENDOR_ID       0xBEEF
-#define PRODUCT_ID      0x1886
+#define PRODUCT_ID      0x1896
 #define DEVICE_VER      0x0001
 #define MANUFACTURER    astro
 #define PRODUCT         wm1
