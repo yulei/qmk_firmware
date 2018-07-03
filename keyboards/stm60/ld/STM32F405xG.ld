@@ -15,11 +15,12 @@
 */
 
 /*
- * ST32F103xE memory setup.
+ * STM32F405xG memory setup.
+ * Note: Use of ram1 and ram2 is mutually exclusive with use of ram0.
  */
 MEMORY
 {
-    flash0  : org = 0x08000000, len = 512k
+    flash0  : org = 0x08010000, len = 960K
     flash1  : org = 0x00000000, len = 0
     flash2  : org = 0x00000000, len = 0
     flash3  : org = 0x00000000, len = 0
@@ -27,12 +28,12 @@ MEMORY
     flash5  : org = 0x00000000, len = 0
     flash6  : org = 0x00000000, len = 0
     flash7  : org = 0x00000000, len = 0
-    ram0    : org = 0x20000000, len = 64k
-    ram1    : org = 0x00000000, len = 0
-    ram2    : org = 0x00000000, len = 0
+    ram0    : org = 0x20000000, len = 128k      /* SRAM1 + SRAM2 */
+    ram1    : org = 0x20000000, len = 112k      /* SRAM1 */
+    ram2    : org = 0x2001C000, len = 16k       /* SRAM2 */
     ram3    : org = 0x00000000, len = 0
-    ram4    : org = 0x00000000, len = 0
-    ram5    : org = 0x00000000, len = 0
+    ram4    : org = 0x10000000, len = 64k       /* CCM SRAM */
+    ram5    : org = 0x40024000, len = 4k        /* BCKP SRAM */
     ram6    : org = 0x00000000, len = 0
     ram7    : org = 0x00000000, len = 0
 }
