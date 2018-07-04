@@ -10,7 +10,7 @@ MCU_SERIES = STM32F1xx
 # Linker script to use
 # - it should exist either in <chibios>/os/common/ports/ARMCMx/compilers/GCC/ld/
 #   or <this_dir>/ld/
-MCU_LDSCRIPT = STM32F103xE
+MCU_LDSCRIPT = wm1
 
 # Startup code to use
 #  - it should exist in <chibios>/os/common/startup/ARMCMx/compilers/GCC/mk/
@@ -18,7 +18,7 @@ MCU_STARTUP = stm32f1xx
 
 # Board: it should exist either in <chibios>/os/hal/boards/
 #  or <this_dir>/boards
-BOARD = GENERIC_STM32_F103XE
+BOARD = WM1_KEYBOARD
 
 # Cortex version
 MCU  = cortex-m3
