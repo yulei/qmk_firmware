@@ -30,6 +30,10 @@
 
 #include "mcuconf.h"
 
+#if !defined(HAL_USE_TM) || defined(__DOXYGEN__)
+#define HAL_USE_TM                  TRUE
+#endif
+
 /**
  * @brief   Enables the PAL subsystem.
  */
