@@ -165,16 +165,16 @@
  * Please refer to the STM32 Reference Manual for details.
  */
 #define CRL_INPUT(n)             (0U << ((n) * 4U))
-#define CRL_OUTPUT_LOW(n)        (1U << ((n) * 4U))
-#define CRL_OUTPUT_MEDIUM(n)     (2U << ((n) * 4U))
+#define CRL_OUTPUT_LOW(n)        (2U << ((n) * 4U))
+#define CRL_OUTPUT_MEDIUM(n)     (1U << ((n) * 4U))
 #define CRL_OUTPUT_HIGH(n)       (3U << ((n) * 4U))
 #define CRL_INPUT_ANOLOG(n)      (0U << (((n) * 4U + 2)))
 #define CRL_INPUT_FLOATING(n)    (1U << (((n) * 4U + 2)))
 #define CRL_INPUT_PULLUPDOWN(n)  (2U << (((n) * 4U + 2)))
 #define CRL_OUTPUT_PUSHPULL(n)   (0U << (((n) * 4U + 2)))
 #define CRL_OUTPUT_OPENDRAIN(n)  (1U << (((n) * 4U + 2)))
-#define CRL_ALT_PUSHPULL(n)      (2U << (((n) * 4U + 2)))
-#define CRL_ALT_OPENDRAIN(n)     (3U << (((n) * 4U + 2)))
+#define CRL_AF_PUSHPULL(n)       (2U << (((n) * 4U + 2)))
+#define CRL_AF_OPENDRAIN(n)      (3U << (((n) * 4U + 2)))
 
 #define CRH_INPUT(n)             CRL_INPUT((n-8))
 #define CRH_OUTPUT_LOW(n)        CRL_OUTPUT_LOW((n-8))
@@ -185,15 +185,15 @@
 #define CRH_INPUT_PULLUPDOWN(n)  CRL_INPUT_PULLUPDOWN((n-8))
 #define CRH_OUTPUT_PUSHPULL(n)   CRL_OUTPUT_PUSHPULL((n-8))
 #define CRH_OUTPUT_OPENDRAIN(n)  CRL_OUTPUT_OPENDRAIN((n-8))
-#define CRH_ALT_PUSHPULL(n)      CRL_ALT_PUSHPULL((n-8))
-#define CRH_ALT_OPENDRAIN(n)     CRL_ALT_OPENDRAIN((n-8))
+#define CRH_AF_PUSHPULL(n)       CRL_AF_PUSHPULL((n-8))
+#define CRH_AF_OPENDRAIN(n)      CRL_AF_OPENDRAIN((n-8))
 
 #define ODR_INPUT_PULLDOWN(n)     (0U << (n))
 #define ODR_INPUT_PULLUP(n)       (1U << (n))
 
 /*
  * Port A setup.
- * Everything input with pull-down except:
+ * Everything input with pull-up except:
  * PA2 - Pushpull output            (LED PWM)
  * PA3 - Pushpull output            (RGB PWM)
  * PA9 - Alternate output           (USART1 TX)
@@ -231,7 +231,7 @@
 
 /*
  * Port B setup.
- * Everything input with pull-down except:
+ * Everything input with pull-up except:
  * PB3 - Pull-up input             (TDO)
  * PB4 - Pull-up input             (nTRST)
  * PB8 - Pushpull output           (LOGO RGB)
@@ -267,7 +267,7 @@
 #define VAL_GPIOB_ODR           0xFFFFFFFF//(ODR_INPUT_PULLUP(GPIOB_TDO)|ODR_INPUT_PULLUP(GPIOB_NTRST)|ODR_INPUT_PULLUP(GPIOB_SET0))
 /*
  * Port C setup.
- * Everything input with pull-down except:
+ * Everything input with pull-up except:
  * PC0 - ADC input                  (JOYSTICK VR1)
  * PC1 - ADC input                  (JOYSTICK VR2)
  * PC5 - Pull-up input              (JOYSTICK SWITCH)
@@ -290,7 +290,9 @@
 
 /*
  * Port D setup.
- * Everything input with pull-down except:
+ * Everything input with pull-up except:
+ * PD0 - Floating input             (HSE OSC in)
+ * PD1 - Floating input             (HSE OSC out)
  */
 /*  PD7...PD0 */
 #define VAL_GPIOD_CRL            0x88888844
@@ -301,7 +303,7 @@
 
 /*
  * Port E setup.
- * Everything input with pull-down except:
+ * Everything input with pull-up except:
  */
 /*  PE7...PE0 */
 #define VAL_GPIOE_CRL            0x88888888
