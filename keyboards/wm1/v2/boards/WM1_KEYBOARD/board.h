@@ -18,10 +18,6 @@
 #define _BOARD_H_
 
 /*
- * Setup for the ST INEMO-M1 Discovery board.
- */
-
-/*
  * Board identifier.
  */
 #define BOARD_WM1_STM32_F103XE
@@ -31,7 +27,6 @@
  * Board frequencies.
  */
 #define STM32_LSECLK            32768
-
 #define STM32_HSECLK            8000000
 //#define STM32_HSE_BYPASS
 
@@ -47,7 +42,7 @@
 /*
  * MCU voltage
  */
-#define STM32_VDD 300
+//#define STM32_VDD 300
 /*
  * IO pins assignments.
  */
@@ -205,7 +200,7 @@
  * PA15 - Pull-up input             (TDI)
  */
 /* PA7...PA0 */
-#define VAL_GPIOA_CRL           0x88888888
+#define VAL_GPIOA_CRL           0x88887888
                                 /*(CRL_INPUT(GPIOA_PIN0)|CRL_INPUT_PULLUPDOWN(GPIOA_PIN0) \
                                 |CRL_INPUT(GPIOA_PIN1)|CRL_INPUT_PULLUPDOWN(GPIOA_PIN1) \
                                 |CRL_OUTPUT_HIGH(GPIOA_LED_PWM)|CRL_ALT_PUSHPULL(GPIOA_LED_PWM) \
@@ -253,7 +248,7 @@
                                 |CRL_INPUT(GPIOB_PIN7)|CRL_INPUT_PULLUPDOWN(GPIOB_PIN7))
                                 */
 /* PB15...PB8 */
-#define VAL_GPIOB_CRH           0x88888888
+#define VAL_GPIOB_CRH           0x88888887
                                 /*(CRH_OUTPUT_HIGH(GPIOB_LOGO_RGB)|CRH_OUTPUT_PUSHPULL(GPIOB_LOGO_RGB) \
                                 |CRH_INPUT(GPIOB_SET0)|CRH_INPUT_PULLUPDOWN(GPIOB_SET0) \
                                 |CRH_INPUT(GPIOB_PIN10)|CRH_INPUT_PULLUPDOWN(GPIOB_PIN10) \

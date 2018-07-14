@@ -14,6 +14,8 @@ void backlight_init_ports(void) {
     palSetPadMode(GPIOA, 2, PAL_MODE_OUTPUT_PUSHPULL);
     palSetPad(GPIOA, 2);
     #endif
+    palSetPadMode(GPIOB, 11, PAL_MODE_OUTPUT_PUSHPULL);
+    palSetPad(GPIOB, 11);
 }
 
 void backlight_set(uint8_t level) {

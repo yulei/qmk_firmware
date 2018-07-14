@@ -46,6 +46,8 @@ void matrix_scan_kb(void) {
 
 void matrix_init(void) {
     printf("matrix init\n");
+    palSetPadMode(GPIOB, 12, PAL_MODE_OUTPUT_PUSHPULL);
+    palSetPad(GPIOB, 12);
 
     palSetPadMode(GPIOA,  1, PAL_MODE_OUTPUT_PUSHPULL);
     palSetPadMode(GPIOA,  0, PAL_MODE_OUTPUT_PUSHPULL);
@@ -113,22 +115,22 @@ uint8_t matrix_scan(void) {
         );
 
         switch (col) {
-            case 0: palSetPad(GPIOA,  1); break;
-            case 1: palSetPad(GPIOA,  0); break;
-            case 2: palSetPad(GPIOC,  3); break;
-            case 3: palSetPad(GPIOC,  2); break;
-            case 4: palSetPad(GPIOC, 13); break;
-            case 5: palSetPad(GPIOB,  7); break;
-            case 6: palSetPad(GPIOB,  6); break;
-            case 7: palSetPad(GPIOB,  5); break;
-            case 8: palSetPad(GPIOD,  2); break;
-            case 9: palSetPad(GPIOC, 12); break;
-            case 10: palSetPad(GPIOC,11); break;
-            case 11: palSetPad(GPIOC,10); break;
-            case 12: palSetPad(GPIOC, 9); break;
-            case 13: palSetPad(GPIOC, 8); break;
-            case 14: palSetPad(GPIOC, 7); break;
-            case 15: palSetPad(GPIOC, 6); break;
+            case 0: palClearPad(GPIOA,  1); break;
+            case 1: palClearPad(GPIOA,  0); break;
+            case 2: palClearPad(GPIOC,  3); break;
+            case 3: palClearPad(GPIOC,  2); break;
+            case 4: palClearPad(GPIOC, 13); break;
+            case 5: palClearPad(GPIOB,  7); break;
+            case 6: palClearPad(GPIOB,  6); break;
+            case 7: palClearPad(GPIOB,  5); break;
+            case 8: palClearPad(GPIOD,  2); break;
+            case 9: palClearPad(GPIOC, 12); break;
+            case 10: palClearPad(GPIOC,11); break;
+            case 11: palClearPad(GPIOC,10); break;
+            case 12: palClearPad(GPIOC, 9); break;
+            case 13: palClearPad(GPIOC, 8); break;
+            case 14: palClearPad(GPIOC, 7); break;
+            case 15: palClearPad(GPIOC, 6); break;
         }
 
         if (matrix_debouncing[col] != data) {
