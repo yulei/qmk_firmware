@@ -65,4 +65,4 @@ MIDI_ENABLE = no # MIDI controls
 UNICODE_ENABLE = no # Unicode
 BLUETOOTH_ENABLE = no # Enable Bluetooth with the Adafruit EZ-Key HID
 
-SRC += i2c_master.c is31fl3236.c rgb_leds.c is31fl3733.c
+#SRC += i2c_master.c is31fl3236.c rgb_leds.c is31fl3733.c
