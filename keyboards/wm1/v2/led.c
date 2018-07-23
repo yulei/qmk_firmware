@@ -11,10 +11,8 @@
 void backlight_init_ports(void) {
     printf("backlight_init_ports()\n");
     #ifdef BACKLIGHT_ENABLE
-    palSetPadMode(GPIOA, 2, PAL_MODE_OUTPUT_PUSHPULL);
     palSetPad(GPIOA, 2);
     #endif
-    palSetPadMode(GPIOB, 13, PAL_MODE_OUTPUT_PUSHPULL);
     palSetPad(GPIOB, 13);
 }
 
