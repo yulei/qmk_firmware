@@ -45,9 +45,17 @@ void matrix_scan_kb(void) {
 }
 
 void matrix_init(void) {
+
     printf("matrix init\n");
     palSetPadMode(GPIOB, 12, PAL_MODE_OUTPUT_PUSHPULL);
     palSetPad(GPIOB, 12);
+    palSetPadMode(GPIOB, 13, PAL_MODE_OUTPUT_PUSHPULL);
+    palClearPad(GPIOB, 13);
+    palSetPadMode(GPIOB, 14, PAL_MODE_OUTPUT_PUSHPULL);
+    palClearPad(GPIOB, 14);
+    palSetPadMode(GPIOB, 15, PAL_MODE_OUTPUT_PUSHPULL);
+    palClearPad(GPIOB, 15);
+    palSetPadMode(GPIOA, 2, PAL_MODE_OUTPUT_PUSHPULL);
 
     palSetPadMode(GPIOA,  1, PAL_MODE_OUTPUT_PUSHPULL);
     palSetPadMode(GPIOA,  0, PAL_MODE_OUTPUT_PUSHPULL);
