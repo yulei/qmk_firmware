@@ -9,7 +9,8 @@
 #include "timer.h"
 #include "wait.h"
 #include "printf.h"
-#include "backlight.h"
+//#include "backlight.h"
+#include "rgb_backlight.h"
 #include "matrix.h"
 
 /**
@@ -29,7 +30,10 @@ static bool debouncing = false;
 static uint16_t debouncing_time = 0;
 
 __attribute__ ((weak))
-void matrix_init_user(void) {}
+void matrix_init_user(void)
+{
+  rb_init();
+}
 
 __attribute__ ((weak))
 void matrix_scan_user(void) {}

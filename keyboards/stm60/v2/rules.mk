@@ -1,5 +1,7 @@
 # project specific files
-SRC = matrix.c
+SRC = matrix.c \
+      rgb_backlight.c \
+      is31fl3733.c
 
 ## chip/board settings
 # - the next two should match the directories in
