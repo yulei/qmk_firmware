@@ -1,5 +1,6 @@
 # project specific files
 SRC = matrix.c \
+      indicator_leds.c \
       rgb_backlight.c \
       is31fl3733.c
 
