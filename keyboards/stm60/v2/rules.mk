@@ -2,7 +2,9 @@
 SRC = matrix.c \
       indicator_leds.c \
       rgb_backlight.c \
-      is31fl3733.c
+      is31fl3733.c \
+      stm60.c \
+      ws2812.c
 
 ## chip/board settings
 # - the next two should match the directories in
@@ -54,4 +56,6 @@ BACKLIGHT_ENABLE = no
 NKRO_ENABLE = no # USB Nkey Rollover
 CUSTOM_MATRIX = yes # Custom matrix file
 AUDIO_ENABLE = no
-# SERIAL_LINK_ENABLE = yes
+
+RGBLIGHT_ENABLE = yes
+RGBLIGHT_CUSTOM_DRIVER = yes

@@ -30,16 +30,17 @@ void is31fl3733_init(void)
   i2cStart(&I2CD1, &i2cfg1);
   txbuf[0] = 0xFE;
   txbuf[1] = 0xC5; // unlock fdh
-  txbuf[2] = 0xFD;
-  txbuf[3] = 0x00; // wirte page 0
-  status = i2cMasterTransmit(&I2CD1, fl3733_addr, txbuf, 4, rxbuf, 0);
+  status = i2cMasterTransmit(&I2CD1, fl3733_addr, txbuf, 2, rxbuf, 0);
+  txbuf[0] = 0xFD;
+  txbuf[1] = 0x00; // wirte page 0
+  status = i2cMasterTransmit(&I2CD1, fl3733_addr, txbuf, 2, rxbuf, 0);
   for (uint8_t i = 0; i < 24; i++) {
     txbuf[0] = i;
     txbuf[1] = 0xFF;
     status = i2cMasterTransmit(&I2CD1, fl3733_addr, txbuf, 2, rxbuf, 0);
   } // turn all led
 
-  txbuf[0] = 0xFE;
+  /*txbuf[0] = 0xFE;
   txbuf[1] = 0xC5;
   txbuf[2] = 0xFD;
   txbuf[3] = 0x02;  // page 2
@@ -49,12 +50,14 @@ void is31fl3733_init(void)
     txbuf[1] = 0xFF;
     status = i2cMasterTransmit(&I2CD1, fl3733_addr, txbuf, 2, rxbuf, 0);
   } // set all pwm
+  */
 
   txbuf[0] = 0xFE;
   txbuf[1] = 0xC5;
-  txbuf[2] = 0xFD;
-  txbuf[3] = 0x03;  // page 3
-  status = i2cMasterTransmit(&I2CD1, fl3733_addr, txbuf, 4, rxbuf, 0);
+  status = i2cMasterTransmit(&I2CD1, fl3733_addr, txbuf, 2, rxbuf, 0);
+  txbuf[0] = 0xFD;
+  txbuf[1] = 0x03;  // page 3
+  status = i2cMasterTransmit(&I2CD1, fl3733_addr, txbuf, 2, rxbuf, 0);
   txbuf[0] = 0x00;
   txbuf[1] = 0x01;  // normal operation
   status = i2cMasterTransmit(&I2CD1, fl3733_addr, txbuf, 2, rxbuf, 0);
