@@ -92,7 +92,7 @@
 //#define NO_ACTION_MACRO
 //#define NO_ACTION_FUNCTION
 
-#define WS2812_LED_N    4
+#define WS2812_LED_N    18
 #define RGBLED_NUM      WS2812_LED_N
 #define WS2812_TIM_N    4
 #define WS2812_TIM_CH   3
