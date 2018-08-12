@@ -6,13 +6,31 @@
 #include <stdbool.h>
 #include <string.h>
 #include "hal.h"
+#include "quantum.h"
 #include "timer.h"
 #include "wait.h"
+#include "rgblight.h"
 #include "printf.h"
 #include "indicator_leds.h"
+#include "ws2812.h"
 #include "rgb_backlight.h"
 #include "matrix.h"
 
+__attribute__ ((weak))
+void matrix_init_user(void) {}
+
+__attribute__ ((weak))
+void matrix_scan_user(void) {}
+
+__attribute__ ((weak))
+void matrix_init_kb(void) {
+  matrix_init_user();
+}
+
+__attribute__ ((weak))
+void matrix_scan_kb(void) {
+  matrix_scan_user();
+}
 /**
  * stm60 keybaord
  * #define MATRIX_ROW_PINS { PB12, PB13, PB14, PB15, PC6}
@@ -30,6 +48,9 @@ static bool debouncing = false;
 static uint16_t debouncing_time = 0;
 
 void matrix_init(void) {
+    indicator_leds_init();
+    ws2812_init();
+    //rb_init();
     printf("matrix init\n");
 
     palSetPadMode(GPIOB, 11, PAL_MODE_OUTPUT_PUSHPULL);
@@ -61,6 +82,8 @@ void matrix_init(void) {
 }
 
 uint8_t matrix_scan(void) {
+    rgblight_task();
+
     for (int col = 0; col < MATRIX_COLS; col++) {
         matrix_row_t data = 0;
 

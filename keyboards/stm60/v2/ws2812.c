@@ -26,6 +26,7 @@
 #include "ch.h"
 #include "hal.h"
 
+#include "wait.h"
 // Application
 #include "board.h"
 
@@ -204,9 +205,10 @@ void ws2812_init(void)
 #ifdef WS2812_EXTERNAL_PULLUP
     palSetPadMode(PORT_WS2812, PIN_WS2812, PAL_MODE_ALTERNATE(WS2812_AF) | PAL_STM32_OTYPE_OPENDRAIN);
 #else
-    palSetPadMode(PORT_WS2812, PIN_WS2812, PAL_MODE_STM32_ALTERNATE_PUSHPULL);// //PAL_MODE_ALTERNATE(WS2812_AF));
+    palSetPadMode(PORT_WS2812, PIN_WS2812, PAL_MODE_ALTERNATE(WS2812_AF) | PAL_STM32_OTYPE_PUSHPULL); //PAL_MODE_STM32_ALTERNATE_PUSHPULL);
 #endif
-
+    //palClearPad(PORT_WS2812, PIN_WS2812);
+    //wait_ms(1);
     // PWM Configuration
     #pragma GCC diagnostic ignored "-Woverride-init"                                        // Turn off override-init warning for this struct. We use the overriding ability to set a "default" channel config
     static const PWMConfig ws2812_pwm_config = {

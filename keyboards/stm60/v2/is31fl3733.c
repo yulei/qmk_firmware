@@ -21,13 +21,17 @@ static msg_t status = MSG_OK;
 
 static const I2CConfig i2cfg1 = {
     OPMODE_I2C,
-    400000,
-    FAST_DUTY_CYCLE_2,
+    100000,
+    STD_DUTY_CYCLE,
 };
 
 void is31fl3733_init(void)
 {
+  palSetPadMode(GPIOB, 6, PAL_MODE_ALTERNATE(4));
+  palSetPadMode(GPIOB, 7, PAL_MODE_ALTERNATE(4));
+
   i2cStart(&I2CD1, &i2cfg1);
+
   txbuf[0] = 0xFE;
   txbuf[1] = 0xC5; // unlock fdh
   status = i2cMasterTransmit(&I2CD1, fl3733_addr, txbuf, 2, rxbuf, 0);
@@ -40,17 +44,17 @@ void is31fl3733_init(void)
     status = i2cMasterTransmit(&I2CD1, fl3733_addr, txbuf, 2, rxbuf, 0);
   } // turn all led
 
-  /*txbuf[0] = 0xFE;
+  txbuf[0] = 0xFE;
   txbuf[1] = 0xC5;
-  txbuf[2] = 0xFD;
-  txbuf[3] = 0x02;  // page 2
-  status = i2cMasterTransmit(&I2CD1, fl3733_addr, txbuf, 4, rxbuf, 0);
+  status = i2cMasterTransmit(&I2CD1, fl3733_addr, txbuf, 2, rxbuf, 0);
+  txbuf[0] = 0xFD;
+  txbuf[1] = 0x01;  // page 1
+  status = i2cMasterTransmit(&I2CD1, fl3733_addr, txbuf, 2, rxbuf, 0);
   for (uint8_t i = 0; i < 192; i++) {
     txbuf[0] = i;
-    txbuf[1] = 0xFF;
+    txbuf[1] = 0x7F;
     status = i2cMasterTransmit(&I2CD1, fl3733_addr, txbuf, 2, rxbuf, 0);
   } // set all pwm
-  */
 
   txbuf[0] = 0xFE;
   txbuf[1] = 0xC5;
