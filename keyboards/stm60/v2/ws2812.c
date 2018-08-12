@@ -105,7 +105,7 @@
  *
  * The duty cycle is calculated for a high period of 350 nS.
  */
-#define WS2812_DUTYCYCLE_0      (WS2812_PWM_FREQUENCY/(1000000000/350))
+#define WS2812_DUTYCYCLE_0      (WS2812_PWM_FREQUENCY/(1000000000/400))
 
 /**
  * @brief   High period for a one, in ticks
@@ -121,7 +121,7 @@
  * The duty cycle is calculated for a high period of 800 nS.
  * This is in the middle of the specifications of the WS2812 and WS2812B.
  */
-#define WS2812_DUTYCYCLE_1      (WS2812_PWM_FREQUENCY/(1000000000/800))
+#define WS2812_DUTYCYCLE_1      (WS2812_PWM_FREQUENCY/(1000000000/950))
 
 /* --- PRIVATE MACROS ------------------------------------------------------- */
 
@@ -200,7 +200,6 @@ void ws2812_init(void)
     uint32_t i;
     for (i = 0; i < WS2812_COLOR_BIT_N; i++) ws2812_frame_buffer[i]                       = WS2812_DUTYCYCLE_0;   // All color bits are zero duty cycle
     for (i = 0; i < WS2812_RESET_BIT_N; i++) ws2812_frame_buffer[i + WS2812_COLOR_BIT_N]  = 0;                    // All reset bits are zero
-
     // Configure pin as AF output. If there's an external pull up resistor the signal level is brought to 5V using open drain mode.
 #ifdef WS2812_EXTERNAL_PULLUP
     palSetPadMode(PORT_WS2812, PIN_WS2812, PAL_MODE_ALTERNATE(WS2812_AF) | PAL_STM32_OTYPE_OPENDRAIN);

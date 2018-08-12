@@ -6,6 +6,7 @@
 
 #include "rgblight.h"
 
+#include "indicator_leds.h"
 #include "ws2812.h"
 
 extern rgblight_config_t rgblight_config;
@@ -18,32 +19,39 @@ void rgblight_set(void) {
             led[i].b = 0;
         }
     }
-
+    for (uint8_t j = 0; j < RGBLED_NUM; j++) {
+      ws2812_write_led(j, led[j].r, led[j].g, led[j].b);
+    }
 }
 
-uint8_t *o_fb;
+__attribute__ ((weak))
+void matrix_init_user(void) {}
+
+__attribute__ ((weak))
 void matrix_init_kb(void) {
-  //ledDriverInit(2, GPIOB, PAL_PORT_BIT(9), &o_fb);
+  indicator_leds_init();
   ws2812_init();
-  //testPatternFB(o_fb);
 
 	matrix_init_user();
 }
 
-static void test_ws2812(void)
+/*static void test_ws2812(void)
 {
-  //uint8_t r, g, b;
+  uint8_t r, g, b;
   for ( uint32_t i=0; i< WS2812_LED_N; i++){
-    //r = rand()%256;
-    //g = rand()%256;
-    //b = rand()%256;
-    ws2812_write_led(i, 255, 0, 0);
+    r = rand()%256;
+    g = rand()%256;
+    b = rand()%256;
+    ws2812_write_led(i, r, g, b);
   }
-}
+}*/
+
+__attribute__ ((weak))
+void matrix_scan_user(void) {}
+
 __attribute__ ((weak))
 void matrix_scan_kb(void) {
 	matrix_scan_user();
-  //testPatternFB(o_fb);
-  test_ws2812();
-  //rgblight_task();
+  //test_ws2812();
+  rgblight_task();
 }

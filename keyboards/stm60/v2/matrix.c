@@ -29,26 +29,6 @@ static matrix_row_t matrix_debouncing[MATRIX_COLS];
 static bool debouncing = false;
 static uint16_t debouncing_time = 0;
 
-__attribute__ ((weak))
-void matrix_init_user(void)
-{
-  //rb_init();
-  indicator_leds_init();
-}
-
-__attribute__ ((weak))
-void matrix_scan_user(void) {}
-
-__attribute__ ((weak))
-void matrix_init_kb(void) {
-  matrix_init_user();
-}
-
-__attribute__ ((weak))
-void matrix_scan_kb(void) {
-  matrix_scan_user();
-}
-
 void matrix_init(void) {
     printf("matrix init\n");
 
