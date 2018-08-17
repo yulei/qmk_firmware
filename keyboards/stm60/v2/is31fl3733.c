@@ -27,8 +27,8 @@ static const I2CConfig i2cfg1 = {
 
 void is31fl3733_init(void)
 {
-  palSetPadMode(GPIOB, 6, PAL_MODE_ALTERNATE(4));
-  palSetPadMode(GPIOB, 7, PAL_MODE_ALTERNATE(4));
+  //palSetPadMode(GPIOB, 6, PAL_MODE_ALTERNATE(4) | PAL_STM32_OTYPE_OPENDRAIN);
+  //palSetPadMode(GPIOB, 7, PAL_MODE_ALTERNATE(4) | PAL_STM32_OTYPE_OPENDRAIN);
 
   i2cStart(&I2CD1, &i2cfg1);
 
@@ -52,7 +52,7 @@ void is31fl3733_init(void)
   status = i2cMasterTransmit(&I2CD1, fl3733_addr, txbuf, 2, rxbuf, 0);
   for (uint8_t i = 0; i < 192; i++) {
     txbuf[0] = i;
-    txbuf[1] = 0x7F;
+    txbuf[1] = 0xFF;
     status = i2cMasterTransmit(&I2CD1, fl3733_addr, txbuf, 2, rxbuf, 0);
   } // set all pwm
 
