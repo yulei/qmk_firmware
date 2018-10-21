@@ -83,7 +83,7 @@ CSTANDARD = -std=gnu99
 #    -adhlns...: create assembler listing
 CFLAGS += -g$(DEBUG)
 CFLAGS += $(CDEFS)
-CFLAGS += -O$(OPT)
+#CFLAGS += -O$(OPT)
 # add color
 ifeq ($(COLOR),true)
 ifeq ("$(shell echo "int main(){}" | $(CC) -fdiagnostics-color -x c - -o /dev/null 2>&1)", "")

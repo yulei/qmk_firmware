@@ -51,6 +51,7 @@ void matrix_init(void) {
     indicator_leds_init();
     ws2812_init();
     //rb_init();
+    //debug_enable = true;
     printf("matrix init\n");
 
     palSetPadMode(GPIOB, 11, PAL_MODE_OUTPUT_PUSHPULL);
