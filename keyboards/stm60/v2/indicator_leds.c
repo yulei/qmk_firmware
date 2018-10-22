@@ -61,11 +61,11 @@ void led_set_kb(uint8_t usb_led)
   // led 4
   indicator_leds_set(3, layer_state & (1 << 0));
   // led 5
-  indicator_leds_set(3, layer_state & (1 << 1));
+  indicator_leds_set(4, layer_state & (1 << 1));
   // led 6
-  indicator_leds_set(3, layer_state & (1 << 2));
+  indicator_leds_set(5, layer_state & (1 << 2));
   // led 7
-  indicator_leds_set(3, layer_state & (1 << 3));
+  indicator_leds_set(6, layer_state & (1 << 3));
   // led 8
-  indicator_leds_set(3, layer_state & (1 << 4));
+  indicator_leds_set(7, layer_state & (1 << 4));
 }

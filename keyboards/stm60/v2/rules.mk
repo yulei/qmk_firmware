@@ -1,8 +1,6 @@
 # project specific files
 SRC = matrix.c \
       indicator_leds.c \
-      rgb_backlight.c \
-      is31fl3733.c \
       stm60.c \
       ws2812.c
 
@@ -49,7 +47,7 @@ BOOTMAGIC_ENABLE = yes	# Virtual DIP switch configuration
 ## (Note that for BOOTMAGIC on Teensy LC you have to use a custom .ld script.)
 MOUSEKEY_ENABLE = no # Mouse keys
 EXTRAKEY_ENABLE = no # Audio control and System control
-CONSOLE_ENABLE = yes # Console for debug
+CONSOLE_ENABLE = no# Console for debug
 COMMAND_ENABLE = no # Commands for debug and configuration
 #SLEEP_LED_ENABLE = yes  # Breathing sleep LED during USB suspend
 BACKLIGHT_ENABLE = no
