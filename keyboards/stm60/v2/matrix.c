@@ -13,26 +13,43 @@
 #include "printf.h"
 #include "indicator_leds.h"
 #include "ws2812.h"
-#include "rgb_backlight.h"
+//#include "rgb_backlight.h"
 #include "matrix.h"
 
-__attribute__ ((weak))
-void matrix_init_user(void) {}
-
-__attribute__ ((weak))
-void matrix_scan_user(void) {
-  rgblight_task();
+// rgb bottom light stuff
+extern rgblight_config_t rgblight_config;
+void ws2812_setleds(LED_TYPE *ledarray, uint16_t leds)
+{
+  for (uint16_t i = 0; i < leds; i++) {
+    ws2812_write_led(i, ledarray[i].r, ledarray[i].g, ledarray[i].b);
+  }
 }
 
-__attribute__ ((weak))
+void rgblight_set(void) {
+    if (!rgblight_config.enable) {
+        for (uint8_t i = 0; i < RGBLED_NUM; i++) {
+            led[i].r = 0;
+            led[i].g = 0;
+            led[i].b = 0;
+        }
+    }
+    ws2812_setleds(led, RGBLED_NUM);
+}
+void matrix_scan_kb(void) {
+  rgblight_task();
+  matrix_scan_user();
+}
 void matrix_init_kb(void) {
   matrix_init_user();
 }
-
-__attribute__ ((weak))
-void matrix_scan_kb(void) {
-  matrix_scan_user();
+__attribute__((weak))
+void matrix_init_user(void) {
 }
+
+__attribute__((weak))
+void matrix_scan_user(void) {
+}
+
 /**
  * stm60 keybaord
  * #define MATRIX_ROW_PINS { PB12, PB13, PB14, PB15, PC6}

@@ -9,13 +9,21 @@
 
 void indicator_leds_init(void) {
   palSetLineMode(LINE_I_LED1, PAL_MODE_OUTPUT_PUSHPULL);
+  palClearLine(LINE_I_LED1);
   palSetLineMode(LINE_I_LED2, PAL_MODE_OUTPUT_PUSHPULL);
+  palClearLine(LINE_I_LED2);
   palSetLineMode(LINE_I_LED3, PAL_MODE_OUTPUT_PUSHPULL);
+  palClearLine(LINE_I_LED3);
   palSetLineMode(LINE_I_LED4, PAL_MODE_OUTPUT_PUSHPULL);
+  palClearLine(LINE_I_LED4);
   palSetLineMode(LINE_I_LED5, PAL_MODE_OUTPUT_PUSHPULL);
+  palClearLine(LINE_I_LED5);
   palSetLineMode(LINE_I_LED6, PAL_MODE_OUTPUT_PUSHPULL);
+  palClearLine(LINE_I_LED6);
   palSetLineMode(LINE_I_LED7, PAL_MODE_OUTPUT_PUSHPULL);
+  palClearLine(LINE_I_LED7);
   palSetLineMode(LINE_I_LED8, PAL_MODE_OUTPUT_PUSHPULL);
+  palClearLine(LINE_I_LED8);
 }
 
 void indicator_leds_set(uint32_t index, bool on)

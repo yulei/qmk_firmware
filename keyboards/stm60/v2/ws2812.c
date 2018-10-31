@@ -249,7 +249,7 @@ void ws2812_init(void)
 ws2812_err_t ws2812_write_led(uint32_t led_number, uint8_t r, uint8_t g, uint8_t b)
 {
     // Check for valid LED
-    if (led_number >= WS2812_LED_N) return WS2812_LED_INVALID;
+    if (led_number > WS2812_LED_N) return WS2812_LED_INVALID;
 
     // Write color to frame buffer
     uint32_t bit;
