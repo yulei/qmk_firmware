@@ -12,6 +12,13 @@
 
 extern rgblight_config_t rgblight_config;
 
+void ws2812_setleds(LED_TYPE *ledarray, uint16_t leds)
+{
+  for (uint16_t i = 0; i < leds; i++) {
+    ws2812_write_led(i, ledarray[i].r, ledarray[i].g, ledarray[i].b);
+  }
+}
+
 void rgblight_set(void) {
     if (!rgblight_config.enable) {
         for (uint8_t i = 0; i < RGBLED_NUM; i++) {
@@ -20,9 +27,7 @@ void rgblight_set(void) {
             led[i].b = 0;
         }
     }
-    for (uint8_t j = 0; j < RGBLED_NUM; j++) {
-      ws2812_write_led(j, led[j].r, led[j].g, led[j].b);
-    }
+    ws2812_setleds(led, RGBLED_NUM);
 }
 /*
 void matrix_init_user(void) {
