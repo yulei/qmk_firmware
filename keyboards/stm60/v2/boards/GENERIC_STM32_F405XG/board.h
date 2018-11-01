@@ -218,7 +218,7 @@
 #define LINE_I_LED5                 PAL_LINE(GPIOC, 10U)
 #define LINE_I_LED6                 PAL_LINE(GPIOC, 11U)
 #define LINE_I_LED7                 PAL_LINE(GPIOC, 12U)
-#define LINE_I_LED8                 PAL_LINE(GPIOA, 8U)
+#define LINE_I_LED8                 PAL_LINE(GPIOB, 5U)
 
 /*
  * I/O ports initial setup, this configuration is established soon after reset
