@@ -36,7 +36,6 @@ void rgblight_set(void) {
     ws2812_setleds(led, RGBLED_NUM);
 }
 void matrix_scan_kb(void) {
-  rgblight_task();
   matrix_scan_user();
 }
 void matrix_init_kb(void) {
@@ -48,6 +47,7 @@ void matrix_init_user(void) {
 
 __attribute__((weak))
 void matrix_scan_user(void) {
+  rgblight_task();
 }
 
 /**
@@ -102,8 +102,6 @@ void matrix_init(void) {
 }
 
 uint8_t matrix_scan(void) {
-    rgblight_task();
-
     for (int col = 0; col < MATRIX_COLS; col++) {
         matrix_row_t data = 0;
 
