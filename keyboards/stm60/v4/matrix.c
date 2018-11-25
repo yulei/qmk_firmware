@@ -13,7 +13,7 @@
 #include "printf.h"
 #include "indicator_leds.h"
 #include "ws2812.h"
-//#include "rgb_backlight.h"
+#include "rgb_backlight.h"
 #include "matrix.h"
 
 // rgb bottom light stuff
@@ -69,7 +69,7 @@ static uint16_t debouncing_time = 0;
 void matrix_init(void) {
     indicator_leds_init();
     //ws2812_init();
-    //rb_init();
+    rb_init();
     //debug_enable = true;
     printf("matrix init\n");
 
