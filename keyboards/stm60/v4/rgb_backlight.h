@@ -23,7 +23,7 @@ typedef struct _rgb_config
 
 void rb_init(void);
 void rb_set_state(bool on);
-void rb_update(void);
+
 void rb_flush(void);
 void rb_set_color(int index, uint8_t r, uint8_t g, uint8_t b);
 void rb_set_color_all(uint8_t r, uint8_t g, uint8_t b);

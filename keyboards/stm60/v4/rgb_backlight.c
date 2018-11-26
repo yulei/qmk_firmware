@@ -225,12 +225,6 @@ void rb_set_state(bool on)
     }
 }
 
-void rb_update(void)
-{
-    if( !rgb_conf.on)
-        return;
-}
-
 void rb_flush(void)
 {
 }
