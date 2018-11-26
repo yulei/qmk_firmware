@@ -103,4 +103,7 @@
 #define WS2812_EXTERNAL_PULLUP
 
 #define RGBLIGHT_ANIMATIONS
+
+
+#define DRIVER_LED_TOTAL 64
 #endif

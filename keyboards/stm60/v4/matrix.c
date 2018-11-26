@@ -9,12 +9,14 @@
 #include "quantum.h"
 #include "timer.h"
 #include "wait.h"
-#include "rgblight.h"
 #include "printf.h"
 #include "indicator_leds.h"
-#include "ws2812.h"
-#include "rgb_backlight.h"
 #include "matrix.h"
+#include "rgb_backlight.h"
+
+#ifdef RGBLIGHT_ENABLE
+#include "rgblight.h"
+#include "ws2812.h"
 
 // rgb bottom light stuff
 extern rgblight_config_t rgblight_config;
@@ -35,6 +37,7 @@ void rgblight_set(void) {
     }
     ws2812_setleds(led, RGBLED_NUM);
 }
+#endif
 void matrix_scan_kb(void) {
   matrix_scan_user();
 }

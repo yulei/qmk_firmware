@@ -6,6 +6,7 @@
 #include "ch.h"
 #include "hal.h"
 
+#include "rgb_matrix.h"
 #include "rgb_backlight.h"
 #include "ws2811.h"
 #include "wait.h"
@@ -22,7 +23,7 @@
 
 static rgb_config rgb_conf;
 static virtual_timer_t vt;
-
+/*
 static const uint8_t rgb_led_matrix[][8][2] =
 {
     {{0,0},   {0,1},    {1,0},    {2,0},    {3,0},    {4,0},        {4,1},    {4,2}},
@@ -33,6 +34,84 @@ static const uint8_t rgb_led_matrix[][8][2] =
     {{0,9},   {0,10},   {1,9},    {1,10},   {2,9},    {2,10},       {3,9},    {4,6}},
     {{0,11},  {0,12},   {1,11},   {1,12},   {2,11},   {3,10},       {3,11},   {4,7}},
     {{0,13},  {0,14},   {1,13},   {2,12},   {3,12},   {0xFF,0xFF},  {4,9},    {4,8}}
+};
+*/
+const rgb_led g_rgb_leds[DRIVER_LED_TOTAL] = {
+/* {row | col << 4}
+ *    |           {x=0..224, y=0..64}
+ *    |              |            modifier
+ *    |              |         | */
+    {{0|(0<<4)},    {  0,  0}, 1},
+    {{0|(1<<4)},    { 17,  0}, 0},
+    {{1|(0<<4)},    {  0, 16}, 1},
+    {{2|(0<<4)},    {  0, 32}, 1},
+    {{3|(0<<4)},    {  0, 48}, 1},
+    {{4|(0<<4)},    {  0, 64}, 1},
+    {{4|(1<<4)},    { 17, 64}, 1},
+    {{4|(2<<4)},    { 34, 64}, 1},
+
+    {{0|(2<<4)},    { 34,  0}, 0},
+    {{0|(3<<4)},    { 51,  0}, 0},
+    {{1|(1<<4)},    { 17, 16}, 0},
+    {{1|(2<<4)},    { 34, 16}, 0},
+    {{2|(1<<4)},    { 17, 32}, 0},
+    {{2|(2<<4)},    { 34, 32}, 0},
+    {{3|(1<<4)},    { 17, 48}, 0},
+    {{3|(2<<4)},    { 34, 48}, 0},
+
+    {{0|(4<<4)},    { 68,  0}, 0},
+    {{0|(5<<4)},    { 85,  0}, 0},
+    {{1|(3<<4)},    { 51, 16}, 0},
+    {{1|(4<<4)},    { 68, 16}, 0},
+    {{2|(3<<4)},    { 51, 32}, 0},
+    {{2|(4<<4)},    { 68, 32}, 0},
+    {{3|(3<<4)},    { 51, 48}, 0},
+    {{3|(4<<4)},    { 68, 48}, 0},
+
+    {{0|(6<<4)},    {102,  0}, 0},
+    {{1|(5<<4)},    { 85, 16}, 0},
+    {{1|(6<<4)},    {102, 16}, 0},
+    {{2|(5<<4)},    { 85, 32}, 0},
+    {{2|(6<<4)},    {102, 32}, 0},
+    {{3|(5<<4)},    { 85, 48}, 0},
+    {{3|(6<<4)},    {102, 48}, 0},
+    {{4|(5<<4)},    {102, 64}, 0},
+
+    {{0|(7<<4)},    {119,  0}, 0},
+    {{0|(8<<4)},    {136,  0}, 0},
+    {{1|(7<<4)},    {119, 16}, 0},
+    {{1|(8<<4)},    {136, 16}, 0},
+    {{2|(7<<4)},    {119, 32}, 0},
+    {{2|(8<<4)},    {136, 32}, 0},
+    {{3|(7<<4)},    {119, 48}, 0},
+    {{3|(8<<4)},    {136, 48}, 0},
+
+    {{0|(9<<4)},    {153,  0}, 0},
+    {{0|(10<<4)},   {170,  0}, 0},
+    {{1|(9<<4)},    {153, 16}, 0},
+    {{1|(10<<4)},   {170, 16}, 0},
+    {{2|(9<<4)},    {153, 32}, 0},
+    {{2|(10<<4)},   {170, 32}, 0},
+    {{3|(9<<4)},    {153, 48}, 0},
+    {{4|(6<<4)},    {102, 48}, 0},
+
+    {{0|(11<<4)},   {187,  0}, 0},
+    {{0|(12<<4)},   {204,  0}, 0},
+    {{1|(11<<4)},   {187, 16}, 0},
+    {{1|(12<<4)},   {204, 16}, 0},
+    {{2|(11<<4)},   {187, 32}, 0},
+    {{3|(10<<4)},   {170, 48}, 0},
+    {{3|(11<<4)},   {187, 48}, 0},
+    {{4|(7<<4)},    {153, 48}, 0},
+
+    {{0|(13<<4)},   {221,  0}, 1},
+    {{0|(14<<4)},   {221,  0}, 1},
+    {{1|(13<<4)},   {221, 32}, 1},
+    {{2|(12<<4)},   {221, 16}, 0},
+    {{3|(12<<4)},   {221, 48}, 1},
+    {{4|(10<<4)},   {221, 64}, 0},
+    {{4|(9<<4)},    {221, 64}, 1},
+    {{4|(8<<4)},    {204, 64}, 1},
 };
 
 static color rgb_color_matrix[5][14];
@@ -47,7 +126,7 @@ static void col_render(uint8_t col);
 
 void col_clear(void)
 {
-    palClearLine(LINE_SER);
+    palSetLine(LINE_SER);
     palClearLine(LINE_OCLK);
     palClearLine(LINE_SCLK);
     wait_us(10);
@@ -95,9 +174,9 @@ void col_start(void)
 void col_next(void)
 {
     if( rgb_conf.cur_col == 0) {
-        palSetLine(LINE_SER);
-    } else {
         palClearLine(LINE_SER);
+    } else {
+        palSetLine(LINE_SER);
     }
 
     palClearLine(LINE_SCLK);
@@ -116,9 +195,9 @@ void col_next(void)
 void col_render(uint8_t col)
 {
     for(uint8_t i = 0; i < 8; i++) {
-        uint32_t x = rgb_led_matrix[col][i][0];
-        uint32_t y = rgb_led_matrix[col][i][1];
-        ws2811_write_led(i, rgb_color_matrix[x][y].r, rgb_color_matrix[x][y].g, rgb_color_matrix[x][y].b);
+      uint32_t x = g_rgb_leds[col * 8 + i].matrix_co.row;
+      uint32_t y = g_rgb_leds[col * 8 + i].matrix_co.col;
+      ws2811_write_led(i, rgb_color_matrix[x][y].r, rgb_color_matrix[x][y].g, rgb_color_matrix[x][y].b);
     }
     ws2811_transfer();
 }
@@ -131,9 +210,9 @@ void col_stop(void)
 
 void rb_init(void)
 {
-    memset(&rgb_color_matrix[0][0], 0, sizeof(rgb_color_matrix));
     ws2811_init();
     col_init();
+    rb_set_color_all(0, 0, 0);
 }
 
 void rb_set_state(bool on)
@@ -152,3 +231,33 @@ void rb_update(void)
         return;
 }
 
+void rb_flush(void)
+{
+}
+
+void rb_set_color(int index, uint8_t r, uint8_t g, uint8_t b)
+{
+  uint32_t row = g_rgb_leds[index].matrix_co.row;
+  uint32_t col = g_rgb_leds[index].matrix_co.col;
+  rgb_color_matrix[col][row].r = r;
+  rgb_color_matrix[col][row].g = g;
+  rgb_color_matrix[col][row].b = b;
+}
+
+void rb_set_color_all(uint8_t r, uint8_t g, uint8_t b)
+{
+  for (uint32_t i = 0; i < 5; i++) {
+    for (uint32_t j = 0; j < 14; j++) {
+      rgb_color_matrix[i][j].r = r;
+      rgb_color_matrix[i][j].g = g;
+      rgb_color_matrix[i][j].b = b;
+    }
+  }
+}
+
+const rgb_matrix_driver_t rgb_matrix_driver = {
+    .init = rb_init,
+    .flush = rb_flush,
+    .set_color = rb_set_color,
+    .set_color_all = rb_set_color_all,
+};

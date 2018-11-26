@@ -57,5 +57,6 @@ NKRO_ENABLE = no # USB Nkey Rollover
 CUSTOM_MATRIX = yes # Custom matrix file
 AUDIO_ENABLE = no
 KEYBOARD_SHARED_EP = yes
+RGB_MATRIX_ENABLE = custom
 RGBLIGHT_ENABLE = no
 RGBLIGHT_CUSTOM_DRIVER = no
