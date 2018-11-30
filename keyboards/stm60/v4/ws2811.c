@@ -40,41 +40,37 @@ static const SPIConfig spicfg = {
 
 static uint8_t RGB_TX_BUF[LED_BUF_SIZE];
 
+#define RGB_SET_BIT(b, c) RGB_TX_BUF[c] = RGB_TX_BUF[c] | (0x01<<(7-b))
+#define RGB_CLEAR_BIT(b, c) RGB_TX_BUF[c] = RGB_TX_BUF[c] & ~(0x01<<(7-b))
+
+#define RGB_UPDATE_INDEX(b, c) \
+  ++b;                         \
+  c += b / BYTE_BITS;          \
+  b %= BYTE_BITS;
+
 static void write_color(uint32_t index, uint8_t c, uint8_t off)
 {
     uint32_t cur = ((index*RGB_BITS+off)*SPI_BITS) / BYTE_BITS;
     uint8_t bit = ((index*RGB_BITS+off)*SPI_BITS) % BYTE_BITS;
 
     for(uint8_t i = 0; i < BYTE_BITS; i++) {
-        if ((c>>i) & 0x01) {
+        if ((c<<i) & 0x80) {
             for(uint8_t j = 0; j < T1H; j++) {
-                uint8_t val = RGB_TX_BUF[cur];
-                RGB_TX_BUF[cur] = val | (0x01<<(7-bit));
-                bit++;
-                cur += bit / BYTE_BITS;
-                bit = bit % BYTE_BITS;
+              RGB_SET_BIT(bit, cur);
+              RGB_UPDATE_INDEX(bit, cur);
             }
             for(uint8_t j = 0; j < T1L; j++) {
-                uint8_t val = RGB_TX_BUF[cur];
-                RGB_TX_BUF[cur] = val & ~(0x01<<(7-bit));
-                bit++;
-                cur += bit / BYTE_BITS;
-                bit = bit % BYTE_BITS;
+              RGB_CLEAR_BIT(bit, cur);
+              RGB_UPDATE_INDEX(bit, cur);
             }
         } else {
             for(uint8_t j = 0; j < T0H; j++) {
-                uint8_t val = RGB_TX_BUF[cur];
-                RGB_TX_BUF[cur] = val | (0x01<<(7-bit));
-                bit++;
-                cur += bit / BYTE_BITS;
-                bit = bit % BYTE_BITS;
+              RGB_SET_BIT(bit, cur);
+              RGB_UPDATE_INDEX(bit, cur);
             }
             for(uint8_t j = 0; j < T0L; j++) {
-                uint8_t val = RGB_TX_BUF[cur];
-                RGB_TX_BUF[cur] = val & ~(0x01<<(7-bit));
-                bit++;
-                cur += bit / BYTE_BITS;
-                bit = bit % BYTE_BITS;
+              RGB_CLEAR_BIT(bit, cur);
+              RGB_UPDATE_INDEX(bit, cur);
             }
         }
     }
