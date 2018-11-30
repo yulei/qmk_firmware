@@ -34,7 +34,7 @@ static const SPIConfig spicfg = {
     NULL,
     GPIOB,
     12,
-    SPI_CR1_BIDIMODE|SPI_CR1_BIDIOE|SPI_CR1_BR_1,
+    SPI_CR1_MSTR|SPI_CR1_BIDIMODE|SPI_CR1_BIDIOE|SPI_CR1_BR_1,
     0
 };
 

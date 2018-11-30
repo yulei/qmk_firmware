@@ -18,8 +18,8 @@
 #define LINE_OCLK   PAL_LINE(GPIOA, 2U)
 #define LINE_SCLK   PAL_LINE(GPIOA, 3U)
 
-// column iteration period was 2 ms
-#define REFRESH_INTERVAL 2
+// column iteration period was 1 ms
+#define REFRESH_INTERVAL 1
 
 static rgb_config rgb_conf;
 static virtual_timer_t vt;
@@ -116,6 +116,7 @@ const rgb_led g_rgb_leds[DRIVER_LED_TOTAL] = {
 
 static color rgb_color_matrix[5][14];
 
+static void col_write(uint8_t d);
 static void col_clear(void);
 static void col_init(void);
 static void col_update(void *param);
@@ -124,20 +125,30 @@ static void col_next(void);
 static void col_stop(void);
 static void col_render(uint8_t col);
 
+void col_write(uint8_t d)
+{
+  palClearLine(LINE_OCLK);
+  palClearLine(LINE_SCLK);
+  for (uint8_t i = 0; i < 8; i++) {
+    if (d&0x80) {
+      palSetLine(LINE_SER);
+    } else {
+      palClearLine(LINE_SER);
+    }
+    wait_us(10);
+    palSetLine(LINE_SCLK);
+    wait_us(10);
+    palClearLine(LINE_SCLK);
+    d <<= 1;
+  }
+  palSetLine(LINE_OCLK);
+  wait_us(10);
+  palClearLine(LINE_OCLK);
+}
+
 void col_clear(void)
 {
-    palSetLine(LINE_SER);
-    palClearLine(LINE_OCLK);
-    palClearLine(LINE_SCLK);
-    wait_us(10);
-    for (uint8_t i = 0; i < 8; i++) {
-        palSetLine(LINE_SCLK);
-        wait_us(10);
-        palClearLine(LINE_SCLK);
-    }
-    palSetLine(LINE_OCLK);
-    wait_us(10);
-    palClearLine(LINE_OCLK);
+  col_write(0xFF);
 }
 
 void col_init(void)
@@ -147,8 +158,8 @@ void col_init(void)
     palSetLineMode(LINE_OCLK, PAL_MODE_OUTPUT_PUSHPULL);
     palSetLineMode(LINE_SCLK, PAL_MODE_OUTPUT_PUSHPULL);
     palSetLine(LINE_OE);
-
     col_clear();
+    palClearLine(LINE_OE);
 }
 
 void col_update(void *param)
@@ -165,29 +176,32 @@ void col_update(void *param)
 void col_start(void)
 {
     col_clear();
-    palClearLine(LINE_OE);
     rgb_conf.cur_col = 0;
+    rgb_conf.on = true;
     // start iteration timer
     chVTSet(&vt, MS2ST(REFRESH_INTERVAL), col_update, NULL);
 }
 
 void col_next(void)
 {
+    palClearLine(LINE_SCLK);
+    palClearLine(LINE_OCLK);
+
     if( rgb_conf.cur_col == 0) {
         palClearLine(LINE_SER);
     } else {
         palSetLine(LINE_SER);
     }
 
-    palClearLine(LINE_SCLK);
+    // shift 74hc595
     wait_us(10);
     palSetLine(LINE_SCLK);
-    palClearLine(LINE_OCLK);
-    wait_us(10);
-    palSetLine(LINE_OCLK);
     wait_us(10);
     palClearLine(LINE_SCLK);
+    palSetLine(LINE_OCLK);
+    wait_us(10);
     palClearLine(LINE_OCLK);
+
     col_render(rgb_conf.cur_col);
     rgb_conf.cur_col = (rgb_conf.cur_col + 1) % 8;
 }
@@ -204,8 +218,9 @@ void col_render(uint8_t col)
 
 void col_stop(void)
 {
-    col_clear();
     rgb_conf.cur_col = 0;
+    rgb_conf.on = false;
+    col_clear();
 }
 
 void rb_init(void)
@@ -217,12 +232,12 @@ void rb_init(void)
 
 void rb_set_state(bool on)
 {
-    rgb_conf.on = on;
-    if (on) {
-        col_start();
-    } else {
-        col_stop();
-    }
+  rgb_conf.on = on;
+  if (on) {
+    col_start();
+  } else {
+    col_stop();
+  }
 }
 
 void rb_flush(void)

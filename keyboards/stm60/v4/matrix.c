@@ -76,27 +76,28 @@ void matrix_init(void) {
     //debug_enable = true;
     printf("matrix init\n");
 
- //#define MATRIX_COL_PINS { PC6, PA9, PA10, PC10, PC4, PC5, PB0, PB9, PC14, PC13, PC0, PC1, PC2, P3}
-    palSetPadMode(GPIOC,  6, PAL_MODE_OUTPUT_PUSHPULL);
-    palSetPadMode(GPIOA,  9, PAL_MODE_OUTPUT_PUSHPULL);
-    palSetPadMode(GPIOA, 10, PAL_MODE_OUTPUT_PUSHPULL);
-    palSetPadMode(GPIOC, 10, PAL_MODE_OUTPUT_PUSHPULL);
-    palSetPadMode(GPIOC,  4, PAL_MODE_OUTPUT_PUSHPULL);
-    palSetPadMode(GPIOC,  5, PAL_MODE_OUTPUT_PUSHPULL);
-    palSetPadMode(GPIOB,  0, PAL_MODE_OUTPUT_PUSHPULL);
-    palSetPadMode(GPIOB,  9, PAL_MODE_OUTPUT_PUSHPULL);
-    palSetPadMode(GPIOC, 14, PAL_MODE_OUTPUT_PUSHPULL);
-    palSetPadMode(GPIOC, 13, PAL_MODE_OUTPUT_PUSHPULL);
-    palSetPadMode(GPIOC,  0, PAL_MODE_OUTPUT_PUSHPULL);
-    palSetPadMode(GPIOC,  1, PAL_MODE_OUTPUT_PUSHPULL);
-    palSetPadMode(GPIOC,  2, PAL_MODE_OUTPUT_PUSHPULL);
-    palSetPadMode(GPIOC,  3, PAL_MODE_OUTPUT_PUSHPULL);
+ // PC6, PA9, PA10, PC10, PC4, PC5, PB0, PB9, PC14, PC13, PC0, PC1, PC2, P3
+    palSetLineMode(LINE_COL_1, PAL_MODE_OUTPUT_PUSHPULL);
+    palSetLineMode(LINE_COL_2, PAL_MODE_OUTPUT_PUSHPULL);
+    palSetLineMode(LINE_COL_3, PAL_MODE_OUTPUT_PUSHPULL);
+    palSetLineMode(LINE_COL_4, PAL_MODE_OUTPUT_PUSHPULL);
+    palSetLineMode(LINE_COL_5, PAL_MODE_OUTPUT_PUSHPULL);
+    palSetLineMode(LINE_COL_6, PAL_MODE_OUTPUT_PUSHPULL);
+    palSetLineMode(LINE_COL_7, PAL_MODE_OUTPUT_PUSHPULL);
+    palSetLineMode(LINE_COL_8, PAL_MODE_OUTPUT_PUSHPULL);
+    palSetLineMode(LINE_COL_9, PAL_MODE_OUTPUT_PUSHPULL);
+    palSetLineMode(LINE_COL_10, PAL_MODE_OUTPUT_PUSHPULL);
+    palSetLineMode(LINE_COL_11, PAL_MODE_OUTPUT_PUSHPULL);
+    palSetLineMode(LINE_COL_12, PAL_MODE_OUTPUT_PUSHPULL);
+    palSetLineMode(LINE_COL_13, PAL_MODE_OUTPUT_PUSHPULL);
+    palSetLineMode(LINE_COL_14, PAL_MODE_OUTPUT_PUSHPULL);
+
     // PB5, PB6, PB7, PB8, PB12
-    palSetPadMode(GPIOB, 5, PAL_MODE_INPUT_PULLDOWN);
-    palSetPadMode(GPIOB, 6, PAL_MODE_INPUT_PULLDOWN);
-    palSetPadMode(GPIOB, 7, PAL_MODE_INPUT_PULLDOWN);
-    palSetPadMode(GPIOB, 8, PAL_MODE_INPUT_PULLDOWN);
-    palSetPadMode(GPIOB, 12, PAL_MODE_INPUT_PULLDOWN);
+    palSetLineMode(LINE_ROW_1, PAL_MODE_INPUT_PULLDOWN);
+    palSetLineMode(LINE_ROW_2, PAL_MODE_INPUT_PULLDOWN);
+    palSetLineMode(LINE_ROW_3, PAL_MODE_INPUT_PULLDOWN);
+    palSetLineMode(LINE_ROW_4, PAL_MODE_INPUT_PULLDOWN);
+    palSetLineMode(LINE_ROW_5, PAL_MODE_INPUT_PULLDOWN);
 
     memset(matrix, 0, MATRIX_ROWS * sizeof(matrix_row_t));
     memset(matrix_debouncing, 0, MATRIX_COLS * sizeof(matrix_row_t));
@@ -107,52 +108,49 @@ void matrix_init(void) {
 uint8_t matrix_scan(void) {
     for (int col = 0; col < MATRIX_COLS; col++) {
         matrix_row_t data = 0;
- //#define MATRIX_COL_PINS { PC6, PA9, PA10, PC10, PC4, PC5, PB0, PB9, PC14, PC13, PC0, PC1, PC2, P3}
         switch (col) {
-            case 0: palSetPad(GPIOC,  6); break;
-            case 1: palSetPad(GPIOA,  9); break;
-            case 2: palSetPad(GPIOA,  10); break;
-            case 3: palSetPad(GPIOC,  10); break;
-            case 4: palSetPad(GPIOC,  4); break;
-            case 5: palSetPad(GPIOC,  5); break;
-            case 6: palSetPad(GPIOB,  0); break;
-            case 7: palSetPad(GPIOB,  9); break;
-            case 8: palSetPad(GPIOC,  14); break;
-            case 9: palSetPad(GPIOC,  13); break;
-            case 10: palSetPad(GPIOC,  0); break;
-            case 11: palSetPad(GPIOC,  1); break;
-            case 12: palSetPad(GPIOA,  2); break;
-            case 13: palSetPad(GPIOA,  3); break;
+            case 0: palSetLine(LINE_COL_1); break;
+            case 1: palSetLine(LINE_COL_2); break;
+            case 2: palSetLine(LINE_COL_3); break;
+            case 3: palSetLine(LINE_COL_4); break;
+            case 4: palSetLine(LINE_COL_5); break;
+            case 5: palSetLine(LINE_COL_6); break;
+            case 6: palSetLine(LINE_COL_7); break;
+            case 7: palSetLine(LINE_COL_8); break;
+            case 8: palSetLine(LINE_COL_9); break;
+            case 9: palSetLine(LINE_COL_10); break;
+            case 10: palSetLine(LINE_COL_11); break;
+            case 11: palSetLine(LINE_COL_12); break;
+            case 12: palSetLine(LINE_COL_13); break;
+            case 13: palSetLine(LINE_COL_14); break;
         }
 
         // need wait to settle pin state
         wait_us(20);
 
-    // PB5, PB6, PB7, PB8, PB12
         data = (
-            (palReadPad(GPIOB, 5) << 0 ) |
-            (palReadPad(GPIOB, 6) << 1 ) |
-            (palReadPad(GPIOB, 7) << 2 ) |
-            (palReadPad(GPIOB, 8) << 3 ) |
-            (palReadPad(GPIOB, 12) << 4 )
+            (palReadLine(LINE_ROW_1) << 0 ) |
+            (palReadLine(LINE_ROW_2) << 1 ) |
+            (palReadLine(LINE_ROW_3) << 2 ) |
+            (palReadLine(LINE_ROW_4) << 3 ) |
+            (palReadLine(LINE_ROW_5) << 4 )
         );
 
- //#define MATRIX_COL_PINS { PC6, PA9, PA10, PC10, PC4, PC5, PB0, PB9, PC14, PC13, PC0, PC1, PC2, P3}
         switch (col) {
-            case 0: palClearPad(GPIOC,  6); break;
-            case 1: palClearPad(GPIOA,  9); break;
-            case 2: palClearPad(GPIOA,  10); break;
-            case 3: palClearPad(GPIOC,  10); break;
-            case 4: palClearPad(GPIOC,  4); break;
-            case 5: palClearPad(GPIOC,  5); break;
-            case 6: palClearPad(GPIOB,  0); break;
-            case 7: palClearPad(GPIOB,  9); break;
-            case 8: palClearPad(GPIOC,  14); break;
-            case 9: palClearPad(GPIOC,  13); break;
-            case 10: palClearPad(GPIOC,  0); break;
-            case 11: palClearPad(GPIOC,  1); break;
-            case 12: palClearPad(GPIOA,  2); break;
-            case 13: palClearPad(GPIOA,  3); break;
+            case 0: palClearLine(LINE_COL_1); break;
+            case 1: palClearLine(LINE_COL_2); break;
+            case 2: palClearLine(LINE_COL_3); break;
+            case 3: palClearLine(LINE_COL_4); break;
+            case 4: palClearLine(LINE_COL_5); break;
+            case 5: palClearLine(LINE_COL_6); break;
+            case 6: palClearLine(LINE_COL_7); break;
+            case 7: palClearLine(LINE_COL_8); break;
+            case 8: palClearLine(LINE_COL_9); break;
+            case 9: palClearLine(LINE_COL_10); break;
+            case 10: palClearLine(LINE_COL_11); break;
+            case 11: palClearLine(LINE_COL_12); break;
+            case 12: palClearLine(LINE_COL_13); break;
+            case 13: palClearLine(LINE_COL_14); break;
         }
 
         if (matrix_debouncing[col] != data) {
