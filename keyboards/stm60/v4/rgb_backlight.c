@@ -149,6 +149,7 @@ void col_write(uint8_t d)
 void col_clear(void)
 {
   col_write(0xFF);
+  //col_write(0);
 }
 
 void col_init(void)
@@ -160,6 +161,7 @@ void col_init(void)
     palSetLine(LINE_OE);
     col_clear();
     palClearLine(LINE_OE);
+    ws2811_transfer();
 }
 
 void col_update(void *param)
@@ -227,7 +229,7 @@ void rb_init(void)
 {
     ws2811_init();
     col_init();
-    rb_set_color_all(0, 0, 0);
+    rb_set_color_all(255, 0, 0);
 }
 
 void rb_set_state(bool on)

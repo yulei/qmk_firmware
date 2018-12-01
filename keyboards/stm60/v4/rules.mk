@@ -45,10 +45,10 @@ OPT_DEFS =
 # Build Options
 #   comment out to disable the options.
 #
-BOOTMAGIC_ENABLE = yes	# Virtual DIP switch configuration
+BOOTMAGIC_ENABLE = no # Virtual DIP switch configuration
 ## (Note that for BOOTMAGIC on Teensy LC you have to use a custom .ld script.)
 MOUSEKEY_ENABLE = no # Mouse keys
-EXTRAKEY_ENABLE = no # Audio control and System control
+EXTRAKEY_ENABLE = yes# Audio control and System control
 CONSOLE_ENABLE = no# Console for debug
 COMMAND_ENABLE = no # Commands for debug and configuration
 #SLEEP_LED_ENABLE = yes  # Breathing sleep LED during USB suspend
@@ -56,7 +56,6 @@ BACKLIGHT_ENABLE = no
 NKRO_ENABLE = no # USB Nkey Rollover
 CUSTOM_MATRIX = yes # Custom matrix file
 AUDIO_ENABLE = no
-KEYBOARD_SHARED_EP = yes
-RGB_MATRIX_ENABLE = custom
+#RGB_MATRIX_ENABLE = custom
 RGBLIGHT_ENABLE = no
 RGBLIGHT_CUSTOM_DRIVER = no

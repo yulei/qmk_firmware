@@ -72,7 +72,8 @@ static uint16_t debouncing_time = 0;
 void matrix_init(void) {
     indicator_leds_init();
     //ws2812_init();
-    rb_init();
+    //rb_init();
+    //rb_set_state(true);
     //debug_enable = true;
     printf("matrix init\n");
 
