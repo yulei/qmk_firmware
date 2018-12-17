@@ -1,10 +1,8 @@
 # project specific files
 SRC = matrix.c \
       indicator_leds.c \
-      stm60.c
-#      ws2811.c \
-#      rgb_backlight.c
-#      ws2812.c
+      stm60.c \
+      ws2812.c
 
 ## chip/board settings
 # - the next two should match the directories in
