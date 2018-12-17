@@ -363,7 +363,7 @@
                                      PIN_ODR_HIGH(GPIOA_PIN4) |           \
                                      PIN_ODR_LOW(GPIOA_RGB_CLK) |         \
                                      PIN_ODR_HIGH(GPIOA_PIN6) |          \
-                                     PIN_ODR_HIGH(GPIOA_RGB_DATA) |          \
+                                     PIN_ODR_LOW(GPIOA_RGB_DATA) |          \
                                      PIN_ODR_HIGH(GPIOA_PIN8) |           \
                                      PIN_ODR_LOW(GPIOA_ILED5) |           \
                                      PIN_ODR_LOW(GPIOA_COL3) |           \

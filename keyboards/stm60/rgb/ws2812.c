@@ -12,7 +12,7 @@
  * buffer
  */
 
-#define ZERO  0x07
+#define ZERO  0x08
 #define ONE   0x0E
 
 #define RGB_BUF_LEN (RGBLED_NUM*3*4)
