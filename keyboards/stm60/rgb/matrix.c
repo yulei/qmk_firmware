@@ -20,13 +20,6 @@
 
 // rgb bottom light stuff
 extern rgblight_config_t rgblight_config;
-void ws2812_setleds(LED_TYPE *ledarray, uint16_t leds)
-{
-  for (uint16_t i = 0; i < leds; i++) {
-    ws2812_write_led(i, ledarray[i].r, ledarray[i].g, ledarray[i].b);
-  }
-}
-
 void rgblight_set(void) {
     if (!rgblight_config.enable) {
         for (uint8_t i = 0; i < RGBLED_NUM; i++) {
@@ -162,9 +155,11 @@ static uint16_t debouncing_time = 0;
 
 void matrix_init(void) {
     indicator_leds_init();
-    //ws2812_init();
-    //rb_init();
-    //rb_set_state(true);
+
+#ifdef RGBLIGHT_ENABLE
+    ws2812_init();
+#endif
+
     //debug_enable = true;
     printf("matrix init\n");
 

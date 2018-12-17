@@ -23,8 +23,8 @@ uint8_t RGBBuf[RGB_BUF_LEN];
  */
 static const SPIConfig spicfg = {
     NULL,
-    GPIOB,
-    12,
+    GPIOA,
+    4,
     SPI_CR1_MSTR|SPI_CR1_BIDIMODE|SPI_CR1_BIDIOE|SPI_CR1_BR_1,
     0
 };
@@ -70,5 +70,5 @@ void ws2812_setleds(LED_TYPE *ledarray, uint16_t number_of_leds)
     update_color(led->b, p);
     p += 4;
   }
-  spiExchange(&SPID1, RGB_BUF_LEN, &RGBBuf[0], NULL);
+  spiSend(&SPID1, RGB_BUF_LEN, &RGBBuf[0]);
 }
