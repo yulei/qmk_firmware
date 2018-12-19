@@ -8,8 +8,8 @@
 
 /* USB Device descriptor parameter */
 #define VENDOR_ID       0xBEEF
-#define PRODUCT_ID      0x1899
-#define DEVICE_VER      0x0001
+#define PRODUCT_ID      0x9999
+#define DEVICE_VER      0x0002
 #define MANUFACTURER    astro
 #define PRODUCT         stm60
 #define DESCRIPTION     60% rgb keyboard
@@ -101,5 +101,5 @@
 #define RGBLIGHT_ANIMATIONS
 
 
-#define DRIVER_LED_TOTAL 64
+#define DRIVER_LED_TOTAL 63
 #endif
