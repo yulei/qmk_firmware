@@ -463,7 +463,7 @@
                                      PIN_PUPDR_PULLDOWN(GPIOB_ILED8) |      \
                                      PIN_PUPDR_PULLDOWN(GPIOB_SCL) |         \
                                      PIN_PUPDR_PULLDOWN(GPIOB_SDA) |      \
-                                     PIN_PUPDR_PULLDOWN(GPIOB_SDB) |      \
+                                     PIN_PUPDR_PULLUP(GPIOB_SDB) |      \
                                      PIN_PUPDR_PULLUP(GPIOB_PIN11) |       \
                                      PIN_PUPDR_PULLDOWN(GPIOB_ROW5) |        \
                                      PIN_PUPDR_PULLDOWN(GPIOB_COL1) |        \
@@ -478,7 +478,7 @@
                                      PIN_ODR_LOW(GPIOB_ILED8) |          \
                                      PIN_ODR_LOW(GPIOB_SCL) |             \
                                      PIN_ODR_LOW(GPIOB_SDA) |          \
-                                     PIN_ODR_LOW(GPIOB_SDB) |          \
+                                     PIN_ODR_HIGH(GPIOB_SDB) |          \
                                      PIN_ODR_HIGH(GPIOB_PIN11) |           \
                                      PIN_ODR_LOW(GPIOB_ROW5) |            \
                                      PIN_ODR_LOW(GPIOB_COL1) |            \

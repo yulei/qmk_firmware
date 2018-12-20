@@ -77,7 +77,7 @@ uint8_t g_twi_transfer_buffer[20];
 uint8_t g_pwm_buffer[DRIVER_COUNT][192];
 bool g_pwm_buffer_update_required = false;
 
-uint8_t g_led_control_registers[DRIVER_COUNT][24] = { { 0 }, { 0 } };
+uint8_t g_led_control_registers[DRIVER_COUNT][24] = { { 0 }, { 0 }};
 bool g_led_control_registers_update_required = false;
 
 void IS31FL3733_write_register( uint8_t addr, uint8_t reg, uint8_t data )
@@ -125,6 +125,7 @@ void IS31FL3733_write_pwm_buffer( uint8_t addr, uint8_t *pwm_buffer )
 
 void IS31FL3733_init( uint8_t addr )
 {
+    palSetPad(GPIOB, 10);
     // In order to avoid the LEDs being driven with garbage data
     // in the LED driver's PWM registers, shutdown is enabled last.
     // Set up the mode and other settings, clear the PWM registers,
@@ -138,7 +139,7 @@ void IS31FL3733_init( uint8_t addr )
     // Turn off all LEDs.
     for ( int i = 0x00; i <= 0x17; i++ )
     {
-        IS31FL3733_write_register( addr, i, 0x00 );
+        IS31FL3733_write_register( addr, i, 0xff);
     }
 
     // Unlock the command register.
@@ -150,7 +151,7 @@ void IS31FL3733_init( uint8_t addr )
     // No need to setup Breath registers to PWM as that is the default.
     for ( int i = 0x00; i <= 0xBF; i++ )
     {
-        IS31FL3733_write_register( addr, i, 0x00 );
+        IS31FL3733_write_register( addr, i, 0xff);
     }
 
     // Unlock the command register.

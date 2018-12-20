@@ -34,12 +34,18 @@ static uint8_t i2c_address;
 
 // This configures the I2C clock to 400khz assuming a 72Mhz clock
 // For more info : https://www.st.com/en/embedded-software/stsw-stm32126.html
-static const I2CConfig i2cconfig = {
+/*static const I2CConfig i2cconfig = {
   STM32_TIMINGR_PRESC(15U) |
   STM32_TIMINGR_SCLDEL(4U) | STM32_TIMINGR_SDADEL(2U) |
   STM32_TIMINGR_SCLH(15U)  | STM32_TIMINGR_SCLL(21U),
   0,
   0
+};
+*/
+static const I2CConfig i2cconfig = {
+    OPMODE_I2C,
+    400000,
+    STD_DUTY_CYCLE,
 };
 
 __attribute__ ((weak))
@@ -48,13 +54,13 @@ void i2c_init(void)
   //palSetGroupMode(GPIOB, GPIOB_PIN6 | GPIOB_PIN7, 0, PAL_MODE_INPUT);
 
   // Try releasing special pins for a short time
-  palSetPadMode(GPIOB, 6, PAL_MODE_INPUT);
-  palSetPadMode(GPIOB, 7, PAL_MODE_INPUT);
+  palSetPadMode(GPIOB, 8, PAL_MODE_INPUT);
+  palSetPadMode(GPIOB, 9, PAL_MODE_INPUT);
 
   chThdSleepMilliseconds(10);
- 
-  palSetPadMode(GPIOB, 6, PAL_MODE_ALTERNATE(4) | PAL_STM32_OTYPE_OPENDRAIN | PAL_STM32_PUPDR_PULLUP);
-  palSetPadMode(GPIOB, 7, PAL_MODE_ALTERNATE(4) | PAL_STM32_OTYPE_OPENDRAIN | PAL_STM32_PUPDR_PULLUP);
+
+  palSetPadMode(GPIOB, 8, PAL_MODE_ALTERNATE(4) | PAL_STM32_OTYPE_OPENDRAIN | PAL_STM32_PUPDR_PULLUP);
+  palSetPadMode(GPIOB, 9, PAL_MODE_ALTERNATE(4) | PAL_STM32_OTYPE_OPENDRAIN | PAL_STM32_PUPDR_PULLUP);
 
   //i2cInit(); //This is invoked by halInit() so no need to redo it.
 }

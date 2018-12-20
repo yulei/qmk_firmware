@@ -247,6 +247,9 @@ static uint16_t debouncing_time = 0;
 void matrix_init(void) {
     indicator_leds_init();
 
+    rgb_matrix_set_color_all(255,255,255);
+    rgb_matrix_update_pwm_buffers();
+
 #ifdef RGBLIGHT_ENABLE
     ws2812_init();
 #endif
