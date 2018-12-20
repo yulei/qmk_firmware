@@ -29,8 +29,9 @@
 /*
  * Board identifier.
  */
-#define BOARD_ST_NUCLEO64_F411RE
+#define BOARD_STM32F4_KEYBOARD
 #define BOARD_NAME                  "STM32 KeyBoard"
+#define BOARD_OTG_NOVBUSSENS
 
 /*
  * Board oscillators-related settings.

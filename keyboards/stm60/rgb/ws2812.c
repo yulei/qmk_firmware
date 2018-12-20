@@ -11,12 +11,67 @@
  * one bit has 1/4.5MHz ~ 222ns. So we use 4 bit to represent one bit data in the RGB
  * buffer
  */
+#define T0H             1
+#define T1L             T0H
+#define T0L             3
+#define T1H             T0L
+#define RES_CYCLE       200
+#define RGB_BITS        24
+#define SPI_BITS        (T0H+T0L)
+#define BYTE_BITS       8
+#define RGB_LED_NUM     8
 
-#define ZERO  0x08
-#define ONE   0x0E
+#define RGB_BUF_SIZE    (RGB_LED_NUM*RGB_BITS*SPI_BITS)/(BYTE_BITS)
+#define LED_BUF_SIZE    (RGB_BUF_SIZE+RES_CYCLE)
 
-#define RGB_BUF_LEN (RGBLED_NUM*3*4)
-uint8_t RGBBuf[RGB_BUF_LEN];
+static uint8_t RGB_TX_BUF[LED_BUF_SIZE];
+
+static void write_color(uint32_t index, uint8_t c, uint8_t off)
+{
+    uint32_t cur = ((index*RGB_BITS+off)*SPI_BITS) / BYTE_BITS;
+    uint8_t bit = ((index*RGB_BITS+off)*SPI_BITS) % BYTE_BITS;
+
+    for(uint8_t i = 0; i < BYTE_BITS; i++) {
+        if ((c>>i) & 0x01) {
+            for(uint8_t j = 0; j < T1H; j++) {
+                uint8_t val = RGB_TX_BUF[cur];
+                RGB_TX_BUF[cur] = val | (0x01<<(7-bit));
+                bit++;
+                cur += bit / BYTE_BITS;
+                bit = bit % BYTE_BITS;
+            }
+            for(uint8_t j = 0; j < T1L; j++) {
+                uint8_t val = RGB_TX_BUF[cur];
+                RGB_TX_BUF[cur] = val & ~(0x01<<(7-bit));
+                bit++;
+                cur += bit / BYTE_BITS;
+                bit = bit % BYTE_BITS;
+            }
+        } else {
+            for(uint8_t j = 0; j < T0H; j++) {
+                uint8_t val = RGB_TX_BUF[cur];
+                RGB_TX_BUF[cur] = val | (0x01<<(7-bit));
+                bit++;
+                cur += bit / BYTE_BITS;
+                bit = bit % BYTE_BITS;
+            }
+            for(uint8_t j = 0; j < T0L; j++) {
+                uint8_t val = RGB_TX_BUF[cur];
+                RGB_TX_BUF[cur] = val & ~(0x01<<(7-bit));
+                bit++;
+                cur += bit / BYTE_BITS;
+                bit = bit % BYTE_BITS;
+            }
+        }
+    }
+}
+
+static void write_led(uint16_t index, uint8_t r, uint8_t g, uint8_t b)
+{
+  write_color(index, g, 0);
+  write_color(index, r, 8);
+  write_color(index, b, 16);
+}
 
 /*
  * SPI configuration (4.5MHz, CPHA=0, CPOL=0, MSb first, Tx only mode). Note: the SYSCLK was set at 72MHz. APB1&APB2 were set as 36MHz
@@ -29,46 +84,25 @@ static const SPIConfig spicfg = {
     0
 };
 
-static void update_color(uint8_t c, uint8_t *p);
 void ws2812_init(void)
 {
-  for (uint16_t i = 0; i < RGB_BUF_LEN; i++) {
-    RGBBuf[i] = 0;
+  /* turn off all led */
+  for (uint8_t i = 0; i < RGB_LED_NUM; i++) {
+    write_led(i, 0, 0, 0);
+  }
+
+  for (uint32_t j = 0; j < RES_CYCLE; j ++) {
+    RGB_TX_BUF[j + RGB_BUF_SIZE] = 0;
   }
   spiStart(&SPID1, &spicfg);
-}
-
-void update_color(uint8_t c, uint8_t *p)
-{
-  for (uint8_t i = 0; i < 4; i++) {
-    uint8_t d = 0;
-    if ( (c<<2*i) & 0x80) {
-      d |= ONE << 4;
-    } else {
-      d |= ZERO << 4;
-    }
-
-    if ((c<<(2*i+1)) & 0x80) {
-      d |= ONE;
-    } else {
-      d |= ZERO;
-    }
-    *p++ = d;
-  }
+  spiSend(&SPID1, LED_BUF_SIZE, &RGB_TX_BUF[0]);
 }
 
 void ws2812_setleds(LED_TYPE *ledarray, uint16_t number_of_leds)
 {
-  uint8_t *p = &RGBBuf[0];
-  LED_TYPE *led = ledarray;
   for (uint16_t i = 0; i < number_of_leds; i++)
   {
-    update_color(led->g, p);
-    p += 4;
-    update_color(led->r, p);
-    p += 4;
-    update_color(led->b, p);
-    p += 4;
+    write_led(i, ledarray[i].r, ledarray[i].g, ledarray[i].b);
   }
-  spiSend(&SPID1, RGB_BUF_LEN, &RGBBuf[0]);
+  spiSend(&SPID1, LED_BUF_SIZE, &RGB_TX_BUF[0]);
 }
