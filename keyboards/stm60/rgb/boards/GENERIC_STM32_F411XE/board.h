@@ -219,6 +219,7 @@
  */
 //#define LINE_RGB                    PAL_LINE(GPIOA, 7U)
 //#define LINE_USB_PU                 PAL_LINE(GPIOA, 8U)
+#define LINE_3733_SDB               PAL_LINE(GPIOB, GPIOB_SDB)
 
 #define LINE_I_LED1                 PAL_LINE(GPIOB, GPIOB_ILED1)
 #define LINE_I_LED2                 PAL_LINE(GPIOC, GPIOC_ILED2)
@@ -403,7 +404,7 @@
  * PB7  - key col 8                 (output pushpull low).
  * PB8  - scl                       (alternate 4).
  * PB9  - sda                       (alternate 4).
- * PB10 - sdb                       (output pushpull low).
+ * PB10 - sdb                       (output pushpull high).
  * PB11 - nc                        (input pullup).
  * PB13 - key col 1                 (output pushpull low).
  * PB14 - key col 2                 (output pushpull low).

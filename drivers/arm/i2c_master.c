@@ -45,7 +45,7 @@ static uint8_t i2c_address;
 static const I2CConfig i2cconfig = {
     OPMODE_I2C,
     400000,
-    STD_DUTY_CYCLE,
+    FAST_DUTY_CYCLE_2,
 };
 
 __attribute__ ((weak))

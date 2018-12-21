@@ -219,6 +219,16 @@ void matrix_init_kb(void) {
 }
 __attribute__((weak))
 void matrix_init_user(void) {
+    indicator_leds_init();
+
+#ifdef RGB_MATRIX_ENABLE
+    rgb_matrix_set_color_all(255,255,255);
+    rgb_matrix_update_pwm_buffers();
+#endif
+
+#ifdef RGBLIGHT_ENABLE
+    ws2812_init();
+#endif
 }
 
 __attribute__((weak))
@@ -245,45 +255,40 @@ static bool debouncing = false;
 static uint16_t debouncing_time = 0;
 
 void matrix_init(void) {
-    indicator_leds_init();
+  // enable 3733
+  palSetLineMode(LINE_3733_SDB, PAL_MODE_OUTPUT_PUSHPULL);
+  palSetLine(LINE_3733_SDB);
 
-    rgb_matrix_set_color_all(255,255,255);
-    rgb_matrix_update_pwm_buffers();
+  //debug_enable = true;
+  printf("matrix init\n");
 
-#ifdef RGBLIGHT_ENABLE
-    ws2812_init();
-#endif
+  // PC6, PA9, PA10, PC10, PC4, PC5, PB0, PB9, PC14, PC13, PC0, PC1, PC2, P3
+  palSetLineMode(LINE_COL_1, PAL_MODE_OUTPUT_PUSHPULL);
+  palSetLineMode(LINE_COL_2, PAL_MODE_OUTPUT_PUSHPULL);
+  palSetLineMode(LINE_COL_3, PAL_MODE_OUTPUT_PUSHPULL);
+  palSetLineMode(LINE_COL_4, PAL_MODE_OUTPUT_PUSHPULL);
+  palSetLineMode(LINE_COL_5, PAL_MODE_OUTPUT_PUSHPULL);
+  palSetLineMode(LINE_COL_6, PAL_MODE_OUTPUT_PUSHPULL);
+  palSetLineMode(LINE_COL_7, PAL_MODE_OUTPUT_PUSHPULL);
+  palSetLineMode(LINE_COL_8, PAL_MODE_OUTPUT_PUSHPULL);
+  palSetLineMode(LINE_COL_9, PAL_MODE_OUTPUT_PUSHPULL);
+  palSetLineMode(LINE_COL_10, PAL_MODE_OUTPUT_PUSHPULL);
+  palSetLineMode(LINE_COL_11, PAL_MODE_OUTPUT_PUSHPULL);
+  palSetLineMode(LINE_COL_12, PAL_MODE_OUTPUT_PUSHPULL);
+  palSetLineMode(LINE_COL_13, PAL_MODE_OUTPUT_PUSHPULL);
+  palSetLineMode(LINE_COL_14, PAL_MODE_OUTPUT_PUSHPULL);
 
-    //debug_enable = true;
-    printf("matrix init\n");
+  // PB5, PB6, PB7, PB8, PB12
+  palSetLineMode(LINE_ROW_1, PAL_MODE_INPUT_PULLDOWN);
+  palSetLineMode(LINE_ROW_2, PAL_MODE_INPUT_PULLDOWN);
+  palSetLineMode(LINE_ROW_3, PAL_MODE_INPUT_PULLDOWN);
+  palSetLineMode(LINE_ROW_4, PAL_MODE_INPUT_PULLDOWN);
+  palSetLineMode(LINE_ROW_5, PAL_MODE_INPUT_PULLDOWN);
 
- // PC6, PA9, PA10, PC10, PC4, PC5, PB0, PB9, PC14, PC13, PC0, PC1, PC2, P3
-    palSetLineMode(LINE_COL_1, PAL_MODE_OUTPUT_PUSHPULL);
-    palSetLineMode(LINE_COL_2, PAL_MODE_OUTPUT_PUSHPULL);
-    palSetLineMode(LINE_COL_3, PAL_MODE_OUTPUT_PUSHPULL);
-    palSetLineMode(LINE_COL_4, PAL_MODE_OUTPUT_PUSHPULL);
-    palSetLineMode(LINE_COL_5, PAL_MODE_OUTPUT_PUSHPULL);
-    palSetLineMode(LINE_COL_6, PAL_MODE_OUTPUT_PUSHPULL);
-    palSetLineMode(LINE_COL_7, PAL_MODE_OUTPUT_PUSHPULL);
-    palSetLineMode(LINE_COL_8, PAL_MODE_OUTPUT_PUSHPULL);
-    palSetLineMode(LINE_COL_9, PAL_MODE_OUTPUT_PUSHPULL);
-    palSetLineMode(LINE_COL_10, PAL_MODE_OUTPUT_PUSHPULL);
-    palSetLineMode(LINE_COL_11, PAL_MODE_OUTPUT_PUSHPULL);
-    palSetLineMode(LINE_COL_12, PAL_MODE_OUTPUT_PUSHPULL);
-    palSetLineMode(LINE_COL_13, PAL_MODE_OUTPUT_PUSHPULL);
-    palSetLineMode(LINE_COL_14, PAL_MODE_OUTPUT_PUSHPULL);
+  memset(matrix, 0, MATRIX_ROWS * sizeof(matrix_row_t));
+  memset(matrix_debouncing, 0, MATRIX_COLS * sizeof(matrix_row_t));
 
-    // PB5, PB6, PB7, PB8, PB12
-    palSetLineMode(LINE_ROW_1, PAL_MODE_INPUT_PULLDOWN);
-    palSetLineMode(LINE_ROW_2, PAL_MODE_INPUT_PULLDOWN);
-    palSetLineMode(LINE_ROW_3, PAL_MODE_INPUT_PULLDOWN);
-    palSetLineMode(LINE_ROW_4, PAL_MODE_INPUT_PULLDOWN);
-    palSetLineMode(LINE_ROW_5, PAL_MODE_INPUT_PULLDOWN);
-
-    memset(matrix, 0, MATRIX_ROWS * sizeof(matrix_row_t));
-    memset(matrix_debouncing, 0, MATRIX_COLS * sizeof(matrix_row_t));
-
-    matrix_init_quantum();
+  matrix_init_quantum();
 }
 
 uint8_t matrix_scan(void) {
