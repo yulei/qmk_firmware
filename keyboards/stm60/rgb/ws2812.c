@@ -7,21 +7,20 @@
 #include "hal.h"
 
 /**
- * the MCU frequency was set at 72Mhz, spi scale was 8, so the spi running in 4.5MHz
- * one bit has 1/4.5MHz ~ 222ns. So we use 4 bit to represent one bit data in the RGB
+ * the APB1 set at 48MHz, spi scale was 8, so the spi running in 6MHz
+ * one bit has 1/6MHz ~ 167ns. So we use 1byte(2 for high, 6 for low) to represent one bit data in the RGB
  * buffer
  */
-#define T0H             1
+#define T0H             2
 #define T1L             T0H
-#define T0L             3
+#define T0L             6
 #define T1H             T0L
-#define RES_CYCLE       200
+#define RES_CYCLE       100
 #define RGB_BITS        24
 #define SPI_BITS        (T0H+T0L)
 #define BYTE_BITS       8
-#define RGB_LED_NUM     8
 
-#define RGB_BUF_SIZE    (RGB_LED_NUM*RGB_BITS*SPI_BITS)/(BYTE_BITS)
+#define RGB_BUF_SIZE    (RGBLED_NUM*RGB_BITS*SPI_BITS)/(BYTE_BITS)
 #define LED_BUF_SIZE    (RGB_BUF_SIZE+RES_CYCLE)
 
 static uint8_t RGB_TX_BUF[LED_BUF_SIZE];
@@ -87,7 +86,7 @@ static const SPIConfig spicfg = {
 void ws2812_init(void)
 {
   /* turn off all led */
-  for (uint8_t i = 0; i < RGB_LED_NUM; i++) {
+  for (uint8_t i = 0; i < RGBLED_NUM; i++) {
     write_led(i, 0, 0, 0);
   }
 
