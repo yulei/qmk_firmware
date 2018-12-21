@@ -73,7 +73,7 @@ static void write_led(uint16_t index, uint8_t r, uint8_t g, uint8_t b)
 }
 
 /*
- * SPI configuration (4.5MHz, CPHA=0, CPOL=0, MSb first, Tx only mode). Note: the SYSCLK was set at 72MHz. APB1&APB2 were set as 36MHz
+ * SPI configuration (6MHz, CPHA=0, CPOL=0, MSb first, Tx only mode). Note: the SYSCLK was set at 96MHz. APB1&APB2 were set as 48MHz
  */
 static const SPIConfig spicfg = {
     NULL,
