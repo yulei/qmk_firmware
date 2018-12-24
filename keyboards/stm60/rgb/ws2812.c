@@ -31,7 +31,7 @@ static void write_color(uint32_t index, uint8_t c, uint8_t off)
     uint8_t bit = ((index*RGB_BITS+off)*SPI_BITS) % BYTE_BITS;
 
     for(uint8_t i = 0; i < BYTE_BITS; i++) {
-        if ((c>>i) & 0x01) {
+        if ((c<<i) & 0x80) {
             for(uint8_t j = 0; j < T1H; j++) {
                 uint8_t val = RGB_TX_BUF[cur];
                 RGB_TX_BUF[cur] = val | (0x01<<(7-bit));
@@ -73,13 +73,13 @@ static void write_led(uint16_t index, uint8_t r, uint8_t g, uint8_t b)
 }
 
 /*
- * SPI configuration (6MHz, CPHA=0, CPOL=0, MSb first, Tx only mode). Note: the SYSCLK was set at 96MHz. APB1&APB2 were set as 48MHz
+ * SPI configuration (6MHz, CPHA=1, CPOL=0, MSb first, Tx only mode). Note: the SYSCLK was set at 96MHz. APB1&APB2 were set as 48MHz
  */
 static const SPIConfig spicfg = {
     NULL,
     GPIOA,
     4,
-    SPI_CR1_MSTR|SPI_CR1_BIDIMODE|SPI_CR1_BIDIOE|SPI_CR1_BR_1,
+    SPI_CR1_MSTR|SPI_CR1_BIDIMODE|SPI_CR1_BIDIOE|SPI_CR1_CPHA|SPI_CR1_SSM|SPI_CR1_BR_1,
     0
 };
 
