@@ -6,11 +6,30 @@
 #include <stdbool.h>
 #include <string.h>
 #include "hal.h"
+#include "quantum.h"
 #include "timer.h"
 #include "wait.h"
 #include "printf.h"
 #include "backlight.h"
 #include "matrix.h"
+
+#ifdef RGBLIGHT_ENABLE
+#include "rgblight.h"
+#include "ws2812.h"
+
+// rgb bottom light stuff
+extern rgblight_config_t rgblight_config;
+void rgblight_set(void) {
+    if (!rgblight_config.enable) {
+        for (uint8_t i = 0; i < RGBLED_NUM; i++) {
+            led[i].r = 0;
+            led[i].g = 0;
+            led[i].b = 0;
+        }
+    }
+    ws2812_setleds(led, RGBLED_NUM);
+}
+#endif
 
 /**
  * wm1 keybaord
@@ -29,12 +48,6 @@ static bool debouncing = false;
 static uint16_t debouncing_time = 0;
 
 __attribute__ ((weak))
-void matrix_init_user(void) {}
-
-__attribute__ ((weak))
-void matrix_scan_user(void) {}
-
-__attribute__ ((weak))
 void matrix_init_kb(void) {
   matrix_init_user();
 }
@@ -43,6 +56,21 @@ __attribute__ ((weak))
 void matrix_scan_kb(void) {
   matrix_scan_user();
 }
+
+__attribute__((weak))
+void matrix_init_user(void) {
+#ifdef RGBLIGHT_ENABLE
+    ws2812_init();
+#endif
+}
+
+__attribute__((weak))
+void matrix_scan_user(void) {
+#ifdef RGBLIGHT_ENABLE
+  rgblight_task();
+#endif
+}
+
 
 void matrix_init(void) {
     printf("matrix init\n");
