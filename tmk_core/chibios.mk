@@ -156,6 +156,7 @@ COMPILEFLAGS += -fdata-sections
 COMPILEFLAGS += -fno-common
 COMPILEFLAGS += -fshort-wchar
 COMPILEFLAGS += $(THUMBFLAGS)
+COMPILEFLAGS += -Os
 
 CFLAGS += $(COMPILEFLAGS)
 
