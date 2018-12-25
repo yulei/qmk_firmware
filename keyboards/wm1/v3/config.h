@@ -96,6 +96,6 @@
 #define RGBLED_NUM      WS2812_LED_N
 
 #define PORT_WS2812     GPIOA
-#define PIN_WS2812      7
+#define PIN_WS2812      3
 #define RGBLIGHT_ANIMATIONS
 #endif

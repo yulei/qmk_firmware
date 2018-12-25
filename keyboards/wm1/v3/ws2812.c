@@ -40,7 +40,7 @@ void setColorRGB(LED_TYPE led, uint8_t *buf, uint32_t pin){
  */
 void ws2812_init()
 {
-  palSetPadMode(PORT_WS2812, PIN_WS2812, PAL_MODE_OUTPUT_PUSHPULL);
+  palSetPadMode(PORT_WS2812, PIN_WS2812, PAL_MODE_OUTPUT_OPENDRAIN);
   palClearPad(PORT_WS2812, PIN_WS2812);
 
   // configure pwm timers -
