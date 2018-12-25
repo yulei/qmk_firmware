@@ -1,5 +1,5 @@
 /*
- * LEDDriver.c
+ * ws2812.c
  *
  *  Created on: Aug 26, 2013
  *      Author: Omri Iluz
@@ -9,21 +9,21 @@
 #include "ch.h"
 #include "hal.h"
 
+#define PIN_MASK(pin)  (0x01<<pin)
 #define RGBBUF_LEN (RGBLED_NUM*24+10)
-static uint8_t fb[RGBBUF_LEN];
+static uint8_t rgb_buffer[RGBBUF_LEN];
 static uint8_t dma_source[0];
 
-void setColor(uint8_t color, uint8_t *buf,uint32_t mask){
-  int i;
-  for (i=0;i<8;i++){
-    buf[i]=((color<<i)&0b10000000?0x0:mask);
+void setColor(uint8_t color, uint8_t *buf, uint32_t pin){
+  for (int i=0; i<8; i++){
+    buf[i]=((color<<i)&0x80 ? 0x0 : PIN_MASK(pin));
   }
 }
 
-void setColorRGB(LED_TYPE led, uint8_t *buf, uint32_t mask){
-  setColor(led.g,buf, mask);
-  setColor(led.r,buf+8, mask);
-  setColor(led.b,buf+16, mask);
+void setColorRGB(LED_TYPE led, uint8_t *buf, uint32_t pin){
+  setColor(led.g, buf, pin);
+  setColor(led.r, buf+8, pin);
+  setColor(led.b, buf+16, pin);
 }
 
 /**
@@ -36,10 +36,6 @@ void setColorRGB(LED_TYPE led, uint8_t *buf, uint32_t mask){
  * @note    Timing is critical for WS2812. While all timing is done in hardware
  *          need to verify memory bandwidth is not exhausted to avoid DMA delays
  *
- * @param[in] leds      length of the LED chain controlled by each pin
- * @param[in] port      which port would be used for output
- * @param[in] mask      Which pins would be used for output, each pin is a full chain
- * @param[out] o_fb     initialized frame buffer
  *
  */
 void ws2812_init()
@@ -48,7 +44,7 @@ void ws2812_init()
   palClearPad(PORT_WS2812, PIN_WS2812);
 
   // configure pwm timers -
-  // timer 2 as master, active for data transmission and inactive to disable transmission during reset period (50uS)
+  // timer 1 as master, active for data transmission and inactive to disable transmission during reset period (50uS)
   // timer 3 as slave, during active time creates a 1.25 uS signal, with duty cycle controlled by frame buffer values
   static PWMConfig pwmc1 = {72000000 / 90, /* 800Khz PWM clock frequency. 1/90 of PWMC3   */
                             (72000000 / 90) * 0.05, /*Total period is 50ms (20FPS), including sLeds cycles + reset length for ws2812b and FB writes  */
@@ -70,13 +66,15 @@ void ws2812_init()
                               0,
                               0,
   };
-  for (int j = 0; j < (RGBLED_NUM) * 24; j++) fb[j] = 0;
-  dma_source[0] = PIN_WS2812;
+  for (int j = 0; j < (RGBLED_NUM) * 24; j++) {
+    rgb_buffer[j] = 0;
+  }
+  dma_source[0] = PIN_MASK(PIN_WS2812);
 
   // DMA stream 2, triggered by channel3 pwm signal. if FB indicates, reset output value early to indicate "0" bit to ws2812
   dmaStreamAllocate(STM32_DMA1_STREAM2, 10, NULL, NULL);
   dmaStreamSetPeripheral(STM32_DMA1_STREAM2, &(PORT_WS2812->BRR));
-  dmaStreamSetMemory0(STM32_DMA1_STREAM2, fb);
+  dmaStreamSetMemory0(STM32_DMA1_STREAM2, &rgb_buffer[0]);
   dmaStreamSetTransactionSize(STM32_DMA1_STREAM2, (RGBLED_NUM) * 24);
   dmaStreamSetMode(
       STM32_DMA1_STREAM2,
@@ -103,7 +101,7 @@ void ws2812_init()
       | STM32_DMA_CR_CIRC | STM32_DMA_CR_PL(3));
   pwmStart(&PWMD1, &pwmc1);
   pwmStart(&PWMD3, &pwmc3);
-  // set pwm3 as slave, triggerd by pwm2 oc1 event. disables pwmd2 for synchronization.
+  // set pwm3 as slave, triggerd by pwm2 oc1 event. disables pwmd1 for synchronization.
   PWMD3.tim->SMCR |= TIM_SMCR_SMS_0 | TIM_SMCR_SMS_2 | TIM_SMCR_TS_0;
   PWMD1.tim->CR1 &= ~TIM_CR1_CEN;
   // set pwm values.
@@ -115,7 +113,7 @@ void ws2812_init()
   pwmEnableChannel(&PWMD1, 0, 90 * RGBLED_NUM * 24 / 90);
   // stop and reset counters for synchronization
   PWMD1.tim->CNT = 0;
-  // Slave (TIM3) needs to "update" immediately after master (TIM2) start in order to start in sync.
+  // Slave (TIM3) needs to "update" immediately after master (TIM1) start in order to start in sync.
   // this initial sync is crucial for the stability of the run
   PWMD3.tim->CNT = 89;
   PWMD3.tim->DIER |= TIM_DIER_CC3DE | TIM_DIER_CC1DE | TIM_DIER_UDE;
@@ -124,14 +122,14 @@ void ws2812_init()
   dmaStreamEnable(STM32_DMA1_STREAM2);
   // all systems go! both timers and all channels are configured to resonate
   // in complete sync without any need for CPU cycles (only DMA and timers)
-  // start pwm2 for system to start resonating
+  // start pwm1 for system to start resonating
   PWMD1.tim->CR1 |= TIM_CR1_CEN;
 }
 
 void ws2812_setleds(LED_TYPE *ledarray, uint16_t number_of_leds)
 {
   for (uint16_t i = 0; i < number_of_leds; i++) {
-    setColorRGB(ledarray[i], fb, PIN_WS2812);
+    setColorRGB(ledarray[i], &rgb_buffer[0], PIN_WS2812);
   }
 }
 /*

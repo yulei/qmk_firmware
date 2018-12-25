@@ -97,5 +97,5 @@
 
 #define PORT_WS2812     GPIOA
 #define PIN_WS2812      7
-
+#define RGBLIGHT_ANIMATIONS
 #endif
