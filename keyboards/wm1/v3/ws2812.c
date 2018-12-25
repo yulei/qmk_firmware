@@ -66,7 +66,8 @@ void ws2812_init()
                               0,
                               0,
   };
-  for (int j = 0; j < (RGBLED_NUM) * 24; j++) {
+
+  for (int j = 0; j < RGBBUF_LEN; j++) {
     rgb_buffer[j] = 0;
   }
   dma_source[0] = PIN_MASK(PIN_WS2812);
@@ -102,7 +103,7 @@ void ws2812_init()
   pwmStart(&PWMD1, &pwmc1);
   pwmStart(&PWMD3, &pwmc3);
   // set pwm3 as slave, triggerd by pwm2 oc1 event. disables pwmd1 for synchronization.
-  PWMD3.tim->SMCR |= TIM_SMCR_SMS_0 | TIM_SMCR_SMS_2 | TIM_SMCR_TS_0;
+  PWMD3.tim->SMCR |= TIM_SMCR_SMS_0 | TIM_SMCR_SMS_2;
   PWMD1.tim->CR1 &= ~TIM_CR1_CEN;
   // set pwm values.
   // 28 (duty in ticks) / 90 (period in ticks) * 1.25uS (period in S) = 0.39 uS
