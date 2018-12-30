@@ -12,12 +12,15 @@
 #include "printf.h"
 #include "indicator_leds.h"
 #include "matrix.h"
+
+#ifdef RGB_MATRIX_ENABLE
 #include "rgb_matrix.h"
+#endif
 
 #ifdef RGBLIGHT_ENABLE
 #include "rgblight.h"
-#include "ws2812.h"
-
+extern void ws2812_init(void);
+extern void ws2812_setleds(LED_TYPE *ledarray, uint16_t number_of_leds);
 // rgb bottom light stuff
 extern rgblight_config_t rgblight_config;
 void rgblight_set(void) {

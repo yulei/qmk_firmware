@@ -79,22 +79,34 @@ static const SPIConfig spicfg = {
     NULL,
     GPIOA,
     4,
-    SPI_CR1_MSTR|SPI_CR1_BIDIMODE|SPI_CR1_BIDIOE|SPI_CR1_CPHA|SPI_CR1_SSM|SPI_CR1_BR_1,
+    SPI_CR1_MSTR|SPI_CR1_BIDIMODE|SPI_CR1_BIDIOE|SPI_CR1_BR_1,
     0
 };
+
+static THD_WORKING_AREA(WS2812_THREAD_WA, 1024);
+static THD_FUNCTION(ws2812_thread, arg){
+  (void) arg;
+  while(1){
+    spiAcquireBus(&SPID1);
+    spiStart(&SPID1, &spicfg);
+    spiSend(&SPID1, LED_BUF_SIZE, &RGB_TX_BUF[0]);
+    spiStop(&SPID1);
+    spiReleaseBus(&SPID1);
+    chThdSleepMicroseconds(50);
+  }
+}
 
 void ws2812_init(void)
 {
   /* turn off all led */
   for (uint8_t i = 0; i < RGBLED_NUM; i++) {
-    write_led(i, 0, 0, 0);
+    write_led(i, 0x0, 0x0, 0xff);
   }
 
   for (uint32_t j = 0; j < RES_CYCLE; j ++) {
     RGB_TX_BUF[j + RGB_BUF_SIZE] = 0;
   }
-  spiStart(&SPID1, &spicfg);
-  spiSend(&SPID1, LED_BUF_SIZE, &RGB_TX_BUF[0]);
+  chThdCreateStatic(WS2812_THREAD_WA, sizeof(WS2812_THREAD_WA),NORMALPRIO, ws2812_thread, NULL);
 }
 
 void ws2812_setleds(LED_TYPE *ledarray, uint16_t number_of_leds)
@@ -103,5 +115,4 @@ void ws2812_setleds(LED_TYPE *ledarray, uint16_t number_of_leds)
   {
     write_led(i, ledarray[i].r, ledarray[i].g, ledarray[i].b);
   }
-  spiSend(&SPID1, LED_BUF_SIZE, &RGB_TX_BUF[0]);
 }

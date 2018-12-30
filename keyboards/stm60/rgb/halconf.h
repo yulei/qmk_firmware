@@ -111,7 +111,7 @@
  * @brief   Enables the PWM subsystem.
  */
 #if !defined(HAL_USE_PWM) || defined(__DOXYGEN__)
-#define HAL_USE_PWM                 FALSE
+#define HAL_USE_PWM                 TRUE
 #endif
 
 /**
@@ -348,7 +348,7 @@
  * @note    Disabling this option saves both code and data space.
  */
 #if !defined(SPI_USE_MUTUAL_EXCLUSION) || defined(__DOXYGEN__)
-#define SPI_USE_MUTUAL_EXCLUSION    FALSE
+#define SPI_USE_MUTUAL_EXCLUSION    TRUE
 #endif
 
 /*===========================================================================*/
