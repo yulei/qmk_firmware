@@ -147,6 +147,7 @@ extern const uint8_t RGBLED_SNAKE_INTERVALS[3] PROGMEM;
 extern const uint8_t RGBLED_KNIGHT_INTERVALS[3] PROGMEM;
 extern const uint16_t RGBLED_RGBTEST_INTERVALS[1] PROGMEM;
 
+#if defined(__AVR__)
 typedef union {
   uint32_t raw;
   struct {
@@ -158,6 +159,19 @@ typedef union {
     uint8_t  speed   :8;//EECONFIG needs to be increased to support this
   };
 } rgblight_config_t;
+#else
+typedef union {
+  uint32_t raw;
+  struct {
+    bool     enable;
+    uint8_t  mode;
+    uint16_t hue;
+    uint8_t  sat;
+    uint8_t  val;
+    uint8_t  speed;
+  };
+} rgblight_config_t;
+#endif
 
 void rgblight_init(void);
 void rgblight_increase(void);
