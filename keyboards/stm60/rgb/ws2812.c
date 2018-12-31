@@ -15,7 +15,7 @@
 #define T1L             T0H
 #define T0L             6
 #define T1H             T0L
-#define RES_CYCLE       100
+#define RES_CYCLE       0
 #define RGB_BITS        24
 #define SPI_BITS        (T0H+T0L)
 #define BYTE_BITS       8
@@ -92,7 +92,7 @@ static THD_FUNCTION(ws2812_thread, arg){
     spiSend(&SPID1, LED_BUF_SIZE, &RGB_TX_BUF[0]);
     spiStop(&SPID1);
     spiReleaseBus(&SPID1);
-    chThdSleepMicroseconds(50);
+    chThdSleepMicroseconds(280);
   }
 }
 
@@ -100,7 +100,7 @@ void ws2812_init(void)
 {
   /* turn off all led */
   for (uint8_t i = 0; i < RGBLED_NUM; i++) {
-    write_led(i, 0x0, 0x0, 0xff);
+    write_led(i, 0x0, 0x0, 0x0);
   }
 
   for (uint32_t j = 0; j < RES_CYCLE; j ++) {

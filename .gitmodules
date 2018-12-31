@@ -1,6 +1,7 @@
 [submodule "lib/chibios"]
 	path = lib/chibios
 	url = https://github.com/yulei/ChibiOS
+  branch = stm60
 [submodule "lib/chibios-contrib"]
 	path = lib/chibios-contrib
 	url = https://github.com/qmk/ChibiOS-Contrib
