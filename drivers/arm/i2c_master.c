@@ -56,8 +56,6 @@ static const I2CConfig i2cconfig = {
 __attribute__ ((weak))
 void i2c_init(void)
 {
-  //palSetGroupMode(GPIOB, GPIOB_PIN6 | GPIOB_PIN7, 0, PAL_MODE_INPUT);
-
   // Try releasing special pins for a short time
   palSetPadMode(I2C_SCL_PORT, I2C_SCL_PIN, PAL_MODE_INPUT);
   palSetPadMode(I2C_SDA_PORT, I2C_SDA_PIN, PAL_MODE_INPUT);
