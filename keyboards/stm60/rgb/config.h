@@ -38,7 +38,7 @@
 #define DEBOUNCE 6
 
 /* Prevent modifiers from being stuck on after layer changes. */
-#define PREVENT_STUCK_MODIFIERS
+//#define PREVENT_STUCK_MODIFIERS
 
 /* backlight */
 //#define BACKLIGHT_LEVELS 1
