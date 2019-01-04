@@ -33,6 +33,8 @@
  * #define MATRIX_COL_PINS { PB11, PB10, PB1, PB0, PC5, PC4, PA7, PA6, PA5}
  * #define UNUSED_PINS
  */
+#define TAPPING_TERM 25
+#define RETRO_TAPPING
 
 /* Debounce reduces chatter (unintended double-presses) - set 0 if debouncing is not needed */
 #define DEBOUNCE 6
