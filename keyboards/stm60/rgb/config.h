@@ -18,9 +18,6 @@
 #define MATRIX_ROWS 5
 #define MATRIX_COLS 14
 
-#define TAPPING_TERM 1
-#define RETRO_TAPPING
-
 /* Debounce reduces chatter (unintended double-presses) - set 0 if debouncing is not needed */
 #define DEBOUNCE 6
 
@@ -62,5 +59,10 @@
 #define DRIVER_COUNT 2
 #define DRIVER_1_LED_TOTAL 63
 #define DRIVER_LED_TOTAL DRIVER_1_LED_TOTAL
+
+// tapping setting
+#define TAPPING_TERM    200
+#define RETRO_TAPPING
+#define PERMISSIVE_HOLD
 
 #endif
