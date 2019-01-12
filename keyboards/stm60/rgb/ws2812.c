@@ -15,7 +15,7 @@
 #define T1L             T0H
 #define T0L             6
 #define T1H             T0L
-#define RES_CYCLE       0
+#define RES_CYCLE       200
 #define RGB_BITS        24
 #define SPI_BITS        (T0H+T0L)
 #define BYTE_BITS       8
@@ -73,7 +73,7 @@ static void write_led(uint16_t index, uint8_t r, uint8_t g, uint8_t b)
 }
 
 /*
- * SPI configuration (6MHz, CPHA=1, CPOL=0, MSb first, Tx only mode). Note: the SYSCLK was set at 96MHz. APB1&APB2 were set as 48MHz
+ * SPI configuration (6MHz, CPHA=0, CPOL=0, MSb first, Tx only mode). Note: the SYSCLK was set at 96MHz. APB1&APB2 were set as 48MHz
  */
 static const SPIConfig spicfg = {
     NULL,
