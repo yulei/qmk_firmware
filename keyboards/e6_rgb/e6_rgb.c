@@ -5,6 +5,26 @@
 #include "e6_rgb.h"
 
 #ifdef RGB_MATRIX_ENABLE
+__attribute__ ((weak))
+void matrix_init_kb(void) {
+    matrix_init_user();
+}
+
+__attribute__ ((weak))
+void matrix_scan_kb(void) {
+    matrix_scan_user();
+}
+
+__attribute__ ((weak))
+void matrix_init_user(void) {
+  setPinOutput(D5);
+  writePinHigh(D5);
+}
+
+__attribute__ ((weak))
+void matrix_scan_user(void) {
+}
+
 const is31_led g_is31_leds[DRIVER_LED_TOTAL] = {
 /* Refer to IS31 manual for these locations
  *   driver
