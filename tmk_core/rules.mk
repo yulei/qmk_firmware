@@ -86,7 +86,7 @@ ifndef SKIP_DEBUG_INFO
   CFLAGS += -g$(DEBUG)
 endif
 CFLAGS += $(CDEFS)
-#CFLAGS += -O$(OPT)
+CFLAGS += -O$(OPT)
 # add color
 ifeq ($(COLOR),true)
 ifeq ("$(shell echo "int main(){}" | $(CC) -fdiagnostics-color -x c - -o /dev/null 2>&1)", "")

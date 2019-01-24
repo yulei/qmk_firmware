@@ -125,7 +125,9 @@ void IS31FL3733_write_pwm_buffer( uint8_t addr, uint8_t *pwm_buffer )
 
 void IS31FL3733_init( uint8_t addr )
 {
+  #ifndef __AVR__
     palSetPad(GPIOB, 10);
+  #endif
     // In order to avoid the LEDs being driven with garbage data
     // in the LED driver's PWM registers, shutdown is enabled last.
     // Set up the mode and other settings, clear the PWM registers,
