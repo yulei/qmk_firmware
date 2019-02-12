@@ -1,8 +1,11 @@
 #include QMK_KEYBOARD_H
 
+<<<<<<< HEAD
 #define _______ KC_TRNS
 
 
+=======
+>>>>>>> upmaster
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     /* Layer 0: Default Layer
      * ,-----------------------------------------------------------.

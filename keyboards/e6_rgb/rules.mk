@@ -46,7 +46,12 @@ OPT_DEFS += -DINTERRUPT_CONTROL_ENDPOINT
 #   Atmel DFU loader 4096
 #   LUFA bootloader  4096
 #   USBaspLoader     2048
+<<<<<<< HEAD
 OPT_DEFS += -DBOOTLOADER_SIZE=4096
+=======
+BOOTLOADER = atmel-dfu
+#OPT_DEFS += -DBOOTLOADER_SIZE=4096
+>>>>>>> upmaster
 
 # Do not put the microcontroller into power saving mode
 # when we get USB suspend event. We want it to keep updating
@@ -57,7 +62,11 @@ OPT_DEFS += -DBOOTLOADER_SIZE=4096
 #   change yes to no to disable
 #
 BOOTMAGIC_ENABLE = yes      # Virtual DIP switch configuration(+1000)
+<<<<<<< HEAD
 MOUSEKEY_ENABLE = yes       # Mouse keys(+4700)
+=======
+MOUSEKEY_ENABLE = no        # Mouse keys(+4700)
+>>>>>>> upmaster
 EXTRAKEY_ENABLE = yes       # Audio control and System control(+450)
 CONSOLE_ENABLE = no         # Console for debug(+400)
 COMMAND_ENABLE = no         # Commands for debug and configuration
@@ -73,4 +82,8 @@ AUDIO_ENABLE = no           # Audio output on port C6
 FAUXCLICKY_ENABLE = no      # Use buzzer to emulate clicky switches
 #RGBLIGHT_ENABLE = yes       # Use RGB bottom light
 RGB_MATRIX_ENABLE = IS31FL3733# Use RGB matrix
+<<<<<<< HEAD
 LAYOUTS = 60_ansi 60_hhkb 60_wkl
+=======
+LAYOUTS = 60_ansi 60_hhkb
+>>>>>>> upmaster
