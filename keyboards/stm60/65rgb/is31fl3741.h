@@ -35,7 +35,8 @@ extern const is31_led g_is31_leds[DRIVER_LED_TOTAL];
 
 void IS31FL3741_init( uint8_t addr );
 void IS31FL3741_write_register( uint8_t addr, uint8_t reg, uint8_t data );
-void IS31FL3741_write_pwm_buffer( uint8_t addr, uint8_t *pwm_buffer );
+void IS31FL3741_write_pwm_buffer( uint8_t addr, uint8_t page, uint8_t *pwm_buffer );
+void IS31FL3741_write_scaling_buffer( uint8_t addr, uint8_t page, uint8_t *scaling_buffer );
 
 void IS31FL3741_set_color( int index, uint8_t red, uint8_t green, uint8_t blue );
 void IS31FL3741_set_color_all( uint8_t red, uint8_t green, uint8_t blue );
@@ -47,7 +48,7 @@ void IS31FL3741_set_led_control_register( uint8_t index, bool red, bool green, b
 // Call this while idle (in between matrix scans).
 // If the buffer is dirty, it will update the driver with the buffer.
 void IS31FL3741_update_pwm_buffers( uint8_t addr1, uint8_t addr2 );
-void IS31FL3741_update_led_control_registers( uint8_t addr1, uint8_t addr2 );
+void IS31FL3741_update_scaling_buffers( uint8_t addr1, uint8_t addr2 );
 
 // pwm page 0
 #define CS1_SW1  0x00

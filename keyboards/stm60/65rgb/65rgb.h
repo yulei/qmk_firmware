@@ -1,10 +1,9 @@
  /**
-  * stm60.h
+  * 65rgb.h
   *
   */
 
-#ifndef STM60_H__
-#define STM60_H__
+#pragma once
 
 #include "quantum.h"
 
@@ -71,4 +70,3 @@
   {k30, k32, k33, k34, k35, k36, k37, k38, k39, k3a, k3b, xxx, k3c, k3d}, \
   {xxx, k42, k43, xxx, xxx, xxx, k47, xxx, xxx, xxx, k49, xxx, k4a, xxx}  \
 }
-#endif

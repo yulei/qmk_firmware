@@ -1,6 +1,7 @@
 # project specific files
-SRC = matrix.c \
-      is31fl3741.c
+SRC += matrix.c \
+      is31fl3741.c \
+      i2c_master.c
 
 ## chip/board settings
 # - the next two should match the directories in
@@ -52,7 +53,7 @@ BACKLIGHT_ENABLE = no
 NKRO_ENABLE = no # USB Nkey Rollover
 CUSTOM_MATRIX = yes # Custom matrix file
 AUDIO_ENABLE = no
-RGBLIGHT_ENABLE = yes
-RGBLIGHT_CUSTOM_DRIVER = yes
+#RGBLIGHT_ENABLE = yes
+#RGBLIGHT_CUSTOM_DRIVER = yes
 
-#RGB_MATRIX_ENABLE = IS31FL3733
+RGB_MATRIX_ENABLE = custom

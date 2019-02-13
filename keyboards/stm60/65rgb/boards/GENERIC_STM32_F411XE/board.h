@@ -42,7 +42,7 @@
 #endif
 
 #if !defined(STM32_HSECLK)
-#define STM32_HSECLK                16000000U
+#define STM32_HSECLK                8000000U
 #endif
 
 //#define STM32_HSE_BYPASS
@@ -113,8 +113,8 @@
 #define GPIOC_ROW3                  15U
 
 #define GPIOD_PIN0                  0U
-#define GPIOD_COL12                 1U
-#define GPIOD_PIN2                  2U
+#define GPIOD_PIN1                  1U
+#define GPIOD_COL12                 2U
 #define GPIOD_PIN3                  3U
 #define GPIOD_PIN4                  4U
 #define GPIOD_PIN5                  5U
