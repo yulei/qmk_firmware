@@ -18,9 +18,54 @@
 
 #ifdef RGBLIGHT_ENABLE
 #include "rgblight.h"
-extern void ws2812_init(void);
-extern void ws2812_setleds(LED_TYPE *ledarray, uint16_t number_of_leds);
-// rgb bottom light stuff
+#include "is31fl3741.h"
+const is31_led rgb_leds[RGBLED_NUM] = {
+    /* Refer to IS31 manual for these locations
+ *   driver
+ *   |  R location
+ *   |  |       G location
+ *   |  |       |       B location
+ *   |  |       |       | */
+    {1, CS36_SW9, CS35_SW9, CS34_SW9},
+    {1, CS36_SW8, CS35_SW8, CS34_SW8},
+    {1, CS36_SW7, CS35_SW7, CS34_SW7},
+    {1, CS36_SW5, CS35_SW5, CS34_SW5},
+    {1, CS36_SW4, CS35_SW4, CS34_SW4},
+    {1, CS36_SW3, CS35_SW3, CS34_SW3},
+    {1, CS36_SW1, CS35_SW1, CS34_SW1},
+
+    {1, CS33_SW1, CS32_SW1, CS31_SW1},
+    {1, CS33_SW4, CS32_SW4, CS31_SW4},
+    {1, CS33_SW5, CS32_SW5, CS31_SW5},
+    {1, CS33_SW7, CS32_SW7, CS31_SW7},
+    {1, CS33_SW2, CS32_SW2, CS31_SW2},
+    {1, CS33_SW3, CS32_SW3, CS31_SW3},
+    {1, CS33_SW6, CS32_SW6, CS31_SW6},
+
+    {0, CS27_SW6, CS26_SW6, CS25_SW6},
+    {1, CS27_SW8, CS26_SW8, CS25_SW8},
+    {1, CS27_SW9, CS26_SW9, CS25_SW9},
+    {0, CS27_SW5, CS26_SW5, CS25_SW5},
+    {0, CS27_SW4, CS26_SW4, CS25_SW4},
+    {1, CS27_SW7, CS26_SW7, CS25_SW7},
+    {0, CS27_SW3, CS26_SW3, CS25_SW3}
+    };
+
+void rgbligtht_init(void)
+{
+  for(int i = 0; i < RGBLED_NUM; i++) {
+    IS31FL3741_set_led_color(&rgb_leds[i], 255, 255, 255);
+    IS31FL3741_set_led_scaling(&rgb_leds[i], 255, 255, 255);
+  }
+}
+
+void rgblight_setleds(LED_TYPE *ledarray, uint16_t number_of_leds)
+{
+  for (int i = 0; i < number_of_leds; i++) {
+    IS31FL3741_set_led_color(&rgb_leds[i], ledarray[i].r, ledarray[i].g, ledarray[i].b);
+  }
+}
+
 extern rgblight_config_t rgblight_config;
 void rgblight_set(void) {
     if (!rgblight_config.enable) {
@@ -30,12 +75,8 @@ void rgblight_set(void) {
             led[i].b = 0;
         }
     }
-    ws2812_setleds(led, RGBLED_NUM);
+    rgblight_setleds(led, RGBLED_NUM);
 }
-#endif
-
-#ifdef RGB_MATRIX_ENABLE
-
 #endif
 
 void matrix_scan_kb(void) {
@@ -53,7 +94,7 @@ void matrix_init_user(void) {
 #endif
 
 #ifdef RGBLIGHT_ENABLE
-    ws2812_init();
+    rgblight_init();
 #endif
 }
 

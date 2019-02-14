@@ -41,8 +41,10 @@ void IS31FL3741_write_scaling_buffer( uint8_t addr, uint8_t page, uint8_t *scali
 void IS31FL3741_set_color( int index, uint8_t red, uint8_t green, uint8_t blue );
 void IS31FL3741_set_color_all( uint8_t red, uint8_t green, uint8_t blue );
 
-void IS31FL3741_set_led_control_register( uint8_t index, bool red, bool green, bool blue );
+void IS31FL3741_set_led_color(const is31_led *led, uint8_t r, uint8_t g, uint8_t b);
+void IS31FL3741_set_led_scaling(const is31_led *led, uint8_t r, uint8_t g, uint8_t b);
 
+void IS31FL3741_set_led_control_register(uint8_t index, bool red, bool green, bool blue);
 // This should not be called from an interrupt
 // (eg. from a timer interrupt).
 // Call this while idle (in between matrix scans).

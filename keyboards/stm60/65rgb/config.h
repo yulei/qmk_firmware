@@ -45,12 +45,7 @@
 //#define NO_ACTION_FUNCTION
 
 //rgb light setting
-#define WS2812_LED_N    18
-#define RGBLED_NUM      WS2812_LED_N
-
-#define PORT_WS2812     GPIOA
-#define PIN_WS2812      7
-
+#define RGBLED_NUM 21
 #define RGBLIGHT_ANIMATIONS
 
 #define DRIVER_ADDR_1 0b0110000

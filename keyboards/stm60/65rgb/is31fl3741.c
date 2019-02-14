@@ -96,17 +96,16 @@ void IS31FL3741_write_register( uint8_t addr, uint8_t reg, uint8_t data )
   #endif
 }
 
-static void IS31FL3741_write_buffer(uint8_t addr, uint8_t page, uint16_t total, uint16_t step, uint8_t* buffer)
+static void IS31FL3741_write_buffer(uint8_t addr, uint8_t reg, uint16_t total, uint16_t step, uint8_t* buffer)
 {
-  // Unlock the command register.
-    IS31FL3741_write_register( addr, ISSI_COMMANDREGISTER_WRITELOCK, 0xC5 );
+  // assume page was ready
+    // set the start register
+    g_twi_transfer_buffer[0] = reg;
 
-    // Select destination page
-    IS31FL3741_write_register( addr, ISSI_COMMANDREGISTER, page);
-    for ( int i = 0; i < total; i += step) {
-        for ( int j = 0; j < step; j++ ) {
-            g_twi_transfer_buffer[j] = buffer[i + j];
-        }
+    for (int i = 0; i < total; i += step) {
+      for (int j = 0; j < step; j++) {
+        g_twi_transfer_buffer[1+j] = buffer[i + j];
+      }
 
     #if ISSI_PERSISTENCE > 0
       for (uint8_t i = 0; i < ISSI_PERSISTENCE; i++) {
@@ -123,18 +122,18 @@ static void IS31FL3741_write_buffer(uint8_t addr, uint8_t page, uint16_t total, 
 void IS31FL3741_write_pwm_buffer( uint8_t addr, uint8_t page, uint8_t *pwm_buffer )
 {
   if (page==ISSI_PAGE_PWM_0) {
-    IS31FL3741_write_buffer(addr, page, 180, 18, pwm_buffer);
+    IS31FL3741_write_buffer(addr, 0, 180, 18, pwm_buffer);
   } else if (page==ISSI_PAGE_PWM_1) {
-    IS31FL3741_write_buffer(addr, page, 171, 19, pwm_buffer);
+    IS31FL3741_write_buffer(addr, 0, 171, 19, pwm_buffer);
   }
 }
 
 void IS31FL3741_write_scaling_buffer( uint8_t addr, uint8_t page, uint8_t *scaling_buffer )
 {
   if (page==ISSI_PAGE_SCALING_0) {
-    IS31FL3741_write_buffer(addr, page, 180, 18, scaling_buffer);
+    IS31FL3741_write_buffer(addr, 0, 180, 18, scaling_buffer);
   } else if (page==ISSI_PAGE_SCALING_1) {
-    IS31FL3741_write_buffer(addr, page, 171, 19, scaling_buffer);
+    IS31FL3741_write_buffer(addr, 0, 171, 19, scaling_buffer);
   }
 }
 
@@ -227,6 +226,22 @@ void IS31FL3741_set_color_all( uint8_t red, uint8_t green, uint8_t blue )
     }
 }
 
+void IS31FL3741_set_led_color(const is31_led *led, uint8_t r, uint8_t g, uint8_t b)
+{
+  g_pwm_buffer[led->driver][led->r] = r;
+  g_pwm_buffer[led->driver][led->g] = g;
+  g_pwm_buffer[led->driver][led->b] = b;
+  g_pwm_buffer_update_required = true;
+}
+
+void IS31FL3741_set_led_scaling(const is31_led *led, uint8_t r, uint8_t g, uint8_t b)
+{
+  g_scaling_buffer[led->driver][led->r] = r;
+  g_scaling_buffer[led->driver][led->g] = g;
+  g_scaling_buffer[led->driver][led->b] = b;
+  g_scaling_buffer_update_required = true;
+}
+
 void IS31FL3741_set_led_control_register( uint8_t index, bool red, bool green, bool blue )
 {
     is31_led led = g_is31_leds[index];
@@ -283,7 +298,7 @@ void IS31FL3741_update_scaling_buffers( uint8_t addr1, uint8_t addr2 )
         IS31FL3741_write_scaling_buffer( addr1, ISSI_PAGE_SCALING_1, g_scaling_buffer[1] );
     }
 
-    g_scaling_buffer_update_required = true;
+    g_scaling_buffer_update_required = false;
 }
 
 #endif
