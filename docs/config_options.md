@@ -68,11 +68,11 @@ This is a C header file that is one of the first things included, and will persi
 * `#define C6_AUDIO`
   * enables audio on pin C6
 * `#define B5_AUDIO`
-  * enables audio on pin B5 (duophony is enables if one of B[5-7]_AUDIO is enabled along with one of C[4-6]_AUDIO)
+  * enables audio on pin B5 (duophony is enables if one of B[5-7]\_AUDIO is enabled along with one of C[4-6]\_AUDIO)
 * `#define B6_AUDIO`
-  * enables audio on pin B6 (duophony is enables if one of B[5-7]_AUDIO is enabled along with one of C[4-6]_AUDIO)
+  * enables audio on pin B6 (duophony is enables if one of B[5-7]\_AUDIO is enabled along with one of C[4-6]\_AUDIO)
 * `#define B7_AUDIO`
-  * enables audio on pin B7 (duophony is enables if one of B[5-7]_AUDIO is enabled along with one of C[4-6]_AUDIO)
+  * enables audio on pin B7 (duophony is enables if one of B[5-7]\_AUDIO is enabled along with one of C[4-6]\_AUDIO)
 * `#define BACKLIGHT_PIN B7`
   * pin of the backlight - B5, B6, B7 use PWM, others use softPWM
 * `#define BACKLIGHT_LEVELS 3`
@@ -87,7 +87,7 @@ This is a C header file that is one of the first things included, and will persi
   * mechanical locking support. Use KC_LCAP, KC_LNUM or KC_LSCR instead in keymap
 * `#define LOCKING_RESYNC_ENABLE`
   * tries to keep switch state consistent with keyboard LED state
-* `#define IS_COMMAND() ( keyboard_report->mods == (MOD_BIT(KC_LSHIFT) | MOD_BIT(KC_RSHIFT)) )`
+* `#define IS_COMMAND() (get_mods() == (MOD_BIT(KC_LSHIFT) | MOD_BIT(KC_RSHIFT)))`
   * key combination that allows the use of magic commands (useful for debugging)
 * `#define USB_MAX_POWER_CONSUMPTION`
   * sets the maximum power (in mA) over USB for the device (default: 500)

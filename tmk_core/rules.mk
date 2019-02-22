@@ -48,9 +48,6 @@ FORMAT = ihex
 #     (Note: 3 is not always the best optimization level. See avr-libc FAQ.)
 OPT = s
 
-AUTOGEN ?= false
-
-
 # Compiler flag to set the C Standard level.
 #     c89   = "ANSI" C
 #     gnu89 = c89 plus GCC extensions
@@ -260,10 +257,6 @@ gccversion :
 	@$(SILENT) || printf "$(MSG_FLASH) $@" | $(AWK_CMD)
 	$(eval CMD=$(HEX) $< $@)
 	@$(BUILD_CMD)
-	@if $(AUTOGEN); then \
-		$(SILENT) || printf "Copying $(TARGET).hex to keymaps/$(KEYMAP)/$(TARGET).hex\n"; \
-		$(COPY) $@ $(KEYMAP_PATH)/$(TARGET).hex; \
-	fi
 
 %.eep: %.elf
 	@$(SILENT) || printf "$(MSG_EEPROM) $@" | $(AWK_CMD)
