@@ -106,11 +106,11 @@ static void init_rows(void)
 
 static uint8_t read_rows()
 {
-  return ((readPin(E6) ? (1 << 0) : 0) |
-          (readPin(F7) ? (1 << 1) : 0) |
-          (readPin(D6) ? (1 << 2) : 0) |
-          (readPin(B7) ? (1 << 3) : 0) |
-          (readPin(D4) ? (1 << 4) : 0));
+  return ((readPin(E6) ? 0 : (1 << 0)) |
+          (readPin(F7) ? 0 : (1 << 1)) |
+          (readPin(D6) ? 0 : (1 << 2)) |
+          (readPin(B7) ? 0 : (1 << 3)) |
+          (readPin(D4) ? 0 : (1 << 4)));
 }
 
 /*
