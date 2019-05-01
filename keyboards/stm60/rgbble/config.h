@@ -42,13 +42,13 @@
 //#define NO_ACTION_FUNCTION
 
 //rgb light setting
-/*#define RGBLED_NUM      18
+#define RGBLED_NUM      18
 #define RGB_DI_PIN      B4
 #define RGBLIGHT_ANIMATIONS
 #define RGBLIGHT_HUE_STEP 8
 #define RGBLIGHT_SAT_STEP 8
 #define RGBLIGHT_VAL_STEP 8
-*/
+
 
 
 //rgb matrix setting

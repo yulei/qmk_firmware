@@ -33,6 +33,8 @@ void matrix_scan_user(void) {}
 
 void matrix_init(void)
 {
+  setPinOutput(B5);
+  writePinLow(B5);
   init_cols();
   init_rows();
 
@@ -218,12 +220,12 @@ static void select_col(uint8_t col) {
           writePinLow(D5);
           break;
         case 10:
-          writePinLow(D2);
-          writePinLow(D3);
-          writePinHigh(D5);
+          writePinHigh(D2);
+          writePinHigh(D3);
+          writePinLow(D5);
           break;
         case 11:
-          writePinHigh(D2);
+          writePinLow(D2);
           writePinLow(D3);
           writePinHigh(D5);
           break;
