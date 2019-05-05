@@ -33,6 +33,8 @@ void matrix_scan_user(void) {}
 
 void matrix_init(void)
 {
+  setPinOutput(F0);
+  writePinHigh(F0);
   setPinOutput(B5);
   writePinLow(B5);
   init_cols();
