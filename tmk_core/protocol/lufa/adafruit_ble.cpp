@@ -147,9 +147,13 @@ static struct SPI_Settings spi;
 // Initialize 4Mhz MSBFIRST MODE0
 void SPI_init(struct SPI_Settings *spi) {
   spi->spcr = _BV(SPE) | _BV(MSTR);
+  #if (F_CPU==8000000)
   spi->spsr = _BV(SPI2X);
 
   static_assert(SpiBusSpeed == F_CPU / 2, "hard coded at 4Mhz");
+  #else
+  static_assert(SpiBusSpeed == F_CPU / 4, "hard coded at 4Mhz");
+  #endif
 
   ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
     // Ensure that SS is OUTPUT High

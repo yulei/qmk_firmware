@@ -65,3 +65,8 @@
 //#define TAPPING_TERM    200
 //#define RETRO_TAPPING
 //#define PERMISSIVE_HOLD
+
+// bluetooth setting
+#define AdafruitBleResetPin D4
+#define AdafruitBleCSPin    B0
+#define AdafruitBleIRQPin   E6
