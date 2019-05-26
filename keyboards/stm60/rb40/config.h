@@ -58,7 +58,7 @@
 #define DRIVER_ADDR_1 0b1010000
 #define DRIVER_ADDR_2 0b1010000 // this is here for compliancy reasons.
 #define DRIVER_COUNT 2
-#define DRIVER_1_LED_TOTAL 46
+#define DRIVER_1_LED_TOTAL 42
 #define DRIVER_LED_TOTAL DRIVER_1_LED_TOTAL
 
 // tapping setting
