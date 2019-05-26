@@ -149,11 +149,7 @@ extern const uint8_t RGBLED_KNIGHT_INTERVALS[3] PROGMEM;
 extern const uint16_t RGBLED_RGBTEST_INTERVALS[1] PROGMEM;
 extern bool is_rgblight_initialized;
 
-<<<<<<< HEAD
-#if defined(__AVR__)
-=======
 // Should stay in sycn with rgb matrix config as we reuse eeprom storage for both (for now)
->>>>>>> upstream/master
 typedef union {
   uint32_t raw;
   struct {
@@ -165,19 +161,6 @@ typedef union {
     uint8_t  speed   :8;//EECONFIG needs to be increased to support this
   };
 } rgblight_config_t;
-#else
-typedef union {
-  uint32_t raw;
-  struct {
-    bool     enable;
-    uint8_t  mode;
-    uint16_t hue;
-    uint8_t  sat;
-    uint8_t  val;
-    uint8_t  speed;
-  };
-} rgblight_config_t;
-#endif
 
 typedef struct _rgblight_status_t {
     uint8_t  base_mode;

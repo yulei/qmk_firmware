@@ -908,16 +908,6 @@ const uint8_t RGBLED_BREATHING_INTERVALS[] PROGMEM = {30, 20, 10, 5};
 void rgblight_effect_breathing(animation_status_t *anim) {
   float val;
 
-<<<<<<< HEAD
-  uint8_t interval_time = get_interval_time(&RGBLED_RAINBOW_SWIRL_INTERVALS[interval / 2], 1, 100);
-
-  if (timer_elapsed(last_timer) < interval_time) {
-    return;
-  }
-  last_timer = timer_read();
-
-=======
->>>>>>> upstream/master
   // http://sean.voisen.org/blog/2011/10/breathing-led-with-arduino/
 #ifdef RGBLIGHT_EFFECT_BREATHE_TABLE
   val = pgm_read_byte(&rgblight_effect_breathe_table[anim->pos / table_scale]);
