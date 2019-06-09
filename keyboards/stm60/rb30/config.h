@@ -45,10 +45,11 @@
 //#define NO_ACTION_FUNCTION
 
 //rgb light setting
-//#define RGBLED_NUM      14
-//#define RGB_DI_PIN      B7
-#define RGBLED_NUM      3
-#define RGB_DI_PIN      F1
+#define RGBLED_NUM      14
+#define RGB_DI_PIN      F0
+
+//#define RGBLED_NUM      3
+//#define RGB_DI_PIN      F1
 #define RGBLIGHT_ANIMATIONS
 #define RGBLIGHT_HUE_STEP 8
 #define RGBLIGHT_SAT_STEP 8

@@ -72,5 +72,5 @@ UNICODE_ENABLE = no         # Unicode
 AUDIO_ENABLE = no           # Audio output on port C6
 FAUXCLICKY_ENABLE = no      # Use buzzer to emulate clicky switches
 #RGBLIGHT_ENABLE = yes       # Use RGB bottom light
-RGB_MATRIX_ENABLE = IS31FL3731 # Use RGB matrix
+RGB_MATRIX_ENABLE = yes     # Use RGB matrix
 #BLUETOOTH = AdafruitBLE
