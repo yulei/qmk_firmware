@@ -20,7 +20,7 @@
 /*
  * Board identifier.
  */
-#define BOARD_PJF_STM32_F103XE
+#define BOARD_PJF_STM32_F103XB
 #define BOARD_NAME              "stm32 based pjf"
 
 /*
@@ -48,8 +48,8 @@
  */
 #define GPIOA_PIN0        0U
 #define GPIOA_PIN1        1U
-#define GPIOA_LED_PWM     2U
-#define GPIOA_RGB_PWM     3U
+#define GPIOA_PIN2        2U
+#define GPIOA_PIN3        3U
 #define GPIOA_PIN4        4U
 #define GPIOA_PIN5        5U
 #define GPIOA_PIN6        6U
@@ -189,8 +189,6 @@
 /*
  * Port A setup.
  * Everything input with pull-up except:
- * PA2 - Pushpull output            (LED PWM)
- * PA3 - Pushpull output            (RGB PWM)
  * PA9 - Alternate output           (USART1 TX)
  * PA10 - Alternate output          (USART1 RX)
  * PA11 - Alternate output          (USB DM)

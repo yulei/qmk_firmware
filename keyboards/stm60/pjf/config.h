@@ -8,8 +8,8 @@
 
 /* USB Device descriptor parameter */
 #define VENDOR_ID       0xBEEF
-#define PRODUCT_ID      0x1897
-#define DEVICE_VER      0x00FF
+#define PRODUCT_ID      0x00FF
+#define DEVICE_VER      0x0001
 #define MANUFACTURER    astro
 #define PRODUCT         pjf
 #define DESCRIPTION     compact 1800 without F row
@@ -26,5 +26,13 @@
 
 /* Debounce reduces chatter (unintended double-presses) - set 0 if debouncing is not needed */
 #define DEBOUNCE 6
+
+/* rgb light */
+#define WS2812_LED_N    6
+#define RGBLED_NUM      WS2812_LED_N
+
+#define PORT_WS2812     GPIOA
+#define PIN_WS2812      3
+#define RGBLIGHT_ANIMATIONS
 
 #endif
