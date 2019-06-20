@@ -11,8 +11,8 @@
 #define PRODUCT_ID      0x00BE
 #define DEVICE_VER      0x6001
 #define MANUFACTURER    astro
-#define PRODUCT         60rgbble
-#define DESCRIPTION     60% rgb ble keyboard
+#define PRODUCT         Dumplings 60
+#define DESCRIPTION     60% rgb keyboard with ble extension
 
 /* key matrix size */
 #define MATRIX_ROWS 5
@@ -48,8 +48,6 @@
 #define RGBLIGHT_HUE_STEP 8
 #define RGBLIGHT_SAT_STEP 8
 #define RGBLIGHT_VAL_STEP 8
-
-
 
 //rgb matrix setting
 #define DRIVER_ADDR_1 0b1110100
