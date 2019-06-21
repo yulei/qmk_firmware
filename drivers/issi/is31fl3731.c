@@ -252,7 +252,7 @@ void IS31FL3731_update_pwm_buffers( uint8_t addr1, uint8_t addr2 )
     if ( g_pwm_buffer_update_required )
     {
         IS31FL3731_write_pwm_buffer( addr1, g_pwm_buffer[0] );
-        //IS31FL3731_write_pwm_buffer( addr2, g_pwm_buffer[1] );
+        IS31FL3731_write_pwm_buffer( addr2, g_pwm_buffer[1] );
     }
     g_pwm_buffer_update_required = false;
 }
@@ -264,7 +264,7 @@ void IS31FL3731_update_led_control_registers( uint8_t addr1, uint8_t addr2 )
         for ( int i=0; i<18; i++ )
         {
             IS31FL3731_write_register(addr1, i, g_led_control_registers[0][i] );
-            //IS31FL3731_write_register(addr2, i, g_led_control_registers[1][i] );
+            IS31FL3731_write_register(addr2, i, g_led_control_registers[1][i] );
         }
     }
 }
