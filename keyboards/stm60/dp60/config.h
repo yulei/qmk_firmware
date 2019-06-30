@@ -8,7 +8,7 @@
 
 /* USB Device descriptor parameter */
 #define VENDOR_ID       0x60BE
-#define PRODUCT_ID      0x00BE
+#define PRODUCT_ID      0x60BE
 #define DEVICE_VER      0x6001
 #define MANUFACTURER    astro
 #define PRODUCT         Dumplings 60
