@@ -75,8 +75,8 @@ FAUXCLICKY_ENABLE = no      # Use buzzer to emulate clicky switches
 #RGBLIGHT_ENABLE = yes       # Use RGB bottom light
 RGB_MATRIX_ENABLE = yes     # Use RGB matrix
 
-RAW_ENABLE = yes
-DYNAMIC_KEYMAP_ENABLE = yes
+#RAW_ENABLE = yes
+#DYNAMIC_KEYMAP_ENABLE = yes
 LAYOUTS = 60_ansi 60_hhkb 60_iso
 
 CUSTOM_MATRIX = yes
