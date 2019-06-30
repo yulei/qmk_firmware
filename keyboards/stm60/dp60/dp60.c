@@ -140,4 +140,5 @@ led_config_t g_led_config = {
         4, 4, 4, 4, 1, 1, 1, 1,
     }
 };
+
 #endif

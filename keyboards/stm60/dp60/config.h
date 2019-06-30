@@ -8,8 +8,8 @@
 
 /* USB Device descriptor parameter */
 #define VENDOR_ID       0x60BE
-#define PRODUCT_ID      0x60BE
-#define DEVICE_VER      0x6001
+#define PRODUCT_ID      0x00BE
+#define DEVICE_VER      0x0001
 #define MANUFACTURER    astro
 #define PRODUCT         Dumplings 60
 #define DESCRIPTION     60% rgb keyboard with ble extension
@@ -21,7 +21,7 @@
 #define DIODE_DIRECTION COL2ROW
 
 /* Debounce reduces chatter (unintended double-presses) - set 0 if debouncing is not needed */
-#define DEBOUNCE 5
+#define DEBOUNCING_DELAY 5
 
 /*
  * Feature disable options
