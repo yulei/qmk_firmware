@@ -59,8 +59,8 @@
 
 // tapping setting
 //#define TAPPING_TERM    200
-#define RETRO_TAPPING
-#define PERMISSIVE_HOLD
+//#define RETRO_TAPPING
+//#define PERMISSIVE_HOLD
 
 //VIA
 #define DYNAMIC_KEYMAP_LAYER_COUNT 2
