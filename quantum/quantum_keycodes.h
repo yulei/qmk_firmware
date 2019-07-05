@@ -424,6 +424,17 @@ enum quantum_keycodes {
     RGB_MODE_GRADIENT,
     RGB_MODE_RGBTEST,
 
+    // RGM Matrix functionality
+    RGB_MATRIX_TOG,
+    RGB_MATRIX_MODE_FORWARD,
+    RGB_MATRIX_MODE_REVERSE,
+    RGB_MATRIX_HUI,
+    RGB_MATRIX_HUD,
+    RGB_MATRIX_SAI,
+    RGB_MATRIX_SAD,
+    RGB_MATRIX_VAI,
+    RGB_MATRIX_VAD,
+
     //Momentum matching toggle
     VLK_TOG,
 
@@ -628,6 +639,16 @@ enum quantum_keycodes {
 #define RGB_M_X RGB_MODE_XMAS
 #define RGB_M_G RGB_MODE_GRADIENT
 #define RGB_M_T RGB_MODE_RGBTEST
+
+#define RGBM_TOG RGB_MATRIX_TOG
+#define RGBM_MOD RGB_MATRIX_MODE_FORWARD
+#define RGBM_RMOD RGB_MATRIX_MODE_REVERSE
+#define RGBM_HUI RGB_MATRIX_HUI
+#define RGBM_HUD RGB_MATRIX_HUD
+#define RGBM_SAI RGB_MATRIX_SAI
+#define RGBM_SAD RGB_MATRIX_SAD
+#define RGBM_VAI RGB_MATRIX_VAI
+#define RGBM_VAD RGB_MATRIX_VAD
 
 // L-ayer, T-ap - 256 keycode max, 16 layer max
 #define LT(layer, kc) (QK_LAYER_TAP | (((layer) & 0xF) << 8) | ((kc) & 0xFF))

@@ -58,12 +58,12 @@
 // -----End rgb effect includes macros-------
 // ------------------------------------------
 
-#ifndef RGB_DISABLE_AFTER_TIMEOUT
-  #define RGB_DISABLE_AFTER_TIMEOUT 0
+#ifndef RGB_MATRIX_DISABLE_AFTER_TIME
+  #define RGB_MATRIX_DISABLE_AFTER_TIME 0
 #endif
 
-#ifndef RGB_DISABLE_WHEN_USB_SUSPENDED
-  #define RGB_DISABLE_WHEN_USB_SUSPENDED false
+#ifndef RGB_MATRIX_DISABLE_WHEN_USB_SUSPENDED
+  #define RGB_MATRIX_DISABLE_WHEN_USB_SUSPENDED false
 #endif
 
 #ifndef EECONFIG_RGB_MATRIX
@@ -376,7 +376,7 @@ void rgb_matrix_task(void) {
 
   // Ideally we would also stop sending zeros to the LED driver PWM buffers
   // while suspended and just do a software shutdown. This is a cheap hack for now.
-  bool suspend_backlight = ((g_suspend_state && RGB_DISABLE_WHEN_USB_SUSPENDED) || (RGB_DISABLE_AFTER_TIMEOUT > 0 && g_rgb_counters.any_key_hit > RGB_DISABLE_AFTER_TIMEOUT * 60 * 20));
+  bool suspend_backlight = ((g_suspend_state && RGB_MATRIX_DISABLE_WHEN_USB_SUSPENDED) || (RGB_MATRIX_DISABLE_AFTER_TIME > 0 && g_rgb_counters.any_key_hit > RGB_MATRIX_DISABLE_AFTER_TIME * 60 * 20));
   uint8_t effect = suspend_backlight || !rgb_matrix_config.enable ? 0 : rgb_matrix_config.mode;
 
   switch (rgb_task_state) {
