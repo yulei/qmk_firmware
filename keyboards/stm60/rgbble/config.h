@@ -60,6 +60,6 @@
 #define DRIVER_LED_TOTAL DRIVER_1_LED_TOTAL + DRIVER_2_LED_TOTAL
 
 // tapping setting
-#define TAPPING_TERM    200
+//#define TAPPING_TERM    200
 #define RETRO_TAPPING
 #define PERMISSIVE_HOLD
