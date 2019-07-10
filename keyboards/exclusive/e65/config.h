@@ -7,9 +7,9 @@
 #define VENDOR_ID       0xFEED
 #define PRODUCT_ID      0x6500
 #define DEVICE_VER      0x0001
-#define MANUFACTURER    dztech
-#define PRODUCT         EX65
-#define DESCRIPTION     Keyboard
+#define MANUFACTURER    Exclusive / E-Team
+#define PRODUCT         E65
+#define DESCRIPTION     E65 QMK Keyboard
 
 /* key matrix size */
 #define MATRIX_ROWS 5
