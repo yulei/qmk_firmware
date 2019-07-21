@@ -85,4 +85,5 @@ typedef struct {
     #define ENDPOINT_CONFIG(epnum, eptype, epdir, epsize, epbank)    Endpoint_ConfigureEndpoint((epdir) | (epnum) , eptype, epsize, epbank)
 // #endif
 
+
 #endif

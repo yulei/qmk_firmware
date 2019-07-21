@@ -7,11 +7,13 @@
 #include "config_common.h"
 
 /* USB Device descriptor parameter */
-#define VENDOR_ID       0x60BE
-#define PRODUCT_ID      0x00BE
+//#define VENDOR_ID       0x60BE
+#define VENDOR_ID       0x2341
+//#define PRODUCT_ID      0x00BE
+#define PRODUCT_ID      0x8037
 #define DEVICE_VER      0x0001
 #define MANUFACTURER    astro
-#define PRODUCT         Dumplings 60
+#define PRODUCT         Dumplings
 #define DESCRIPTION     60% rgb keyboard with ble extension
 
 /* key matrix size */

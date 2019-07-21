@@ -277,7 +277,8 @@ const USB_Descriptor_Device_t PROGMEM DeviceDescriptor =
 {
     .Header                 = {.Size = sizeof(USB_Descriptor_Device_t), .Type = DTYPE_Device},
 
-    .USBSpecification       = VERSION_BCD(1,1,0),
+    //.USBSpecification       = VERSION_BCD(1,1,0),
+    .USBSpecification       = VERSION_BCD(2,1,0),
 #if VIRTSER_ENABLE
     .Class                  = USB_CSCP_IADDeviceClass,
     .SubClass               = USB_CSCP_IADDeviceSubclass,
@@ -832,6 +833,41 @@ const USB_Descriptor_Configuration_t PROGMEM ConfigurationDescriptor =
                     .PollingIntervalMS      = 0x05
             },
 #endif
+    .WebUSB_Interface =
+		{
+			.Header                 = {.Size = sizeof(USB_Descriptor_Interface_t), .Type = DTYPE_Interface},
+
+			.InterfaceNumber        = WebUSB_INTERFACE,
+			.AlternateSetting       = 0x00,
+
+			.TotalEndpoints         = 2,
+
+			.Class                  = USB_CSCP_VendorSpecificClass,
+			.SubClass               = USB_CSCP_VendorSpecificSubclass,
+			.Protocol               = USB_CSCP_VendorSpecificProtocol,
+
+			.InterfaceStrIndex      = NO_DESCRIPTOR
+		},
+
+	.WebUSB_DataInEndpoint =
+		{
+			.Header                 = {.Size = sizeof(USB_Descriptor_Endpoint_t), .Type = DTYPE_Endpoint},
+
+			.EndpointAddress        = WEBUSB_IN_EPADDR,
+			.Attributes             = (EP_TYPE_INTERRUPT | ENDPOINT_ATTR_NO_SYNC | ENDPOINT_USAGE_DATA),
+			.EndpointSize           = WEBUSB_EPSIZE,
+			.PollingIntervalMS      = 0x05
+		},
+
+	.WebUSB_DataOutEndpoint =
+		{
+			.Header                 = {.Size = sizeof(USB_Descriptor_Endpoint_t), .Type = DTYPE_Endpoint},
+
+			.EndpointAddress        = WEBUSB_OUT_EPADDR,
+			.Attributes             = (EP_TYPE_INTERRUPT | ENDPOINT_ATTR_NO_SYNC | ENDPOINT_USAGE_DATA),
+			.EndpointSize           = WEBUSB_EPSIZE,
+			.PollingIntervalMS      = 0x05
+		}
 };
 
 
@@ -874,6 +910,20 @@ const USB_Descriptor_String_t PROGMEM SerialNumberString =
 };
 
 
+
+
+/** Binary device Object Store (BOS) descriptor structure. This descriptor, located in memory, describes a
+ *  flexible and extensible framework for describing and adding device-level capabilities to the set of USB standard
+ *  specifications. The BOS descriptor defines a root descriptor that is similar to the configuration descriptor,
+ *  and is the base descriptor for accessing a family of related descriptors. It defines the number of 'sub' Device
+ *  Capability Descriptors and the total length of itself and the sub-descriptors.
+ */
+
+const USB_Descriptor_BOS_t PROGMEM BOSDescriptor = BOS_DESCRIPTOR(
+		(MS_OS_20_PLATFORM_DESCRIPTOR(MS_OS_20_VENDOR_CODE, MS_OS_20_DESCRIPTOR_SET_TOTAL_LENGTH))
+		(WEBUSB_PLATFORM_DESCRIPTOR(WEBUSB_VENDOR_CODE, WEBUSB_LANDING_PAGE_INDEX))
+);
+
 /** This function is called by the library when in device mode, and must be overridden (see library "USB Descriptors"
  *  documentation) by the application code so that the address and size of a requested descriptor can be given
  *  to the USB library. When the device receives a Get Descriptor request on the control endpoint, this function
@@ -900,6 +950,10 @@ uint16_t get_usb_descriptor(const uint16_t wValue,
             Address = &ConfigurationDescriptor;
             Size    = sizeof(USB_Descriptor_Configuration_t);
             break;
+        case DTYPE_BOS:
+		    Address = &BOSDescriptor;
+			Size = pgm_read_byte(&BOSDescriptor.TotalLength);
+			break;
         case DTYPE_String:
             switch (DescriptorIndex )
             {

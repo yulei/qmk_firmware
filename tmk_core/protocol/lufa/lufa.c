@@ -49,6 +49,8 @@
 #endif
 #include "suspend.h"
 
+#include "MS_OS_20_Device.h"
+#include "WebUSBDevice.h"
 #include "usb_descriptor.h"
 #include "lufa.h"
 #include "quantum.h"
@@ -90,6 +92,36 @@
 #ifdef RAW_ENABLE
 	#include "raw_hid.h"
 #endif
+
+/** URL descriptor string. This is a UTF-8 string containing a URL excluding the prefix. At least one of these must be
+ * 	defined and returned when the Landing Page descriptor index is requested.
+ */
+const WebUSB_URL_Descriptor_t PROGMEM WebUSB_LandingPage = WEBUSB_URL_DESCRIPTOR(1, u8"www.example.org");
+/** Microsoft OS 2.0 Descriptor. This is used by Windows to select the USB driver for the device.
+ *
+ *  For WebUSB in Chrome, the correct driver is WinUSB, which is selected via CompatibleID.
+ *
+ *  Additionally, while Chrome is built using libusb, a magic registry key needs to be set containing a GUID for
+ *  the device.
+ */
+const MS_OS_20_Descriptor_t PROGMEM MS_OS_20_Descriptor =
+{
+	.Header =
+		{
+			.Length = CPU_TO_LE16(10),
+			.DescriptorType = CPU_TO_LE16(MS_OS_20_SET_HEADER_DESCRIPTOR),
+			.WindowsVersion = MS_OS_20_WINDOWS_VERSION_8_1,
+			.TotalLength = CPU_TO_LE16(MS_OS_20_DESCRIPTOR_SET_TOTAL_LENGTH)
+		},
+
+	.CompatibleID =
+		{
+			.Length = CPU_TO_LE16(20),
+			.DescriptorType = CPU_TO_LE16(MS_OS_20_FEATURE_COMPATBLE_ID),
+			.CompatibleID = u8"WINUSB\x00", // Automatically null-terminated to 8 bytes
+			.SubCompatibleID = {0, 0, 0, 0, 0, 0, 0, 0}
+		}
+};
 
 uint8_t keyboard_idle = 0;
 /* 0: Boot Protocol, 1: Report Protocol(default) */
@@ -481,6 +513,50 @@ void EVENT_USB_Device_ControlRequest(void)
     /* Handle HID Class specific requests */
     switch (USB_ControlRequest.bRequest)
     {
+        case WEBUSB_VENDOR_CODE:
+            if (USB_ControlRequest.bmRequestType == (REQDIR_DEVICETOHOST | REQTYPE_VENDOR | REQREC_DEVICE))
+            {
+				switch (USB_ControlRequest.wIndex) {
+                case WebUSB_RTYPE_GetURL:
+                    switch (USB_ControlRequest.wValue) {
+                    case WEBUSB_LANDING_PAGE_INDEX:
+                        Endpoint_ClearSETUP();
+                        /* Write the descriptor data to the control endpoint */
+                        Endpoint_Write_Control_PStream_LE(&WebUSB_LandingPage, WebUSB_LandingPage.Header.Size);
+                        /* Release the endpoint after transaction. */
+                        Endpoint_ClearStatusStage();
+                        break;
+                    default:    /* Stall transfer on invalid index. */
+                        Endpoint_StallTransaction();
+                        break;
+                    }
+                    break;
+                default:    /* Stall on unknown WebUSB request */
+                    Endpoint_StallTransaction();
+                    break;
+				}
+            }
+
+			break;
+
+		case MS_OS_20_VENDOR_CODE:
+            if (USB_ControlRequest.bmRequestType == (REQDIR_DEVICETOHOST | REQTYPE_VENDOR | REQREC_DEVICE))
+            {
+                switch (USB_ControlRequest.wIndex) {
+                case MS_OS_20_DESCRIPTOR_INDEX:
+                    Endpoint_ClearSETUP();
+                    /* Write the descriptor data to the control endpoint */
+                    Endpoint_Write_Control_PStream_LE(&MS_OS_20_Descriptor, MS_OS_20_Descriptor.Header.TotalLength);
+                    /* Release the endpoint after transaction. */
+                    Endpoint_ClearStatusStage();
+                    break;
+                default:    /* Stall on unknown MS OS 2.0 request */
+                    Endpoint_StallTransaction();
+                    break;
+                }
+            }
+
+            break;
         case HID_REQ_GetReport:
             if (USB_ControlRequest.bmRequestType == (REQDIR_DEVICETOHOST | REQTYPE_CLASS | REQREC_INTERFACE))
             {
@@ -666,7 +742,7 @@ static void send_keyboard(report_keyboard_t *report)
 
     keyboard_report_sent = *report;
 }
- 
+
 /** \brief Send Mouse
  *
  * FIXME: Needs doc
