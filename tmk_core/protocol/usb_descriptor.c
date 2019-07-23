@@ -277,8 +277,12 @@ const USB_Descriptor_Device_t PROGMEM DeviceDescriptor =
 {
     .Header                 = {.Size = sizeof(USB_Descriptor_Device_t), .Type = DTYPE_Device},
 
-    //.USBSpecification       = VERSION_BCD(1,1,0),
+#ifdef WEBUSB_ENABLE
     .USBSpecification       = VERSION_BCD(2,1,0),
+#else
+    .USBSpecification       = VERSION_BCD(1,1,0),
+#endif
+
 #if VIRTSER_ENABLE
     .Class                  = USB_CSCP_IADDeviceClass,
     .SubClass               = USB_CSCP_IADDeviceSubclass,
@@ -833,6 +837,8 @@ const USB_Descriptor_Configuration_t PROGMEM ConfigurationDescriptor =
                     .PollingIntervalMS      = 0x05
             },
 #endif
+
+#ifdef WEBUSB_ENABLE
     .WebUSB_Interface =
 		{
 			.Header                 = {.Size = sizeof(USB_Descriptor_Interface_t), .Type = DTYPE_Interface},
@@ -868,6 +874,7 @@ const USB_Descriptor_Configuration_t PROGMEM ConfigurationDescriptor =
 			.EndpointSize           = WEBUSB_EPSIZE,
 			.PollingIntervalMS      = 0x05
 		}
+#endif //WEBUSB_ENABLE
 };
 
 
@@ -911,6 +918,7 @@ const USB_Descriptor_String_t PROGMEM SerialNumberString =
 
 
 
+#ifdef WEBUSB_ENABLE
 
 /** Binary device Object Store (BOS) descriptor structure. This descriptor, located in memory, describes a
  *  flexible and extensible framework for describing and adding device-level capabilities to the set of USB standard
@@ -923,6 +931,7 @@ const USB_Descriptor_BOS_t PROGMEM BOSDescriptor = BOS_DESCRIPTOR(
 		(MS_OS_20_PLATFORM_DESCRIPTOR(MS_OS_20_VENDOR_CODE, MS_OS_20_DESCRIPTOR_SET_TOTAL_LENGTH))
 		(WEBUSB_PLATFORM_DESCRIPTOR(WEBUSB_VENDOR_CODE, WEBUSB_LANDING_PAGE_INDEX))
 );
+#endif
 
 /** This function is called by the library when in device mode, and must be overridden (see library "USB Descriptors"
  *  documentation) by the application code so that the address and size of a requested descriptor can be given
@@ -950,10 +959,12 @@ uint16_t get_usb_descriptor(const uint16_t wValue,
             Address = &ConfigurationDescriptor;
             Size    = sizeof(USB_Descriptor_Configuration_t);
             break;
+#ifdef WEBUSB_ENABLE
         case DTYPE_BOS:
 		    Address = &BOSDescriptor;
 			Size = pgm_read_byte(&BOSDescriptor.TotalLength);
 			break;
+#endif
         case DTYPE_String:
             switch (DescriptorIndex )
             {

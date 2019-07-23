@@ -49,12 +49,14 @@
 #include "hal.h"
 #endif
 
+#ifdef WEBUSB_ENABLE
 #include "WebUSBDevice.h"
 #include "MS_OS_20_Device.h"
 #define WEBUSB_VENDOR_CODE 0x42
 #define WEBUSB_LANDING_PAGE_INDEX 0
 #define MS_OS_20_VENDOR_CODE 0x45     // Must be different than WEBUSB_VENDOR_CODE
 #define MS_OS_20_DESCRIPTOR_SET_TOTAL_LENGTH (10 + 20)	// Sum of `.Length`s in MS_OS_20_Descriptor in WebUSB.c
+#endif
 
 typedef struct
 {
@@ -130,12 +132,17 @@ typedef struct
   USB_Descriptor_Endpoint_t                CDC_DataOutEndpoint;
   USB_Descriptor_Endpoint_t                CDC_DataInEndpoint;
 #endif
+
+#ifdef WEBUSB_ENABLE
     USB_Descriptor_Interface_t            WebUSB_Interface;
 	USB_Descriptor_Endpoint_t             WebUSB_DataInEndpoint;
 	USB_Descriptor_Endpoint_t             WebUSB_DataOutEndpoint;
+#endif
+
 } USB_Descriptor_Configuration_t;
 
 /* Type Defines: */
+#ifdef WEBUSB_ENABLE
 /** Type define for the Microsoft OS 2.0 Descriptor for the device. This must be defined in the
  *  application code as the descriptor may contain sub-descriptors which can vary between devices,
  *  and which identify which USB drivers Windows should use.
@@ -145,7 +152,7 @@ typedef struct
     MS_OS_20_Descriptor_Set_Header_t        Header;
     MS_OS_20_CompatibleID_Descriptor        CompatibleID;
 } MS_OS_20_Descriptor_t;
-
+#endif
 /* index of interface */
 enum usb_interfaces {
 #if !defined(KEYBOARD_SHARED_EP)
@@ -176,7 +183,10 @@ enum usb_interfaces {
     CCI_INTERFACE,
     CDI_INTERFACE,
 #endif
+
+#if defined(WEBUSB_ENABLE)
     WebUSB_INTERFACE,
+#endif
     TOTAL_INTERFACES
 };
 
@@ -226,10 +236,12 @@ enum usb_endpoints {
 #   define CDC_IN_EPADDR                  (ENDPOINT_DIR_IN | CDC_IN_EPNUM)
 #   define CDC_OUT_EPADDR                  (ENDPOINT_DIR_OUT | CDC_OUT_EPNUM)
 #endif
+#ifdef WEBUSB_ENABLE
     WEBUSB_IN_EPNUM = NEXT_EPNUM,
     WEBUSB_OUT_EPNUM = NEXT_EPNUM,
 #   define WEBUSB_IN_EPADDR (ENDPOINT_DIR_IN|WEBUSB_IN_EPNUM)
 #   define WEBUSB_OUT_EPADDR (ENDPOINT_DIR_OUT|WEBUSB_OUT_EPNUM)
+#endif
 };
 
 #if defined(PROTOCOL_LUFA)
@@ -254,7 +266,9 @@ enum usb_endpoints {
 #define MIDI_STREAM_EPSIZE          64
 #define CDC_NOTIFICATION_EPSIZE     8
 #define CDC_EPSIZE                  16
+#ifdef WEBUSB_ENABLE
 #define WEBUSB_EPSIZE               8
+#endif
 
 uint16_t get_usb_descriptor(const uint16_t wValue,
                             const uint16_t wIndex,

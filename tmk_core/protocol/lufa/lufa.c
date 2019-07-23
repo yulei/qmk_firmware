@@ -49,8 +49,10 @@
 #endif
 #include "suspend.h"
 
+#ifdef WEBUSB_ENABLE
 #include "MS_OS_20_Device.h"
 #include "WebUSBDevice.h"
+#endif
 #include "usb_descriptor.h"
 #include "lufa.h"
 #include "quantum.h"
@@ -93,10 +95,13 @@
 	#include "raw_hid.h"
 #endif
 
+#ifdef WEBUSB_ENABLE
+    #include "webusb.h"
 /** URL descriptor string. This is a UTF-8 string containing a URL excluding the prefix. At least one of these must be
  * 	defined and returned when the Landing Page descriptor index is requested.
  */
-const WebUSB_URL_Descriptor_t PROGMEM WebUSB_LandingPage = WEBUSB_URL_DESCRIPTOR(1, u8"www.example.org");
+#define U8_STR(STR) u8 ## #STR
+const WebUSB_URL_Descriptor_t PROGMEM WebUSB_LandingPage = WEBUSB_URL_DESCRIPTOR(1, U8_STR(LANDING_PAGE));
 /** Microsoft OS 2.0 Descriptor. This is used by Windows to select the USB driver for the device.
  *
  *  For WebUSB in Chrome, the correct driver is WinUSB, which is selected via CompatibleID.
@@ -122,6 +127,7 @@ const MS_OS_20_Descriptor_t PROGMEM MS_OS_20_Descriptor =
 			.SubCompatibleID = {0, 0, 0, 0, 0, 0, 0, 0}
 		}
 };
+#endif
 
 uint8_t keyboard_idle = 0;
 /* 0: Boot Protocol, 1: Report Protocol(default) */
@@ -254,6 +260,92 @@ static void raw_hid_task(void)
 		if ( data_read )
 		{
 			raw_hid_receive( data, sizeof(data) );
+		}
+	}
+}
+#endif
+#ifdef WEBUSB_ENABLE
+
+/** \brief WEBUSB Send
+ *
+ * FIXME: Needs doc
+ */
+void webusb_send( uint8_t *data, uint8_t length )
+{
+	// TODO: implement variable size packet
+	if ( length != WEBUSB_EPSIZE )
+	{
+		return;
+	}
+
+	if (USB_DeviceState != DEVICE_STATE_Configured)
+	{
+		return;
+	}
+
+	// TODO: decide if we allow calls to raw_hid_send() in the middle
+	// of other endpoint usage.
+	uint8_t ep = Endpoint_GetCurrentEndpoint();
+
+	Endpoint_SelectEndpoint(WEBUSB_IN_EPNUM);
+
+	// Check to see if the host is ready to accept another packet
+	if (Endpoint_IsINReady())
+	{
+		// Write data
+		Endpoint_Write_Stream_LE(data, WEBUSB_EPSIZE, NULL);
+		// Finalize the stream transfer to send the last packet
+		Endpoint_ClearIN();
+	}
+
+	Endpoint_SelectEndpoint(ep);
+}
+
+/** \brief WEBUSB Receive
+ *
+ * FIXME: Needs doc
+ */
+__attribute__ ((weak))
+void webusb_receive( uint8_t *data, uint8_t length )
+{
+	// Users should #include "webusb_hid.h" in their own code
+	// and implement this function there. Leave this as weak linkage
+	// so users can opt to not handle data coming in.
+}
+
+/** \brief Raw HID Task
+ *
+ * FIXME: Needs doc
+ */
+static void webusb_task(void)
+{
+	// Create a temporary buffer to hold the read in data from the host
+	uint8_t data[WEBUSB_EPSIZE];
+	bool data_read = false;
+
+	// Device must be connected and configured for the task to run
+	if (USB_DeviceState != DEVICE_STATE_Configured)
+	return;
+
+	Endpoint_SelectEndpoint(WEBUSB_OUT_EPNUM);
+
+	// Check to see if a packet has been sent from the host
+	if (Endpoint_IsOUTReceived())
+	{
+		// Check to see if the packet contains data
+		if (Endpoint_IsReadWriteAllowed())
+		{
+			/* Read data */
+			Endpoint_Read_Stream_LE(data, sizeof(data), NULL);
+			data_read = true;
+		}
+
+		// Finalize the stream transfer to receive the last packet
+		Endpoint_ClearOUT();
+
+		if ( data_read )
+		{
+			webusb_receive( data, sizeof(data) );
 		}
 	}
 }
@@ -486,6 +578,13 @@ void EVENT_USB_Device_ConfigurationChanged(void)
     ConfigSuccess &= Endpoint_ConfigureEndpoint(CDC_OUT_EPADDR, EP_TYPE_BULK, CDC_EPSIZE, ENDPOINT_BANK_SINGLE);
     ConfigSuccess &= Endpoint_ConfigureEndpoint(CDC_IN_EPADDR, EP_TYPE_BULK, CDC_EPSIZE, ENDPOINT_BANK_SINGLE);
 #endif
+
+#ifdef WEBUSB_ENABLE
+    ConfigSuccess &= ENDPOINT_CONFIG(WEBUSB_IN_EPNUM, EP_TYPE_INTERRUPT, ENDPOINT_DIR_IN,
+									 WEBUSB_EPSIZE, ENDPOINT_BANK_SINGLE);
+    ConfigSuccess &= ENDPOINT_CONFIG(WEBUSB_OUT_EPNUM, EP_TYPE_INTERRUPT, ENDPOINT_DIR_OUT,
+									 WEBUSB_EPSIZE, ENDPOINT_BANK_SINGLE);
+#endif
 }
 
 /* FIXME: Expose this table in the docs somehow
@@ -513,6 +612,7 @@ void EVENT_USB_Device_ControlRequest(void)
     /* Handle HID Class specific requests */
     switch (USB_ControlRequest.bRequest)
     {
+#ifdef WEBUSB_ENABLE
         case WEBUSB_VENDOR_CODE:
             if (USB_ControlRequest.bmRequestType == (REQDIR_DEVICETOHOST | REQTYPE_VENDOR | REQREC_DEVICE))
             {
@@ -557,6 +657,8 @@ void EVENT_USB_Device_ControlRequest(void)
             }
 
             break;
+#endif
+
         case HID_REQ_GetReport:
             if (USB_ControlRequest.bmRequestType == (REQDIR_DEVICETOHOST | REQTYPE_CLASS | REQREC_INTERFACE))
             {
@@ -1173,6 +1275,10 @@ int main(void)
 
 #ifdef RAW_ENABLE
         raw_hid_task();
+#endif
+
+#ifdef WEBUSB_ENABLE
+        webusb_task();
 #endif
 
 #if !defined(INTERRUPT_CONTROL_ENDPOINT)

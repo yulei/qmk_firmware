@@ -15,6 +15,7 @@
 #define MANUFACTURER    astro
 #define PRODUCT         Dumplings
 #define DESCRIPTION     60% rgb keyboard with ble extension
+#define LANDING_PAGE    www.example.org
 
 /* key matrix size */
 #define MATRIX_ROWS 5

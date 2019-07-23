@@ -69,6 +69,9 @@ ifeq ($(strip $(VIRTSER_ENABLE)), yes)
     OPT_DEFS += -DVIRTSER_ENABLE
 endif
 
+ifeq ($(strip $(WEBUSB_ENABLE)), yes)
+    OPT_DEFS += -DWEBUSB_ENABLE
+endif
 ifeq ($(strip $(FAUXCLICKY_ENABLE)), yes)
     OPT_DEFS += -DFAUXCLICKY_ENABLE
     SRC += $(QUANTUM_DIR)/fauxclicky.c
