@@ -76,8 +76,8 @@ FAUXCLICKY_ENABLE = no      # Use buzzer to emulate clicky switches
 #RGB_MATRIX_ENABLE = yes     # Use RGB matrix
 
 #RAW_ENABLE = yes
-#WEBUSB_ENABLE = yes
-#DYNAMIC_KEYMAP_ENABLE = yes
+WEBUSB_ENABLE = yes
+DYNAMIC_KEYMAP_ENABLE = yes
 
 LAYOUTS = 60_ansi 60_hhkb 60_iso
 

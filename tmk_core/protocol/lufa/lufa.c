@@ -100,8 +100,9 @@
 /** URL descriptor string. This is a UTF-8 string containing a URL excluding the prefix. At least one of these must be
  * 	defined and returned when the Landing Page descriptor index is requested.
  */
+#define xU8_STR(S) U8_STR(S)
 #define U8_STR(STR) u8 ## #STR
-const WebUSB_URL_Descriptor_t PROGMEM WebUSB_LandingPage = WEBUSB_URL_DESCRIPTOR(1, U8_STR(LANDING_PAGE));
+const WebUSB_URL_Descriptor_t PROGMEM WebUSB_LandingPage = WEBUSB_URL_DESCRIPTOR(1, xU8_STR(LANDING_PAGE));
 /** Microsoft OS 2.0 Descriptor. This is used by Windows to select the USB driver for the device.
  *
  *  For WebUSB in Chrome, the correct driver is WinUSB, which is selected via CompatibleID.
