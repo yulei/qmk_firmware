@@ -7,13 +7,13 @@
 #include "config_common.h"
 
 /* USB Device descriptor parameter */
-#define VENDOR_ID       0xDEAD
+#define VENDOR_ID       0xFEED
 #define PRODUCT_ID      0xFEED
 #define DEVICE_VER      0x0062
 #define MANUFACTURER    astro
 #define PRODUCT         e6rgb
 #define DESCRIPTION     60% rgb keyboard
-#define LANDING_PAGE    matrixzj.github.io/astro/30.json
+#define LANDING_PAGE    matrixzj.github.io/astro/60_wkl.json
 
 /* key matrix size */
 #define MATRIX_ROWS 5
@@ -64,6 +64,8 @@
 #define TAPPING_TERM    200
 #define RETRO_TAPPING
 #define PERMISSIVE_HOLD
+
+#define DEBOUNCING_DELAY 5
 
 // WEBUSB
 #define DYNAMIC_KEYMAP_LAYER_COUNT 2

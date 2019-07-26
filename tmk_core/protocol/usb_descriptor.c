@@ -931,6 +931,13 @@ const USB_Descriptor_BOS_t PROGMEM BOSDescriptor = BOS_DESCRIPTOR(
 		(MS_OS_20_PLATFORM_DESCRIPTOR(MS_OS_20_VENDOR_CODE, MS_OS_20_DESCRIPTOR_SET_TOTAL_LENGTH))
 		(WEBUSB_PLATFORM_DESCRIPTOR(WEBUSB_VENDOR_CODE, WEBUSB_LANDING_PAGE_INDEX))
 );
+
+const USB_OSDescriptor_t PROGMEM OSDescriptorString =
+{
+	.Header                 = {.Size = sizeof(USB_OSDescriptor_t), .Type = DTYPE_String},
+	.Signature              = L"MSFT100",
+	.VendorCode             = REQ_GetOSFeatureDescriptor
+};
 #endif
 
 /** This function is called by the library when in device mode, and must be overridden (see library "USB Descriptors"
@@ -984,6 +991,10 @@ uint16_t get_usb_descriptor(const uint16_t wValue,
                     Address = &SerialNumberString;
                     Size    = pgm_read_byte(&SerialNumberString.Header.Size);
                     break;
+                #ifdef WEBUSB_ENABLE
+                    Address = &OSDescriptorString;
+                    Size    = pgm_read_byte(&OSDescriptorString.Header.Size);
+                #endif
             }
             break;
         case HID_DTYPE_HID:

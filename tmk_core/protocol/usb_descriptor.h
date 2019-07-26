@@ -52,6 +52,7 @@
 #ifdef WEBUSB_ENABLE
 #include "WebUSBDevice.h"
 #include "MS_OS_20_Device.h"
+#include "wcid.h"
 #define WEBUSB_VENDOR_CODE 0x42
 #define WEBUSB_LANDING_PAGE_INDEX 0
 #define MS_OS_20_VENDOR_CODE 0x45     // Must be different than WEBUSB_VENDOR_CODE
