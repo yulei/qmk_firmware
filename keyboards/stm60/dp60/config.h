@@ -7,15 +7,13 @@
 #include "config_common.h"
 
 /* USB Device descriptor parameter */
-//#define VENDOR_ID       0x60BE
-#define VENDOR_ID       0x2341
-//#define PRODUCT_ID      0x00BE
-#define PRODUCT_ID      0x8037
+#define VENDOR_ID       0x60BE
+#define PRODUCT_ID      0x00BE
 #define DEVICE_VER      0x0001
 #define MANUFACTURER    astro
 #define PRODUCT         Dumplings
 #define DESCRIPTION     60% rgb keyboard with ble extension
-#define LANDING_PAGE    www.example.org
+#define LANDING_PAGE    yulei.github.io/qmk_webusb_tool/60_wkl.json
 
 /* key matrix size */
 #define MATRIX_ROWS 5
@@ -65,6 +63,9 @@
 //#define RETRO_TAPPING
 //#define PERMISSIVE_HOLD
 
+#ifdef WEBUSB_ENABLE
+#define WEBUSB_KEYCOUNT  61
+#define WEBUSB_LAYERCOUNT 2
 //VIA
 #define DYNAMIC_KEYMAP_LAYER_COUNT 2
 // EEPROM usage
@@ -84,3 +85,4 @@
 #define DYNAMIC_KEYMAP_MACRO_EEPROM_ADDR 635
 #define DYNAMIC_KEYMAP_MACRO_EEPROM_SIZE 389    // 1024-DYNAMIC_KEYMAP_MACRO_EEPROM_ADDR
 #define DYNAMIC_KEYMAP_MACRO_COUNT 16
+#endif

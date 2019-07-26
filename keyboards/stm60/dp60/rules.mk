@@ -82,6 +82,4 @@ DYNAMIC_KEYMAP_ENABLE = yes
 LAYOUTS = 60_ansi 60_hhkb 60_iso
 
 CUSTOM_MATRIX = yes
-SRC += matrix.c
-
-#keyboards/wilba_tech/wt_main.c
+SRC += matrix.c keyboards/wilba_tech/wt_main.c keyboards/stm60/webusb.c
