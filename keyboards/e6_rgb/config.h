@@ -13,7 +13,7 @@
 #define MANUFACTURER    astro
 #define PRODUCT         e6rgb
 #define DESCRIPTION     60% rgb keyboard
-#define LANDING_PAGE    matrixzj.github.io/astro/60_wkl.json
+#define LANDING_PAGE    yulei.github.io/qmk_webusb_tool/60_wkl.json
 
 /* key matrix size */
 #define MATRIX_ROWS 5
