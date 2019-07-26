@@ -268,7 +268,7 @@ enum usb_endpoints {
 #define CDC_NOTIFICATION_EPSIZE     8
 #define CDC_EPSIZE                  16
 #ifdef WEBUSB_ENABLE
-#define WEBUSB_EPSIZE               8
+#define WEBUSB_EPSIZE               32
 #endif
 
 uint16_t get_usb_descriptor(const uint16_t wValue,

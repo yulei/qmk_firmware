@@ -247,7 +247,7 @@ void webusb_receive( uint8_t *data, uint8_t length )
         break;
     case CMD_GET_POSITION:
         cmd_data[1] = webusb_keymap[cmd_data[0]].row;
-        cmd_data[2] = webusb_keymap[cmd_data[1]].col;
+        cmd_data[2] = webusb_keymap[cmd_data[0]].col;
         break;
 #ifdef DYNAMIC_KEYMAP_ENABLE
     case CMD_GET_KEYCODE:

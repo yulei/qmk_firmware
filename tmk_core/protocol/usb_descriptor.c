@@ -992,8 +992,10 @@ uint16_t get_usb_descriptor(const uint16_t wValue,
                     Size    = pgm_read_byte(&SerialNumberString.Header.Size);
                     break;
                 #ifdef WEBUSB_ENABLE
+                case 0xEE:
                     Address = &OSDescriptorString;
                     Size    = pgm_read_byte(&OSDescriptorString.Header.Size);
+                    break;
                 #endif
             }
             break;
