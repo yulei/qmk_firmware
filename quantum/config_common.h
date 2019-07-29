@@ -291,7 +291,9 @@
             sei(); \
         } while(0)
 #   else
+#     ifndef MODULE_ADAFRUIT_BLE
 #       error "USART configuration is needed."
+#     endif
 #   endif
 #endif
 

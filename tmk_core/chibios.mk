@@ -169,10 +169,13 @@ ASFLAGS += $(THUMBFLAGS)
 
 CPPFLAGS += $(COMPILEFLAGS)
 CPPFLAGS += -fno-rtti
+CPPFLAGS += -fno-exceptions
+CPPFLAGS += -std=c++11
 
 LDFLAGS +=-Wl,--gc-sections
 LDFLAGS +=-Wl,--no-wchar-size-warning
 LDFLAGS += -mno-thumb-interwork -mthumb
+LDFLAGS += -specs=nano.specs -specs=nosys.specs
 LDSYMBOLS =,--defsym=__process_stack_size__=$(USE_PROCESS_STACKSIZE)
 LDSYMBOLS :=$(LDSYMBOLS),--defsym=__main_stack_size__=$(USE_EXCEPTIONS_STACKSIZE)
 LDFLAGS += -Wl,--script=$(LDSCRIPT)$(LDSYMBOLS)

@@ -7,6 +7,16 @@ SRC += $(CHIBIOS_DIR)/main.c
 SRC += usb_descriptor.c
 SRC += $(CHIBIOS_DIR)/usb_driver.c
 
+ifeq ($(strip $(BLUETOOTH)), AdafruitBLE)
+SRC += $(CHIBIOS_DIR)/spi.c
+SRC += $(CHIBIOS_DIR)/adafruit_ble.cpp
+SRC += $(CHIBIOS_DIR)/outputselect.c
+endif
+
+ifeq ($(strip $(POWER_MANAGEMENT_ENABLE)), yes)
+SRC += $(CHIBIOS_DIR)/power_manager.c
+endif
+
 VPATH += $(TMK_PATH)/$(PROTOCOL_DIR)
 VPATH += $(TMK_PATH)/$(CHIBIOS_DIR)
 VPATH += $(TMK_PATH)/$(CHIBIOS_DIR)/lufa_utils

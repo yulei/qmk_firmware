@@ -47,6 +47,16 @@
 #ifdef STM32_EEPROM_ENABLE
 #include "eeprom_stm32.h"
 #endif
+#ifdef MODULE_ADAFRUIT_BLE
+    #include "adafruit_ble.h"
+#endif
+#ifdef POWER_MANAGEMENT_ENABLE
+#include "power_manager.h"
+#endif
+#ifdef WEBUSB_ENABLE
+#include "webusb.h"
+#endif
+
 #include "suspend.h"
 #include "wait.h"
 
@@ -81,6 +91,10 @@ void raw_hid_task(void);
 
 #ifdef CONSOLE_ENABLE
 void console_task(void);
+#endif
+
+#ifdef WEBUSB_ENABLE
+void webusb_task(void);
 #endif
 
 /* TESTING
@@ -137,6 +151,10 @@ int main(void) {
 
 #ifdef VISUALIZER_ENABLE
   visualizer_init();
+#endif
+
+#ifdef POWER_MANAGEMENT_ENABLE
+  pwr_init();
 #endif
 
 
@@ -216,6 +234,15 @@ int main(void) {
 #endif
 
     keyboard_task();
+
+#ifdef MODULE_ADAFRUIT_BLE
+    adafruit_ble_task();
+#endif
+
+#ifdef POWER_MANAGEMENT_ENABLE
+    pwr_task();
+#endif
+
 #ifdef CONSOLE_ENABLE
     console_task();
 #endif
@@ -224,6 +251,9 @@ int main(void) {
 #endif
 #ifdef RAW_ENABLE
     raw_hid_task();
+#endif
+#ifdef WEBUSB_ENABLE
+    webusb_task();
 #endif
   }
 }

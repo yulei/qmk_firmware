@@ -82,6 +82,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
   #include "velocikey.h"
 #endif
 
+#ifdef POWER_MANAGEMENT_ENABLE
+#include "power_manager.h"
+#endif
+
 #ifdef MATRIX_HAS_GHOST
 extern const uint16_t keymaps[][MATRIX_ROWS][MATRIX_COLS];
 static matrix_row_t get_real_keys(uint8_t row, matrix_row_t rowdata){
@@ -272,6 +276,10 @@ void keyboard_task(void)
     uint8_t ret = matrix_scan();
 #else
     matrix_scan();
+#endif
+
+#ifdef POWER_MANAGEMENT_ENABLE
+    pwr_scan_hook(&matrix_prev[0]);
 #endif
 
     if (is_keyboard_master()) {

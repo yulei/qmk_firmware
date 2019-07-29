@@ -31,6 +31,11 @@
 #include "usb_descriptor.h"
 #include "usb_driver.h"
 
+#ifdef MODULE_ADAFRUIT_BLE
+#include "outputselect.h"
+#include "adafruit_ble.h"
+#endif
+
 #ifdef NKRO_ENABLE
   #include "keycode_config.h"
 
@@ -295,6 +300,9 @@ typedef struct {
 #ifdef VIRTSER_ENABLE
       usb_driver_config_t serial_driver;
 #endif
+#ifdef WEBUSB_ENABLE
+      usb_driver_config_t webusb_driver;
+#endif
     };
     usb_driver_config_t array[0];
   };
@@ -330,6 +338,14 @@ static usb_driver_configs_t drivers = {
   #define CDC_IN_MODE USB_EP_MODE_TYPE_BULK
   #define CDC_OUT_MODE USB_EP_MODE_TYPE_BULK
   .serial_driver = QMK_USB_DRIVER_CONFIG(CDC, CDC_NOTIFICATION_EPNUM, false),
+#endif
+
+#ifdef WEBUSB_ENABLE
+  #define WEBUSB_IN_CAPACITY 4
+  #define WEBUSB_OUT_CAPACITY 4
+  #define WEBUSB_IN_MODE USB_EP_MODE_TYPE_INTR
+  #define WEBUSB_OUT_MODE USB_EP_MODE_TYPE_INTR
+  .webusb_driver = QMK_USB_DRIVER_CONFIG(WEBUSB, 0, false),
 #endif
 };
 
@@ -439,6 +455,40 @@ static void set_led_transfer_cb(USBDriver *usbp) {
   }
 }
 #endif
+#ifdef WEBUSB_ENABLE
+#include "webusb.h"
+/** URL descriptor string. This is a UTF-8 string containing a URL excluding the prefix. At least one of these must be
+ * 	defined and returned when the Landing Page descriptor index is requested.
+ */
+#define xU8_STR(S) U8_STR(S)
+#define U8_STR(STR) u8 ## #STR
+const WebUSB_URL_Descriptor_t PROGMEM WebUSB_LandingPage = WEBUSB_URL_DESCRIPTOR(1, xU8_STR(LANDING_PAGE));
+/** Microsoft OS 2.0 Descriptor. This is used by Windows to select the USB driver for the device.
+ *
+ *  For WebUSB in Chrome, the correct driver is WinUSB, which is selected via CompatibleID.
+ *
+ *  Additionally, while Chrome is built using libusb, a magic registry key needs to be set containing a GUID for
+ *  the device.
+ */
+const MS_OS_20_Descriptor_t PROGMEM MS_OS_20_Descriptor =
+{
+	.Header =
+		{
+			.Length = CPU_TO_LE16(10),
+			.DescriptorType = CPU_TO_LE16(MS_OS_20_SET_HEADER_DESCRIPTOR),
+			.WindowsVersion = MS_OS_20_WINDOWS_VERSION_8_1,
+			.TotalLength = CPU_TO_LE16(MS_OS_20_DESCRIPTOR_SET_TOTAL_LENGTH)
+		},
+
+	.CompatibleID =
+		{
+			.Length = CPU_TO_LE16(20),
+			.DescriptorType = CPU_TO_LE16(MS_OS_20_FEATURE_COMPATBLE_ID),
+			.CompatibleID = u8"WINUSB\x00", // Automatically null-terminated to 8 bytes
+			.SubCompatibleID = {0, 0, 0, 0, 0, 0, 0, 0}
+		}
+};
+#endif
 
 /* Callback for SETUP request on the endpoint 0 (control) */
 static bool usb_request_hook_cb(USBDriver *usbp) {
@@ -451,6 +501,30 @@ static bool usb_request_hook_cb(USBDriver *usbp) {
    *  2,3: (LSB,MSB) wValue
    *  4,5: (LSB,MSB) wIndex
    *  6,7: (LSB,MSB) wLength (number of bytes to transfer if there is a data phase) */
+#ifdef WEBUSB_ENABLE
+    if(((usbp->setup[0] & USB_RTYPE_TYPE_MASK) == USB_RTYPE_TYPE_VENDOR) &&
+        ((usbp->setup[0] & USB_RTYPE_RECIPIENT_MASK) == USB_RTYPE_RECIPIENT_DEVICE) &&
+        ((usbp->setup[0] & USB_RTYPE_DIR_MASK) == USB_RTYPE_DIR_DEV2HOST)) {
+            switch(usbp->setup[1]) { // bRequest
+            case WEBUSB_VENDOR_CODE: {
+                if (usbp->setup[4] == WebUSB_RTYPE_GetURL) { //wIndex
+                    if (usbp->setup[2] == WEBUSB_LANDING_PAGE_INDEX) { //wValue
+                        usbSetupTransfer(usbp, (uint8_t*)&WebUSB_LandingPage, WebUSB_LandingPage.Header.Size, NULL);
+                        return TRUE;
+                    }
+                }
+                break;
+
+            case MS_OS_20_VENDOR_CODE:
+                if (usbp->setup[4] == MS_OS_20_DESCRIPTOR_INDEX) { //wIndex
+                    usbSetupTransfer(usbp, (uint8_t*)&MS_OS_20_Descriptor, MS_OS_20_Descriptor.Header.TotalLength, NULL);
+                    return TRUE;
+                }
+                break;
+            }
+        }
+     }
+#endif
 
   /* Handle HID class specific requests */
   if(((usbp->setup[0] & USB_RTYPE_TYPE_MASK) == USB_RTYPE_TYPE_CLASS) &&
@@ -625,6 +699,29 @@ void init_usb_driver(USBDriver *usbp) {
   chVTObjectInit(&keyboard_idle_timer);
 }
 
+void usb_driver_start(USBDriver *usbp)
+{
+    for (int i=0; i<NUM_USB_DRIVERS;i++) {
+        QMKUSBDriver* driver = &drivers.array[i].driver;
+        qmkusbStart(driver, &drivers.array[i].config);
+    }
+    usbDisconnectBus(usbp);
+    wait_ms(1000);
+    usbStart(usbp, &usbcfg);
+    usbConnectBus(usbp);
+}
+
+void usb_driver_stop(USBDriver *usbp)
+{
+    usbStop(usbp);
+    wait_ms(1000);
+    usbDisconnectBus(usbp);
+    for (int i=0; i<NUM_USB_DRIVERS;i++) {
+        QMKUSBDriver* driver = &drivers.array[i].driver;
+        qmkusbStop(driver);
+    }
+}
+
 /* ---------------------------------------------------------
  *                  Keyboard functions
  * ---------------------------------------------------------
@@ -685,6 +782,17 @@ uint8_t keyboard_leds(void) {
 /* prepare and start sending a report IN
  * not callable from ISR or locked state */
 void send_keyboard(report_keyboard_t *report) {
+
+#ifdef MODULE_ADAFRUIT_BLE
+  uint8_t where = where_to_send();
+  if (where == OUTPUT_BLUETOOTH || where == OUTPUT_USB_AND_BT) {
+      adafruit_ble_send_keys(report->mods, report->keys, sizeof(report->keys));
+  }
+  if (where != OUTPUT_USB && where != OUTPUT_USB_AND_BT) {
+    return;
+  }
+#endif
+
   osalSysLock();
   if(usbGetDriverStateI(&USB_DRIVER) != USB_ACTIVE) {
     osalSysUnlock();
@@ -752,6 +860,19 @@ void mouse_in_cb(USBDriver *usbp, usbep_t ep) {
 #endif
 
 void send_mouse(report_mouse_t *report) {
+
+#ifdef MODULE_ADAFRUIT_BLE
+  uint8_t where = where_to_send();
+  if (where == OUTPUT_BLUETOOTH || where == OUTPUT_USB_AND_BT) {
+    // FIXME: mouse buttons
+    adafruit_ble_send_mouse_move(report->x, report->y, report->v, report->h, report->buttons);
+  }
+
+  if (where != OUTPUT_USB && where != OUTPUT_USB_AND_BT) {
+    return;
+  }
+#endif
+
   osalSysLock();
   if(usbGetDriverStateI(&USB_DRIVER) != USB_ACTIVE) {
     osalSysUnlock();
@@ -818,6 +939,18 @@ void send_system(uint16_t data) {
 }
 
 void send_consumer(uint16_t data) {
+
+#ifdef MODULE_ADAFRUIT_BLE
+       uint8_t where = where_to_send();
+
+    if (where == OUTPUT_BLUETOOTH || where == OUTPUT_USB_AND_BT) {
+        adafruit_ble_send_consumer_key(data, 0);
+    }
+
+  if (where != OUTPUT_USB && where != OUTPUT_USB_AND_BT) {
+    return;
+  }
+#endif
   send_extra_report(REPORT_ID_CONSUMER, data);
 }
 
@@ -898,6 +1031,51 @@ void raw_hid_task(void) {
     size_t size = chnReadTimeout(&drivers.raw_driver.driver, buffer, sizeof(buffer), TIME_IMMEDIATE);
     if (size > 0) {
         raw_hid_receive(buffer, size);
+    }
+  } while(size > 0);
+}
+
+#endif
+#ifdef WEBUSB_ENABLE
+
+/** \brief WEBUSB Send
+ *
+ * FIXME: Needs doc
+ */
+void webusb_send( uint8_t *data, uint8_t length )
+{
+    // TODO: implement variable size packet
+	if ( length != WEBUSB_EPSIZE )
+	{
+		return;
+	}
+    chnWrite(&drivers.webusb_driver.driver, data, length);
+}
+
+/** \brief WEBUSB Receive
+ *
+ * FIXME: Needs doc
+ */
+__attribute__ ((weak))
+void webusb_receive( uint8_t *data, uint8_t length )
+{
+	// Users should #include "webusb_hid.h" in their own code
+	// and implement this function there. Leave this as weak linkage
+	// so users can opt to not handle data coming in.
+}
+
+/** \brief Raw WebUSB Task
+ *
+ * FIXME: Needs doc
+ */
+void webusb_task(void)
+{
+  uint8_t buffer[WEBUSB_EPSIZE];
+  size_t size = 0;
+  do {
+    size_t size = chnReadTimeout(&drivers.webusb_driver.driver, buffer, sizeof(buffer), TIME_IMMEDIATE);
+    if (size > 0) {
+        webusb_receive(buffer, size);
     }
   } while(size > 0);
 }

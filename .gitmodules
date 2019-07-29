@@ -12,3 +12,6 @@
 [submodule "lib/googletest"]
 	path = lib/googletest
 	url = https://github.com/google/googletest
+[submodule "keyboards/matrix"]
+	path = keyboards/matrix
+	url = https://github.com/yulei/matrix.git
