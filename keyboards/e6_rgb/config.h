@@ -24,9 +24,6 @@
 #define UNUSED_PINS
 #define DIODE_DIRECTION COL2ROW
 
-/* Debounce reduces chatter (unintended double-presses) - set 0 if debouncing is not needed */
-#define DEBOUNCE 5
-
 /*
  * Feature disable options
  *  These options are also useful to firmware size reduction.
@@ -67,6 +64,10 @@
 
 #define DEBOUNCING_DELAY 5
 
+#ifdef WEBUSB_ENABLE
+#define WEBUSB_KEYCOUNT  62
+#define WEBUSB_LAYERCOUNT 2
+#endif
 // WEBUSB
 #define DYNAMIC_KEYMAP_LAYER_COUNT 2
 // EEPROM usage
