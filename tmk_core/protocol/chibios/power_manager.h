@@ -1,6 +1,6 @@
 /**
  * power_manager.h
- * to reduce the power consume while under battery supply
+ * to reduce the power consuming while under battery supply
  */
 
 #pragma once
@@ -9,13 +9,13 @@
 
 typedef enum {
     PWR_VBUS,       // power supply from the usb
-    PWR_BATTERY    // power supply from the battery
+    PWR_BATTERY     // power supply from the battery
 } power_supply_t;
 
 typedef enum {
-    PWR_MODE_RUN,       // in normal running system, keeping on this mode while VBUS on or user is typing
-    PWR_MODE_SLEEP,     // VBUS off, scan frequency under 10Hz
-    PWR_MODE_STANDBY,   // VBUS off, no input for a predefined interval, turn ble off
+    PWR_MODE_RUN,       // system run at full speed, keeping on this mode while VBUS ON or user is typing, scanning on 100Hz
+    PWR_MODE_SLEEP,     // VBUS off and user was not typing for a period of time, slowdown the scan frequency to 10Hz
+    PWR_MODE_STANDBY,   // VBUS off and no input for a predefined interval, turn ble off
 } power_mode_t;
 
 void pwr_init(void);
