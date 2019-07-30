@@ -52,7 +52,6 @@
 #ifdef WEBUSB_ENABLE
 #include "WebUSBDevice.h"
 #include "MS_OS_20_Device.h"
-//#include "wcid.h"
 #define WEBUSB_VENDOR_CODE 0x42
 #define WEBUSB_LANDING_PAGE_INDEX 0
 #define MS_OS_20_VENDOR_CODE 0x45     // Must be different than WEBUSB_VENDOR_CODE
@@ -60,6 +59,7 @@
 #define DTYPE_BOS 0x0F /**< Indicates that the descriptor is a Binary Object Store (BOS) descriptor. */
 #define DTYPE_DeviceCapability 0x10 /**< Indicates that the descriptor is a Device Capability descriptor. */
 #define DCTYPE_Platform 0x05 /**< Defines a device capability specific to a particular platform/operating system. */
+
    /** \brief Standard USB Binary Object Store (BOS) Descriptor (LUFA naming conventions).
 			 *
 			 *  Type define for a standard BOS Descriptor. This structure uses LUFA-specific element names

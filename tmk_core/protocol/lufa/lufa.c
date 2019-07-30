@@ -588,19 +588,6 @@ void EVENT_USB_Device_ConfigurationChanged(void)
 #endif
 }
 
-/* #ifdef WEBUSB_ENABLE
-const USB_OSCompatibleIDDescriptor_t PROGMEM DevCompatIDs =
-{
-	TotalLength:            sizeof(USB_OSCompatibleIDDescriptor_t),
-	Version:                0x0100,
-	Index:                  EXTENDED_COMPAT_ID_DESCRIPTOR,
-	TotalSections:          1,
-	CompatID:               {FirstInterfaceNumber: WebUSB_INTERFACE,
-	                         Reserved: 0x01,
-	                         CompatibleID: "WINUSB"}
-};
-#endif
-*/
 /* FIXME: Expose this table in the docs somehow
 Appendix G: HID Request Support Requirements
 
@@ -671,23 +658,6 @@ void EVENT_USB_Device_ControlRequest(void)
             }
 
             break;
-
-/*         case REQ_GetOSFeatureDescriptor:
-            if (USB_ControlRequest.bmRequestType == (REQDIR_DEVICETOHOST | REQTYPE_VENDOR | REQREC_DEVICE))
-            {
-                switch (USB_ControlRequest.wIndex) {
-                case EXTENDED_COMPAT_ID_DESCRIPTOR:
-                    Endpoint_ClearSETUP();
-                    Endpoint_Write_Control_PStream_LE(&DevCompatIDs, DevCompatIDs.TotalLength);
-                    Endpoint_ClearStatusStage();
-                    break;
-                default:    // Stall on unknown WCID request
-                    Endpoint_StallTransaction();
-                    break;
-                }
-            }
-            break;
-*/
 #endif
 
         case HID_REQ_GetReport:
