@@ -63,7 +63,7 @@
 //#define RETRO_TAPPING
 //#define PERMISSIVE_HOLD
 
-#ifdef WEBUSB_ENABLE
+#if defined(WEBUSB_ENABLE) || defined(RAW_ENABLE)
 #define WEBUSB_KEYCOUNT  61
 #define WEBUSB_LAYERCOUNT 2
 //VIA
