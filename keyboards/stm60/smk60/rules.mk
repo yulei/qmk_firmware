@@ -75,7 +75,8 @@ FAUXCLICKY_ENABLE = no      # Use buzzer to emulate clicky switches
 RGBLIGHT_ENABLE = yes       # Use RGB bottom light
 LAYOUTS = 60_ansi 60_hhkb
 
-WEBUSB_ENABLE = yes
-DYNAMIC_KEYMAP_ENABLE = yes
+#WEBUSB_ENABLE = yes
+#RAW_ENABLE = yes
+#DYNAMIC_KEYMAP_ENABLE = yes
 
-SRC += keyboards/wilba_tech/wt_main.c keyboards/stm60/webusb.c
+#SRC += keyboards/wilba_tech/wt_main.c keyboards/stm60/webusb.c
