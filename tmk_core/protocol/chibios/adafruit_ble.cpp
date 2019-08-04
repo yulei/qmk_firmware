@@ -519,6 +519,9 @@ bool adafruit_ble_enable_keyboard(void) {
   // Check connection status in a little while; allow the ATZ time
   // to kick in.
   state.last_connection_update = timer_read();
+
+  // turn the lead off
+  adafruit_ble_set_mode_leds(false);
 fail:
   return state.configured;
 }
