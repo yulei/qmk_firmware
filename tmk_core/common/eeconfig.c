@@ -5,7 +5,11 @@
 
 #ifdef STM32_EEPROM_ENABLE
 #include "hal.h"
+#ifdef EEPROM_EMU_STM32F411xE
+#include "eeprom_stm32f4.h"
+#else
 #include "eeprom_stm32.h"
+#endif
 #endif
 
 extern uint32_t default_layer_state;

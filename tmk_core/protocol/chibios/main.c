@@ -45,7 +45,11 @@
 #include "qmk_midi.h"
 #endif
 #ifdef STM32_EEPROM_ENABLE
-#include "eeprom_stm32.h"
+    #ifdef EEPROM_EMU_STM32F411xE
+    #include "eeprom_stm32f4.h"
+    #else
+    #include "eeprom_stm32.h"
+    #endif
 #endif
 #ifdef MODULE_ADAFRUIT_BLE
     #include "adafruit_ble.h"
