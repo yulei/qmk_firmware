@@ -74,3 +74,8 @@ FAUXCLICKY_ENABLE = no      # Use buzzer to emulate clicky switches
 #RGBLIGHT_ENABLE = yes       # Use RGB bottom light
 #RGB_MATRIX_ENABLE = IS31FL3737 # Use RGB matrix
 #BLUETOOTH = AdafruitBLE
+
+
+RAW_ENABLE = yes
+DYNAMIC_KEYMAP_ENABLE = yes
+SRC += keyboards/wilba_tech/wt_main.c

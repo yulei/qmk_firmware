@@ -25,6 +25,7 @@
 
 /* Debounce reduces chatter (unintended double-presses) - set 0 if debouncing is not needed */
 #define DEBOUNCE 5
+#define DEBOUNCING_DELAY 5
 
 /*
  * Feature disable options
@@ -70,3 +71,25 @@
 #define AdafruitBleResetPin D4
 #define AdafruitBleCSPin    B0
 #define AdafruitBleIRQPin   E6
+
+#if defined(RAW_ENABLE)
+//VIA
+#define DYNAMIC_KEYMAP_LAYER_COUNT 4
+// EEPROM usage
+
+// TODO: refactor with new user EEPROM code (coming soon)
+#define EEPROM_MAGIC 0x451F
+#define EEPROM_MAGIC_ADDR 32
+// Bump this every time we change what we store
+// This will automatically reset the EEPROM with defaults
+// and avoid loading invalid data from the EEPROM
+#define EEPROM_VERSION 0x08
+#define EEPROM_VERSION_ADDR 34
+
+// Dynamic keymap starts after EEPROM version
+#define DYNAMIC_KEYMAP_EEPROM_ADDR 35
+// Dynamic macro starts after dynamic keymaps (35+(4*10*6*2)) = (35+480)
+#define DYNAMIC_KEYMAP_MACRO_EEPROM_ADDR 635
+#define DYNAMIC_KEYMAP_MACRO_EEPROM_SIZE 389    // 1024-DYNAMIC_KEYMAP_MACRO_EEPROM_ADDR
+#define DYNAMIC_KEYMAP_MACRO_COUNT 16
+#endif
