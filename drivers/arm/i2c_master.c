@@ -52,6 +52,7 @@ static const I2CConfig i2cconfig = {
   0,
   0
 };
+#endif
 
 static i2c_status_t chibios_to_qmk(const msg_t* status) {
   switch (*status) {
@@ -64,7 +65,6 @@ static i2c_status_t chibios_to_qmk(const msg_t* status) {
       return I2C_STATUS_ERROR;
   }
 }
-
 __attribute__ ((weak))
 void i2c_init(void)
 {
