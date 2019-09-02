@@ -817,7 +817,7 @@ LIB8STATIC uint8_t squarewave8( uint8_t in, uint8_t pulsewidth)
 // that provides similar functionality.
 // You can also force use of the get_millisecond_timer function
 // by #defining USE_GET_MILLISECOND_TIMER.
-#if (defined(ARDUINO) || defined(SPARK) || defined(FASTLED_HAS_MILLIS)) && !defined(USE_GET_MILLISECOND_TIMER)
+#if (/*defined(ARDUINO) ||*/ defined(SPARK) || defined(FASTLED_HAS_MILLIS)) && !defined(USE_GET_MILLISECOND_TIMER)
 // Forward declaration of Arduino function 'millis'.
 //uint32_t millis();
 #define GET_MILLIS millis
