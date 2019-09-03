@@ -22,7 +22,11 @@
 #ifdef STM32_EEPROM_ENABLE
   #include "hal.h"
   #include "eeprom.h"
-  #include "eeprom_stm32.h"
+  #ifdef EEPROM_EMU_STM32F411xE
+    #include "eeprom_stm32f4.h"
+  #else
+    #include "eeprom_stm32.h"
+  #endif
 #endif
 #include "wait.h"
 #include "progmem.h"
