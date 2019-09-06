@@ -45,7 +45,7 @@
 //#define NO_ACTION_FUNCTION
 
 //rgb light setting
-#define RGBLED_NUM      6
+#define RGBLED_NUM      7
 #define RGB_DI_PIN      B7
 #define RGBLIGHT_ANIMATIONS
 #define RGBLIGHT_HUE_STEP 8
