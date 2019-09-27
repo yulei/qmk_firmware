@@ -587,7 +587,9 @@ static bool usb_request_hook_cb(USBDriver *usbp) {
             has_report_id = 0;
           }
           if (has_report_id) {
+#if defined(SHARED_EP_ENABLE)
             usbSetupTransfer(usbp, set_report_buf, sizeof(set_report_buf), set_led_transfer_cb);
+#endif
           } else {
             usbSetupTransfer(usbp, (uint8_t *)&keyboard_led_stats, 1, NULL);
           }
