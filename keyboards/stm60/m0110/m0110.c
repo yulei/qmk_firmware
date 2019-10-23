@@ -23,7 +23,9 @@ webusb_pos_t webusb_keymap[] = {
 
 void matrix_init_user(void)
 {
-    setPinOutput(7);
+    setPinOutput(D7);
+    setPinOutput(D2);
+	writePinLow(D2);
 }
 
 void led_set_user(uint8_t usb_led) {
