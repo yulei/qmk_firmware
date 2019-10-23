@@ -25,7 +25,7 @@ void matrix_init_user(void)
 {
     setPinOutput(D7);
     setPinOutput(D2);
-	writePinLow(D2);
+	writePinHigh(D2);
 }
 
 void led_set_user(uint8_t usb_led) {
