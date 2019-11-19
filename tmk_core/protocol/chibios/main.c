@@ -50,15 +50,7 @@
 #    include "qmk_midi.h"
 #endif
 #ifdef STM32_EEPROM_ENABLE
-<<<<<<< HEAD
-#ifdef EEPROM_EMU_STM32F411xE
-#        include "eeprom_stm32f4.h"
-#    else
-#        include "eeprom_stm32.h"
-#    endif
-=======
 #include "eeprom_stm32.h"
->>>>>>> upmaster
     #endif
 #ifdef MODULE_ADAFRUIT_BLE
 #    include "adafruit_ble.h"
@@ -159,13 +151,7 @@ int main(void) {
     visualizer_init();
 #endif
 
-<<<<<<< HEAD
-#    ifdef POWER_MANAGEMENT_ENABLE pwr_init();
-#endif
-
-=======
     host_driver_t *driver = NULL;
->>>>>>> upmaster
 
     /* Wait until the USB or serial link is active */
     while (true) {

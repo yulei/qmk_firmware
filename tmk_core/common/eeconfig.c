@@ -8,7 +8,6 @@
 #    include "hal.h"
 #    include "eeprom_stm32.h"
 #endif
-#endif
 
 /** \brief eeconfig enable
  *
