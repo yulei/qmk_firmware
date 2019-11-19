@@ -15,3 +15,6 @@
 [submodule "keyboards/matrix_dev"]
 	path = keyboards/matrix_dev
 	url = https://github.com/yulei/matrix.git
+[submodule "lib/lufa"]
+	path = lib/lufa
+	url = https://github.com/qmk/lufa
