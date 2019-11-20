@@ -37,7 +37,7 @@
 #define DRIVER_LED_TOTAL DRIVER_1_LED_TOTAL + DRIVER_2_LED_TOTAL
 
 /* indicator rgb */
-#define WS2812_LED_N 8
+#define WS2812_LED_N 7
 #define RGBLED_NUM WS2812_LED_N
 #define WS2812_TIM_N 3
 #define WS2812_TIM_CH 3

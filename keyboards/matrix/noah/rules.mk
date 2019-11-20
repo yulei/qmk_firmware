@@ -50,15 +50,7 @@ RGB_MATRIX_ENABLE = yes
 RGBLIGHT_ENABLE = yes
 RGBLIGHT_CUSTOM_DRIVER = yes
 
-U2U_ENABLE = no
-
 # project specific files
 SRC += \
     matrix.c \
     ws2812_f4.c
-
-ifeq ($(strip $(U2U_ENABLE)), yes)
-    SRC += pad.cpp
-    include $(KEYBOARD_PATH_2)/usb_hid_chibios/usb_hid.mk
-    TMK_COMMON_DEFS += -DNOAH_U2U
-endif

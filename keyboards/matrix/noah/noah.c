@@ -4,49 +4,71 @@
 
 #include "noah.h"
 
-#ifdef NOAH_U2U
-#include "pad.h"
-#endif
-
 #ifdef RGBLIGHT_ENABLE
+#include <string.h>
 #include "rgblight.h"
 #include "ws2812_f4.h"
 extern rgblight_config_t rgblight_config;
 
+// led 0 for caps lock, led 1 for scroll lock, led 3 for num lock
+// led 4 for layer 1, led 5 for layer 2, led 6 for layer 3, led 7 for layer 4
+#if RGBLED_NUM < 7
+#error "MUST set the RGBLED_NUM bigger than 7"
+#endif
+LED_TYPE noah_leds[RGBLED_NUM];
+static bool noah_led_mode = true;
 void rgblight_set(void) {
-    if (!rgblight_config.enable)
-    {
+    memset(&noah_leds[0], 0, sizeof(noah_leds));
+    if (!rgblight_config.enable) {
         for (uint8_t i = 0; i < RGBLED_NUM; i++) {
             led[i].r = 0;
             led[i].g = 0;
             led[i].b = 0;
         }
     }
-    ws2812_setleds(led, RGBLED_NUM);
+    if (noah_led_mode) {
+      uint8_t ind_led = host_keyboard_leds();
+      if (IS_LED_ON(ind_led, USB_LED_CAPS_LOCK)) { 
+        noah_leds[0] = led[0]; 
+      }
+      if (IS_LED_ON(ind_led, USB_LED_SCROLL_LOCK)) {
+        noah_leds[1] = led[1];
+      }
+      if (IS_LED_ON(ind_led, USB_LED_NUM_LOCK)) {
+        noah_leds[2] = led[2];
+      }
+      for (int32_t i = 0; i < 4; i++) {
+        if(layer_state_is(i+1)) {
+          noah_leds[i + 3] = led[i + 3];
+        }
+      }
+    } else {
+      memcpy(&noah_leds[0], &led[0], sizeof(noah_leds));
+  }
+
+  ws2812_setleds(noah_leds, RGBLED_NUM);
 }
 #endif
 
-void matrix_scan_kb(void) {
-  matrix_scan_user();
-}
+void matrix_scan_kb(void) { matrix_scan_user(); }
+
 void matrix_init_kb(void) {
   matrix_init_user();
 }
 __attribute__((weak))
 void matrix_init_user(void) {
-#ifdef NOAH_U2U
-  pad_init();
-#endif
 #ifdef RGBLIGHT_ENABLE
-    ws2812_init();
+  ws2812_init();
+  rgblight_enable();
+#endif
+
+#ifdef RGB_MATRIX_ENABLE
+  rgb_matrix_disable();
 #endif
 }
 
 __attribute__((weak))
 void matrix_scan_user(void) {
-#ifdef NOAH_U2U
-  pad_scan();
-#endif
 #ifdef RGBLIGHT_ENABLE
   rgblight_task();
 #endif
@@ -195,3 +217,25 @@ led_config_t g_led_config = {
 };
 
 #endif
+
+bool process_record_user(uint16_t keycode, keyrecord_t *record) {
+  switch(keycode) {
+#ifdef RGBLIGHT_ENABLE
+    case KC_F24: // switch the led mode on or off
+      noah_led_mode = !noah_led_mode;
+      return false;
+
+  #ifdef RGB_MATRIX_ENABLE
+    case KC_F13: // toggle rgb matrix
+      rgb_matrix_toggle();
+      return false;
+    case KC_F14:
+      rgb_matrix_step();
+      return false;
+  #endif
+#endif
+    default:
+      break;
+  }
+  return true;
+}
