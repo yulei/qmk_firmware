@@ -16,7 +16,7 @@ extern rgblight_config_t rgblight_config;
 #error "MUST set the RGBLED_NUM bigger than 7"
 #endif
 LED_TYPE noah_leds[RGBLED_NUM];
-static bool noah_led_mode = true;
+static bool noah_led_mode = false;
 void rgblight_set(void) {
     memset(&noah_leds[0], 0, sizeof(noah_leds));
     if (!rgblight_config.enable) {
@@ -28,8 +28,8 @@ void rgblight_set(void) {
     }
     if (noah_led_mode) {
       uint8_t ind_led = host_keyboard_leds();
-      if (IS_LED_ON(ind_led, USB_LED_CAPS_LOCK)) { 
-        noah_leds[0] = led[0]; 
+      if (IS_LED_ON(ind_led, USB_LED_CAPS_LOCK)) {
+        noah_leds[0] = led[0];
       }
       if (IS_LED_ON(ind_led, USB_LED_SCROLL_LOCK)) {
         noah_leds[1] = led[1];
@@ -44,7 +44,7 @@ void rgblight_set(void) {
       }
     } else {
       memcpy(&noah_leds[0], &led[0], sizeof(noah_leds));
-  }
+    }
 
   ws2812_setleds(noah_leds, RGBLED_NUM);
 }
@@ -219,23 +219,25 @@ led_config_t g_led_config = {
 #endif
 
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
-  switch(keycode) {
-#ifdef RGBLIGHT_ENABLE
-    case KC_F24: // switch the led mode on or off
-      noah_led_mode = !noah_led_mode;
-      return false;
+  if (record->event.pressed) {
+    switch(keycode) {
+    #ifdef RGBLIGHT_ENABLE
+        case KC_F24: // switch the led mode on or off
+        noah_led_mode = !noah_led_mode;
+        return false;
 
-  #ifdef RGB_MATRIX_ENABLE
-    case KC_F13: // toggle rgb matrix
-      rgb_matrix_toggle();
-      return false;
-    case KC_F14:
-      rgb_matrix_step();
-      return false;
-  #endif
-#endif
-    default:
-      break;
+    #ifdef RGB_MATRIX_ENABLE
+        case KC_F13: // toggle rgb matrix
+        rgb_matrix_toggle();
+        return false;
+        case KC_F14:
+        rgb_matrix_step();
+        return false;
+    #endif
+    #endif
+        default:
+        break;
+    }
   }
   return true;
 }
