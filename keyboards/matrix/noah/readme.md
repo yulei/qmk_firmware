@@ -1,5 +1,6 @@
 # NOAH 65 keyboard
 
+![NOAH](https://raw.githubusercontent.com/yulei/qmk_webusb_tool/master/public/noah.jpg)
 This was the first 65% keyboard made by the Matrix team, it had the following features:
 
 - per key rgb led
