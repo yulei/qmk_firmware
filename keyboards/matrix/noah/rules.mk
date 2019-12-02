@@ -54,4 +54,4 @@ RGBLIGHT_CUSTOM_DRIVER = yes
 SRC += \
     matrix.c \
     ws2812_f4.c \
-	eeprom_f4.c
+	ee_f4.c

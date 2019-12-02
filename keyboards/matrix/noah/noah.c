@@ -3,6 +3,7 @@
  */
 
 #include "noah.h"
+#include "ee_f4.h"
 
 #ifdef RGBLIGHT_ENABLE
 #include <string.h>
@@ -16,7 +17,9 @@ extern rgblight_config_t rgblight_config;
 #error "MUST set the RGBLED_NUM bigger than 7"
 #endif
 LED_TYPE noah_leds[RGBLED_NUM];
-static bool noah_led_mode = false;
+static uint8_t noah_led_mode = 0;
+#define NOAH_LED_ADDR 0x01
+
 void rgblight_set(void) {
     memset(&noah_leds[0], 0, sizeof(noah_leds));
     if (!rgblight_config.enable) {
@@ -60,6 +63,7 @@ void matrix_init_user(void) {
 #ifdef RGBLIGHT_ENABLE
   ws2812_init();
   rgblight_enable();
+  eef4_read_byte(NOAH_LED_ADDR, &noah_led_mode);
 #endif
 
 #ifdef RGB_MATRIX_ENABLE
@@ -224,6 +228,7 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
     #ifdef RGBLIGHT_ENABLE
         case KC_F24: // switch the led mode on or off
         noah_led_mode = !noah_led_mode;
+        eef4_write_byte(NOAH_LED_ADDR, noah_led_mode);
         return false;
 
     #ifdef RGB_MATRIX_ENABLE
