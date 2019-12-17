@@ -3,7 +3,6 @@
  */
 
 #include "noah.h"
-#include "ee_f4.h"
 
 #ifdef RGBLIGHT_ENABLE
 #include <string.h>
@@ -17,9 +16,7 @@ extern rgblight_config_t rgblight_config;
 #error "MUST set the RGBLED_NUM bigger than 7"
 #endif
 LED_TYPE noah_leds[RGBLED_NUM];
-static uint8_t noah_led_mode = 0;
-#define NOAH_LED_ADDR 0x01
-
+static bool noah_led_mode = false;
 void rgblight_set(void) {
     memset(&noah_leds[0], 0, sizeof(noah_leds));
     if (!rgblight_config.enable) {
@@ -32,21 +29,23 @@ void rgblight_set(void) {
     if (noah_led_mode) {
       uint8_t ind_led = host_keyboard_leds();
       if (IS_LED_ON(ind_led, USB_LED_CAPS_LOCK)) {
-        noah_leds[0] = led[0];
+        noah_leds[6] = led[0];
       }
       if (IS_LED_ON(ind_led, USB_LED_SCROLL_LOCK)) {
-        noah_leds[1] = led[1];
+        noah_leds[5] = led[1];
       }
       if (IS_LED_ON(ind_led, USB_LED_NUM_LOCK)) {
-        noah_leds[2] = led[2];
+        noah_leds[4] = led[2];
       }
       for (int32_t i = 0; i < 4; i++) {
         if(layer_state_is(i+1)) {
-          noah_leds[i + 3] = led[i + 3];
+          noah_leds[3 - i] = led[i + 3];
         }
       }
     } else {
-      memcpy(&noah_leds[0], &led[0], sizeof(noah_leds));
+        for(uint8_t i = 0; i < RGBLED_NUM; i++) {
+            noah_leds[RGBLED_NUM-i-1] = led[i];
+        }
     }
 
   ws2812_setleds(noah_leds, RGBLED_NUM);
@@ -63,7 +62,6 @@ void matrix_init_user(void) {
 #ifdef RGBLIGHT_ENABLE
   ws2812_init();
   rgblight_enable();
-  eef4_read_byte(NOAH_LED_ADDR, &noah_led_mode);
 #endif
 
 #ifdef RGB_MATRIX_ENABLE
@@ -73,9 +71,6 @@ void matrix_init_user(void) {
 
 __attribute__((weak))
 void matrix_scan_user(void) {
-#ifdef RGBLIGHT_ENABLE
-  rgblight_task();
-#endif
 }
 
 
@@ -228,7 +223,6 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
     #ifdef RGBLIGHT_ENABLE
         case KC_F24: // switch the led mode on or off
         noah_led_mode = !noah_led_mode;
-        eef4_write_byte(NOAH_LED_ADDR, noah_led_mode);
         return false;
 
     #ifdef RGB_MATRIX_ENABLE

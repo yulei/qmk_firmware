@@ -23,6 +23,8 @@
 #    include "hal.h"
 #    include "eeprom.h"
 #    include "eeprom_stm32.h"
+#else
+#    include "eeprom.h"
 #endif
 #include "wait.h"
 #include "progmem.h"
@@ -146,18 +148,18 @@ void rgblight_check_config(void) {
 }
 
 uint32_t eeconfig_read_rgblight(void) {
-#if defined(__AVR__) || defined(STM32_EEPROM_ENABLE) || defined(PROTOCOL_ARM_ATSAM) || defined(EEPROM_SIZE)
+//#if defined(__AVR__) || defined(STM32_EEPROM_ENABLE) || defined(PROTOCOL_ARM_ATSAM) || defined(EEPROM_SIZE)
     return eeprom_read_dword(EECONFIG_RGBLIGHT);
-#else
-    return 0;
-#endif
+//#else
+//    return 0;
+//#endif
 }
 
 void eeconfig_update_rgblight(uint32_t val) {
-#if defined(__AVR__) || defined(STM32_EEPROM_ENABLE) || defined(PROTOCOL_ARM_ATSAM) || defined(EEPROM_SIZE)
+//#if defined(__AVR__) || defined(STM32_EEPROM_ENABLE) || defined(PROTOCOL_ARM_ATSAM) || defined(EEPROM_SIZE)
     rgblight_check_config();
     eeprom_update_dword(EECONFIG_RGBLIGHT, val);
-#endif
+//#endif
 }
 
 void eeconfig_update_rgblight_default(void) {
@@ -295,11 +297,11 @@ void rgblight_mode_eeprom_helper(uint8_t mode, bool write_to_eeprom) {
     } else {
         dprintf("rgblight mode [NOEEPROM]: %u\n", rgblight_config.mode);
     }
-    if (is_static_effect(rgblight_config.mode)) {
+    /*if (is_static_effect(rgblight_config.mode)) {
 #ifdef RGBLIGHT_USE_TIMER
         rgblight_timer_disable();
 #endif
-    } else {
+    } else*/ {
 #ifdef RGBLIGHT_USE_TIMER
         rgblight_timer_enable();
 #endif
@@ -307,6 +309,9 @@ void rgblight_mode_eeprom_helper(uint8_t mode, bool write_to_eeprom) {
 #ifdef RGBLIGHT_USE_TIMER
     animation_status.restart = true;
 #endif
+    rgblight_config.hue    = 0;
+    rgblight_config.sat    = UINT8_MAX;
+    rgblight_config.val    = RGBLIGHT_LIMIT_VAL;
     rgblight_sethsv_noeeprom(rgblight_config.hue, rgblight_config.sat, rgblight_config.val);
 }
 

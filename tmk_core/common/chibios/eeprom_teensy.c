@@ -517,7 +517,7 @@ void eeprom_write_block(const void *buf, void *addr, uint32_t len) {
 #else
 // No EEPROM supported, so emulate it
 
-#    define EEPROM_SIZE 32
+#    define EEPROM_SIZE 64
 static uint8_t buffer[EEPROM_SIZE];
 
 uint8_t eeprom_read_byte(const uint8_t *addr) {

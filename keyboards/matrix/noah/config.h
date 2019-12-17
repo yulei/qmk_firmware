@@ -46,9 +46,11 @@
 #define WS2812_DMA_STREAM STM32_DMA1_STREAM2  // DMA stream for TIMx_UP (look up in reference manual under DMA Channel selection)
 #define WS2812_DMA_CHANNEL 5                  // DMA channel for TIMx_UP
 #define RGBLIGHT_ANIMATIONS
-//#define WS2812_EXTERNAL_PULLUP
+#define RGBLIGHT_HUE_STEP 8
+#define RGBLIGHT_SAT_STEP 8
+#define RGBLIGHT_VAL_STEP 8
 
 // tapping setting
-#define TAPPING_TERM 200
-#define RETRO_TAPPING
-#define PERMISSIVE_HOLD
+//#define TAPPING_TERM 200
+//#define RETRO_TAPPING
+//#define PERMISSIVE_HOLD
