@@ -73,3 +73,6 @@ id_rsa_*
 
 # python things
 __pycache__
+
+# NRF5 SDK
+lib/nRF5_SDK_16.0.0_98a08e2/
