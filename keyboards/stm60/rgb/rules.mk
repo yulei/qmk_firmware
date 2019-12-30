@@ -1,7 +1,3 @@
-# project specific files
-SRC = matrix.c \
-      indicator_leds.c \
-      stm60.c
 
 ## chip/board settings
 # - the next two should match the directories in
@@ -20,7 +16,7 @@ MCU_STARTUP = stm32f4xx
 
 # Board: it should exist either in <chibios>/os/hal/boards/
 #  or <this_dir>/boards
-BOARD = GENERIC_STM32_F411xE
+BOARD = GENERIC_STM32_F411XE
 
 # Cortex version
 MCU  = cortex-m4
@@ -53,5 +49,13 @@ BACKLIGHT_ENABLE = no
 NKRO_ENABLE = no # USB Nkey Rollover
 CUSTOM_MATRIX = yes # Custom matrix file
 AUDIO_ENABLE = no
+
 RGBLIGHT_ENABLE = yes
+RGBLIGHT_CUSTOM_DRIVER = yes
 RGB_MATRIX_ENABLE = IS31FL3733
+
+# project specific files
+SRC = matrix.c \
+      indicator_leds.c \
+      stm60.c \
+	  ws2812_f4.c

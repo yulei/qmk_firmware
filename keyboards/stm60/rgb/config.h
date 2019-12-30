@@ -45,14 +45,17 @@
 //#define NO_ACTION_FUNCTION
 
 //rgb light setting
-#define RGB_DI_PIN A7
-#define RGBLED_NUM 18
+//#define RGB_DI_PIN A7
+//#define RGBLED_NUM 18
 
-//#define WS2812_LED_N    18
-//#define RGBLED_NUM      WS2812_LED_N
-
-//#define PORT_WS2812     GPIOA
-//#define PIN_WS2812      7
+#define WS2812_LED_N 18
+#define RGBLED_NUM WS2812_LED_N
+#define WS2812_TIM_N 3
+#define WS2812_TIM_CH 1
+#define PORT_WS2812 GPIOA
+#define PIN_WS2812 7
+#define WS2812_DMA_STREAM STM32_DMA1_STREAM5  // DMA stream for TIMx_UP (look up in reference manual under DMA Channel selection)
+#define WS2812_DMA_CHANNEL 5                  // DMA channel for TIMx_UP
 
 #define RGBLIGHT_ANIMATIONS
 
