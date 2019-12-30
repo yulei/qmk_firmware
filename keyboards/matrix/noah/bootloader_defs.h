@@ -4,4 +4,4 @@
  * This also requires a patch to chibios:
  *  <tmk_dir>/tmk_core/tool/chibios/ch-bootloader-jump.patch
  */
-#define STM32_BOOTLOADER_ADDRESS 0x1FFF0000
+#define STM32_BOOTLOADER_ADDRESS 0x20000000 //0x1FFF0000

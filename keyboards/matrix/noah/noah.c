@@ -29,21 +29,23 @@ void rgblight_set(void) {
     if (noah_led_mode) {
       uint8_t ind_led = host_keyboard_leds();
       if (IS_LED_ON(ind_led, USB_LED_CAPS_LOCK)) {
-        noah_leds[0] = led[0];
+        noah_leds[6] = led[0];
       }
       if (IS_LED_ON(ind_led, USB_LED_SCROLL_LOCK)) {
-        noah_leds[1] = led[1];
+        noah_leds[5] = led[1];
       }
       if (IS_LED_ON(ind_led, USB_LED_NUM_LOCK)) {
-        noah_leds[2] = led[2];
+        noah_leds[4] = led[2];
       }
       for (int32_t i = 0; i < 4; i++) {
         if(layer_state_is(i+1)) {
-          noah_leds[i + 3] = led[i + 3];
+          noah_leds[3 - i] = led[i + 3];
         }
       }
     } else {
-      memcpy(&noah_leds[0], &led[0], sizeof(noah_leds));
+        for(uint8_t i = 0; i < RGBLED_NUM; i++) {
+            noah_leds[RGBLED_NUM-i-1] = led[i];
+        }
     }
 
   ws2812_setleds(noah_leds, RGBLED_NUM);
@@ -69,9 +71,6 @@ void matrix_init_user(void) {
 
 __attribute__((weak))
 void matrix_scan_user(void) {
-#ifdef RGBLIGHT_ENABLE
-  rgblight_task();
-#endif
 }
 
 
