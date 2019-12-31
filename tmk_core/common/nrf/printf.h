@@ -5,4 +5,6 @@
 #pragma once
 
 void nrf_rtt_printf(char *fmt, ...);
-#define __xprintf nrf_rtt_printf
+
+#define printf nrf_rtt_printf
+#define sprintf nrf_rtt_printf

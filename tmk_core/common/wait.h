@@ -33,6 +33,10 @@ extern "C" {
 #    include "clks.h"
 #    define wait_ms(ms) CLK_delay_ms(ms)
 #    define wait_us(us) CLK_delay_us(us)
+#elif defined PROTOCOL_NRF
+#   include "nrf_delay.h"
+#   define wait_ms(ms) nrf_delay_ms(ms)
+#   define wait_us(us) nrf_delay_us(us)
 #else  // Unit tests
 void wait_ms(uint32_t ms);
 #    define wait_us(us) wait_ms(us / 1000)

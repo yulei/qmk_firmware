@@ -4,9 +4,6 @@ else
 	SDK_ROOT := $(strip $(SDK_ROOT))
 endif
 
-$(OUTPUT_DIRECTORY)/nrf52832_xxaa.out: \
-  LINKER_SCRIPT  :=
-
 # Source files common to all targets
 SRC += \
   $(SDK_ROOT)/modules/nrfx/mdk/gcc_startup_nrf52.S \
@@ -53,6 +50,7 @@ SRC += \
   $(SDK_ROOT)/modules/nrfx/drivers/src/prs/nrfx_prs.c \
   $(SDK_ROOT)/modules/nrfx/drivers/src/nrfx_uart.c \
   $(SDK_ROOT)/modules/nrfx/drivers/src/nrfx_uarte.c \
+  $(SDK_ROOT)/modules/nrfx/drivers/src/nrfx_saadc.c \
   $(SDK_ROOT)/components/libraries/bsp/bsp.c \
   $(SDK_ROOT)/components/libraries/bsp/bsp_btn_ble.c \
   $(SDK_ROOT)/external/segger_rtt/SEGGER_RTT.c \
@@ -107,7 +105,7 @@ VPATH += \
   $(SDK_ROOT)/components/nfc/ndef/text \
   $(SDK_ROOT)/components/libraries/mutex \
   $(SDK_ROOT)/components/libraries/gpiote \
-  $(SDK_ROOT)/components/libraries/bootloader/ble_dfu \
+  $(SDK_ROOT)/components/libraries/bootloader\
   $(SDK_ROOT)/components/nfc/ndef/connection_handover/common \
   $(SDK_ROOT)/components/boards \
   $(SDK_ROOT)/components/nfc/ndef/generic/record \
@@ -144,7 +142,6 @@ VPATH += \
   $(SDK_ROOT)/components/libraries/usbd/class/hid/mouse \
   $(SDK_ROOT)/components/libraries/low_power_pwm \
   $(SDK_ROOT)/components/nfc/ndef/conn_hand_parser/ble_oob_advdata_parser \
-  $(SDK_ROOT)/components/ble/ble_services/ble_dfu \
   $(SDK_ROOT)/external/fprintf \
   $(SDK_ROOT)/components/libraries/svc \
   $(SDK_ROOT)/components/libraries/atomic \
@@ -296,6 +293,8 @@ ASMFLAGS += -D__STACK_SIZE=8192
 # that may need symbols provided by these libraries.
 #LIB_FILES += -lc -lnosys -lm
 CFLAGS += -lc -lnosys -lm
+
+OPT_DEFS += -DPROTOCOL_NRF
 
 SDK_CONFIG_FILE := $(NRF_DIR)/sdk_config.h
 CMSIS_CONFIG_TOOL := $(SDK_ROOT)/external_tools/cmsisconfig/CMSIS_Configuration_Wizard.jar

@@ -5,10 +5,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <string.h>
-#include "hal.h"
 #include "quantum.h"
-#include "timer.h"
-#include "wait.h"
 #include "printf.h"
 #include "matrix.h"
 
@@ -22,8 +19,8 @@
 /* matrix state(1:on, 0:off) */
 static matrix_row_t matrix[MATRIX_ROWS];
 static matrix_row_t matrix_debouncing[MATRIX_COLS];
-static bool debouncing = false;
-static uint16_t debouncing_time = 0;
+//static bool debouncing = false;
+//static uint16_t debouncing_time = 0;
 
 void matrix_init(void)
 {
