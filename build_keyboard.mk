@@ -236,6 +236,9 @@ ifdef MCU_FAMILY
 else ifdef ARM_ATSAM
     PLATFORM=ARM_ATSAM
     FIRMWARE_FORMAT=bin
+else ifdef NRF_MCU
+	PLATFORM=NRF
+    FIRMWARE_FORMAT=bin
 else
     PLATFORM=AVR
     FIRMWARE_FORMAT?=hex
@@ -368,6 +371,11 @@ ifeq ($(PLATFORM),ARM_ATSAM)
     include $(TMK_PATH)/protocol/arm_atsam.mk
 endif
 
+ifeq ($(PLATFORM), NRF)
+	include $(TMK_PATH)/protocol/nrf.mk
+	include $(TMK_PATH)/nrf.mk
+endif
+
 ifeq ($(PLATFORM),CHIBIOS)
     include $(TMK_PATH)/protocol/chibios.mk
 endif
@@ -402,3 +410,4 @@ objs-size: build
 
 include show_options.mk
 include $(TMK_PATH)/rules.mk
+

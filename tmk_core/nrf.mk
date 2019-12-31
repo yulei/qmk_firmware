@@ -1,13 +1,14 @@
-TARGETS          := nrf52832_xxaa
-OUTPUT_DIRECTORY := _build
-
-SDK_ROOT := ../lib/nRF5_SDK_16.0.0_98a08e2
+ifeq ($(wildcard $(SDK_ROOT)), "")
+	$(error nrf sdk root not defined, please set SDK_ROOT in your rules.mk)
+else
+	SDK_ROOT := $(strip $(SDK_ROOT))
+endif
 
 $(OUTPUT_DIRECTORY)/nrf52832_xxaa.out: \
-  LINKER_SCRIPT  := ble_app_gcc_nrf52.ld
+  LINKER_SCRIPT  :=
 
 # Source files common to all targets
-SRC_FILES += \
+SRC += \
   $(SDK_ROOT)/modules/nrfx/mdk/gcc_startup_nrf52.S \
   $(SDK_ROOT)/components/libraries/log/src/nrf_log_backend_rtt.c \
   $(SDK_ROOT)/components/libraries/log/src/nrf_log_backend_serial.c \
@@ -86,7 +87,7 @@ SRC_FILES += \
   $(SDK_ROOT)/components/softdevice/common/nrf_sdh_soc.c \
 
 # Include folders common to all targets
-INC_FOLDERS += \
+VPATH += \
   $(SDK_ROOT)/components/nfc/ndef/generic/message \
   $(SDK_ROOT)/components/nfc/t2t_lib \
   $(SDK_ROOT)/components/nfc/t4t_parser/hl_detection_procedure \
@@ -221,13 +222,21 @@ INC_FOLDERS += \
 # Libraries common to all targets
 LIB_FILES += \
 
+# cmd
+CC = arm-none-eabi-gcc
+OBJCOPY = arm-none-eabi-objcopy
+OBJDUMP = arm-none-eabi-objdump
+SIZE = arm-none-eabi-size
+AR = arm-none-eabi-ar
+NM = arm-none-eabi-nm
+
 # Optimization flags
-OPT = -O3 -g3
+#OPT = -O3 -g3
 # Uncomment the line below to enable link time optimization
 #OPT += -flto
 
 # C flags common to all targets
-CFLAGS += $(OPT)
+#CFLAGS += $(OPT)
 CFLAGS += -DAPP_TIMER_V2
 CFLAGS += -DAPP_TIMER_V2_RTC1_ENABLED
 CFLAGS += -DBOARD_PCA10040
@@ -248,7 +257,7 @@ CFLAGS += -ffunction-sections -fdata-sections -fno-strict-aliasing
 CFLAGS += -fno-builtin -fshort-enums
 
 # C++ flags common to all targets
-CXXFLAGS += $(OPT)
+#CXXFLAGS += $(OPT)
 # Assembler flags common to all targets
 ASMFLAGS += -g3
 ASMFLAGS += -mcpu=cortex-m4
@@ -267,63 +276,34 @@ ASMFLAGS += -DS132
 ASMFLAGS += -DSOFTDEVICE_PRESENT
 
 # Linker flags
-LDFLAGS += $(OPT)
-LDFLAGS += -mthumb -mabi=aapcs -L$(SDK_ROOT)/modules/nrfx/mdk -T$(LINKER_SCRIPT)
+#LDFLAGS += $(OPT)
+LDFLAGS += -mthumb -mabi=aapcs
 LDFLAGS += -mcpu=cortex-m4
 LDFLAGS += -mfloat-abi=hard -mfpu=fpv4-sp-d16
 # let linker dump unused sections
 LDFLAGS += -Wl,--gc-sections
 # use newlib in nano version
 LDFLAGS += --specs=nano.specs
+LDFLAGS += -L$(SDK_ROOT)/modules/nrfx/mdk/ -T$(TMK_DIR)/$(NRF_DIR)/ble_app_gcc_nrf52.ld
 
-nrf52832_xxaa: CFLAGS += -D__HEAP_SIZE=8192
-nrf52832_xxaa: CFLAGS += -D__STACK_SIZE=8192
-nrf52832_xxaa: ASMFLAGS += -D__HEAP_SIZE=8192
-nrf52832_xxaa: ASMFLAGS += -D__STACK_SIZE=8192
+#nrf52832
+CFLAGS += -D__HEAP_SIZE=8192
+CFLAGS += -D__STACK_SIZE=8192
+ASMFLAGS += -D__HEAP_SIZE=8192
+ASMFLAGS += -D__STACK_SIZE=8192
 
 # Add standard libraries at the very end of the linker input, after all objects
 # that may need symbols provided by these libraries.
-LIB_FILES += -lc -lnosys -lm
+#LIB_FILES += -lc -lnosys -lm
+CFLAGS += -lc -lnosys -lm
 
-
-.PHONY: default help
-
-# Default target - first one defined
-default: nrf52832_xxaa
-
-# Print all targets that can be built
-help:
-	@echo following targets are available:
-	@echo		nrf52832_xxaa
-	@echo		flash_softdevice
-	@echo		sdk_config - starting external tool for editing sdk_config.h
-	@echo		flash      - flashing binary
-
-TEMPLATE_PATH := $(SDK_ROOT)/components/toolchain/gcc
-
-
-include $(TEMPLATE_PATH)/Makefile.common
-
-$(foreach target, $(TARGETS), $(call define_target, $(target)))
-
-.PHONY: flash flash_softdevice erase
-
-# Flash the program
-flash: default
-	@echo Flashing: $(OUTPUT_DIRECTORY)/nrf52832_xxaa.hex
-	nrfjprog -f nrf52 --program $(OUTPUT_DIRECTORY)/nrf52832_xxaa.hex --sectorerase
-	nrfjprog -f nrf52 --reset
-
-# Flash softdevice
-flash_softdevice:
-	@echo Flashing: s132_nrf52_7.0.1_softdevice.hex
-	nrfjprog -f nrf52 --program $(SDK_ROOT)/components/softdevice/s132/hex/s132_nrf52_7.0.1_softdevice.hex --sectorerase
-	nrfjprog -f nrf52 --reset
-
-erase:
-	nrfjprog -f nrf52 --eraseall
-
-SDK_CONFIG_FILE := ../config/sdk_config.h
+SDK_CONFIG_FILE := $(NRF_DIR)/sdk_config.h
 CMSIS_CONFIG_TOOL := $(SDK_ROOT)/external_tools/cmsisconfig/CMSIS_Configuration_Wizard.jar
 sdk_config:
 	java -jar $(CMSIS_CONFIG_TOOL) $(SDK_CONFIG_FILE)
+
+HEX = $(OBJCOPY) -O $(FORMAT)
+
+bin: $(BUILD_DIR)/$(TARGET).hex
+	$(OBJCOPY) -Iihex -Obinary $(BUILD_DIR)/$(TARGET).hex $(BUILD_DIR)/$(TARGET).bin
+	$(COPY) $(BUILD_DIR)/$(TARGET).bin $(TARGET).bin

@@ -90,8 +90,12 @@ ifeq ("$(shell echo "int main(){}" | $(CC) -fdiagnostics-color -x c - -o /dev/nu
 	CFLAGS+= -fdiagnostics-color
 endif
 endif
+
 CFLAGS += -Wall
-CFLAGS += -Wstrict-prototypes
+ifneq ($(PLATFORM), NRF)
+	CFLAGS += -Wstrict-prototypes
+endif
+
 ifneq ($(strip $(ALLOW_WARNINGS)), yes)
     CFLAGS += -Werror
 endif
@@ -377,8 +381,14 @@ $(DEPS):
 $(foreach OUTPUT,$(OUTPUTS),$(eval $(call GEN_OBJRULE,$(OUTPUT))))
 
 # Create preprocessed source for use in sending a bug report.
+ifneq ($(PLATFORM), NRF)
 %.i : %.c | $(BEGIN)
 	$(CC) -E -mmcu=$(MCU) $(CFLAGS) $< -o $@
+else
+%.i : %.c | $(BEGIN)
+	$(CC) -E -mcpu=$(MCU) $(CFLAGS) $< -o $@
+endif
+
 
 # Target: clean project.
 clean:
