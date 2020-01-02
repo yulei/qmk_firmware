@@ -42,6 +42,10 @@
 #define RGBLIGHT_SAT_STEP 8
 #define RGBLIGHT_VAL_STEP 8
 
+// indicator RGB
+#define RGB_INDICATOR_NUM   8
+#define RGB_INDICATOR_PIN   B1
+
 //rgb matrix setting
 #define DRIVER_ADDR_1 0b1110100
 #define DRIVER_ADDR_2 0b1110111

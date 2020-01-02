@@ -184,3 +184,59 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
   }
   return true;
 }
+
+#ifdef RGBLIGHT_ENABLE
+#ifdef RGB_INDICATOR_PIN
+extern rgblight_config_t rgblight_config;
+
+// led 0 for caps lock, led 1 for scroll lock, led 2 for num lock
+// led 3~7 for layer 1~5
+LED_TYPE dp60_leds[RGB_INDICATOR_NUM];
+static bool dp60_led_mode = true;
+void indicator_led_task(void) {
+    led_t led_state = (led_t)host_keyboard_leds();
+    if (!rgblight_config.enable || dp60_led_mode) {
+        // only use indicator mode
+        for (uint8_t i = 0; i < RGB_INDICATOR_NUM; i++) {
+            dp60_leds[i].r = 0;
+            dp60_leds[i].g = 0;
+            dp60_leds[i].b = 0;
+        }
+        if (led_state.caps_lock) {
+            dp60_leds[RGB_INDICATOR_NUM-1] = led[0];
+        }
+        if (led_state.scroll_lock) {
+            dp60_leds[RGB_INDICATOR_NUM-1-1] = led[1];
+        }
+        if (led_state.num_lock) {
+            dp60_leds[RGB_INDICATOR_NUM-1-2] = led[2];
+        }
+        for (uint8_t j = 3; j < 8; j++) {
+            if (layer_state_is(j)) {
+                dp60_leds[RGB_INDICATOR_NUM - 1 - j] = led[j];
+            }
+        }
+    } else {
+        for (uint8_t i = 0; i < RGB_INDICATOR_NUM; i++) {
+            dp60_leds[i] = led[RGB_INDICATOR_NUM-1-i];
+        }
+    }
+
+    ws2812_setleds_pin(dp60_leds, RGB_INDICATOR_NUM, RGB_INDICATOR_PIN);
+}
+
+#ifndef RAW_ENABLE
+__attribute__((weak)) void matrix_scan_user(void) {}
+void matrix_scan_kb(void)
+#else
+__attribute__((weak)) void matrix_scan_user(void)
+#endif
+{
+    indicator_led_task();
+
+#ifndef RAW_ENABLE
+    matrix_scan_user();
+#endif
+}
+#endif
+#endif
