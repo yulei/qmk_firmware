@@ -135,34 +135,24 @@ static void hids_init(ble_srv_error_handler_t err_handler)
     memset((void*)output_report_array, 0, sizeof(ble_hids_outp_rep_init_t) * OUTPUT_REP_COUNT);
     memset((void*)feature_report_array, 0, sizeof(ble_hids_feature_rep_init_t) * FEATURE_REP_COUNT);
 
-    // Initialize HID Service
-    HID_REP_IN_SETUP(
-        input_report_array[INPUT_REP_KBD_INDEX],
-        INPUT_REPORT_KEYS_MAX_LEN,
-        INPUT_REP_REF_ID);
+    // keyboard report
+    HID_REP_IN_SETUP(input_report_array[INPUT_REP_KBD_INDEX], INPUT_REPORT_KEYS_MAX_LEN, INPUT_REP_REF_ID);
 
     // keyboard led report
-    HID_REP_OUT_SETUP(
-        output_report_array[OUTPUT_REP_KBD_INDEX],
-        OUTPUT_REPORT_MAX_LEN,
-        OUTPUT_REP_REF_ID);
+    HID_REP_OUT_SETUP(output_report_array[OUTPUT_REP_KBD_INDEX], OUTPUT_REPORT_MAX_LEN, OUTPUT_REP_REF_ID);
 
 #ifdef MOUSEKEY_ENABLE
-    HID_REP_IN_SETUP(input_report_array[INPUT_REP_MOUSE_INDEX], 5, REPORT_ID_MOUSE);
+    HID_REP_IN_SETUP(input_report_array[INPUT_REP_MOUSE_INDEX], 5, NRF_REPORT_ID_MOUSE);
 #endif
 #ifdef EXTRAKEY_ENABLE
     // system input report
-    HID_REP_IN_SETUP(input_report_array[INPUT_REP_SYSTEM_INDEX], 2, REPORT_ID_SYSTEM);
+    HID_REP_IN_SETUP(input_report_array[INPUT_REP_SYSTEM_INDEX], 2, NRF_REPORT_ID_SYSTEM);
     // consumer input report
-    HID_REP_IN_SETUP(input_report_array[INPUT_REP_CONSUMER_INDEX], 2, REPORT_ID_CONSUMER);
+    HID_REP_IN_SETUP(input_report_array[INPUT_REP_CONSUMER_INDEX], 2, NRF_REPORT_ID_CONSUMER);
 #endif
 
-    // 请勿删除，否则可能会造成按键指示灯下发不正常
     // unknown vendor define feature report
-    HID_REP_FEATURE_SETUP(
-        feature_report_array[FEATURE_REPORT_INDEX],
-        FEATURE_REPORT_MAX_LEN,
-        FEATURE_REP_REF_ID);
+    HID_REP_FEATURE_SETUP(feature_report_array[FEATURE_REPORT_INDEX], FEATURE_REPORT_MAX_LEN, FEATURE_REP_REF_ID);
 
     memset(&hids_init_obj, 0, sizeof(hids_init_obj));
 
@@ -177,7 +167,7 @@ static void hids_init(ble_srv_error_handler_t err_handler)
     hids_init_obj.feature_rep_count = FEATURE_REP_COUNT;
     hids_init_obj.p_feature_rep_array = feature_report_array;
     hids_init_obj.rep_map.data_len = sizeof(hid_descriptor);
-    hids_init_obj.rep_map.p_data = hid_descriptor;
+    hids_init_obj.rep_map.p_data = (uint8_t*)hid_descriptor;
     hids_init_obj.hid_information.bcd_hid = BASE_USB_HID_SPEC_VERSION;
     hids_init_obj.hid_information.b_country_code = 0;
     hids_init_obj.hid_information.flags = HID_INFO_FLAG_REMOTE_WAKE_MSK | HID_INFO_FLAG_NORMALLY_CONNECTABLE_MSK;
@@ -284,7 +274,7 @@ static uint32_t buffer_enqueue(ble_hids_t* p_hids,
 
 /**@brief   Function to dequeue key scan patterns that could not be transmitted either completely of
  *          partially.
- * 
+ *
  * @param[in]  tx_flag   Indicative of whether the dequeue should result in transmission or not.
  * @note       A typical example when all keys are dequeued with transmission is when link is
  *             disconnected.
@@ -335,7 +325,7 @@ static uint32_t buffer_dequeue(bool tx_flag)
  * @param[in]   key_pattern_len   Pattern length.
  * @param[in]   p_key_pattern     Pattern to be sent.
  */
-void keys_send(uint8_t report_id, uint8_t key_pattern_len, uint8_t* p_key_pattern)
+void hid_send_report(uint8_t report_id, uint8_t key_pattern_len, uint8_t* p_key_pattern)
 {
     ret_code_t err_code;
     // check if report id overflow

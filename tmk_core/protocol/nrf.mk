@@ -9,3 +9,4 @@ SRC += $(NRF_DIR)/main.c
 # Search Path
 VPATH += $(TMK_DIR)/$(NRF_DIR)
 VPATH += $(TMK_DIR)/$(NRF_DIR)/ble
+VPATH += $(TMK_DIR)/protocol/chibios/lufa_utils

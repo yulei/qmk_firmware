@@ -25,11 +25,20 @@ void ble_keyboard_init(void)
 
 uint8_t keyboard_leds(void) { return keyboard_led_val_ble; }
 
-void    send_keyboard(report_keyboard_t *report) { keys_send(REPORT_ID_KEYBOARD-1, KEYBOARD_REPORT_SIZE, report->raw); }
-void    send_mouse(report_mouse_t *report) { keys_send(REPORT_ID_MOUSE-1, sizeof(report_mouse_t), (uint8_t *)report); }
-void    send_system(uint16_t data) { keys_send(REPORT_ID_SYSTEM-1, sizeof(uint16_t), (uint8_t *)&data); }
-void    send_consumer(uint16_t data) { keys_send(REPORT_ID_CONSUMER-1, sizeof(uint16_t), (uint8_t *)&data); }
+void send_keyboard(report_keyboard_t *report) { hid_send_report(NRF_REPORT_ID_KEYBOARD, KEYBOARD_REPORT_SIZE, report->raw); }
 
+#ifdef MOUSEKEY_ENABLE
+void send_mouse(report_mouse_t *report) { hid_send_report(NRF_REPORT_ID_MOUSE, sizeof(report_mouse_t), (uint8_t *)report); }
+#else
+void send_mouse(report_mouse_t *report) { (void)report; }
+#endif
+#ifdef EXTRAKEY_ENABELE
+void send_system(uint16_t data) { hid_send_report(NRF_REPORT_ID_SYSTEM, sizeof(uint16_t), (uint8_t *)&data); }
+void send_consumer(uint16_t data) { hid_send_report(NRF_REPORT_ID_CONSUMER, sizeof(uint16_t), (uint8_t *)&data); }
+#else
+void send_system(uint16_t data) { (void)data; }
+void send_consumer(uint16_t data) { (void)data; }
+#endif
 
 void trig_event_param(enum user_event event, uint8_t arg)
 {

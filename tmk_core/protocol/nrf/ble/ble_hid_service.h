@@ -1,3 +1,7 @@
+/**
+ * @file ble_hid_service.h
+ */
+
 #pragma once
 
 #include <stdbool.h>
@@ -5,16 +9,17 @@
 
 #include "ble_hids.h"
 #include "ble_services.h"
+#include "ble_hid_descriptor.h"
 
 void hid_service_init(ble_srv_error_handler_t err_handler);
 void hid_event_handler(enum user_event evt, void* arg);
-void keys_send(uint8_t report_index, uint8_t key_pattern_len, uint8_t* p_key_pattern);
 bool hid_queue_empty(void);
+void hid_send_report(uint8_t report_index, uint8_t key_pattern_len, uint8_t* p_key_pattern);
 
 extern uint8_t keyboard_led_val_ble;
 
 /** Quick HID param setup macro
- * 
+ *
  * @param _name: name to setup
  * @param _len: report max length
  * @param _id: report id
@@ -30,7 +35,7 @@ extern uint8_t keyboard_led_val_ble;
     }
 
 /** Setup Input report
- * 
+ *
  * @param _name: name to setup
  * @param _len: report max length
  * @param _id: report id
@@ -42,7 +47,7 @@ extern uint8_t keyboard_led_val_ble;
     }
 
 /** Setup Output report
- * 
+ *
  * @param _name: name to setup
  * @param _len: report max length
  * @param _id: report id
@@ -50,7 +55,7 @@ extern uint8_t keyboard_led_val_ble;
 #define HID_REP_OUT_SETUP(_name, _len, _id) HID_REP_SETUP(_name, _len, _id, BLE_HIDS_REP_TYPE_OUTPUT)
 
 /** Setup Feature report
- * 
+ *
  * @param _name: name to setup
  * @param _len: report max length
  * @param _id: report id
