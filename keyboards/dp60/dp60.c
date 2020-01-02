@@ -161,30 +161,6 @@ webusb_pos_t webusb_keymap[] = {
 };
 #endif
 
-#ifndef RAW_ENABLE
-bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
-#else
-bool process_record_user(uint16_t keycode, keyrecord_t *record) {
-#endif
-  if (record->event.pressed) {
-    switch(keycode) {
-    #ifdef RGBLIGHT_ENABLE
-        #ifdef RGB_MATRIX_ENABLE
-        case KC_F13: // toggle rgb matrix
-            rgb_matrix_toggle();
-            return false;
-        case KC_F14:
-            rgb_matrix_step();
-            return false;
-        #endif
-    #endif
-        default:
-        break;
-    }
-  }
-  return true;
-}
-
 #ifdef RGBLIGHT_ENABLE
 #ifdef RGB_INDICATOR_PIN
 extern rgblight_config_t rgblight_config;
@@ -192,7 +168,8 @@ extern rgblight_config_t rgblight_config;
 // led 0 for caps lock, led 1 for scroll lock, led 2 for num lock
 // led 3~7 for layer 1~5
 LED_TYPE dp60_leds[RGB_INDICATOR_NUM];
-static bool dp60_led_mode = true;
+uint8_t     dp60_leds_index[] = {7, 6, 5, 4, 3, 2, 1, 0};
+static bool dp60_led_mode     = true;
 void indicator_led_task(void) {
     led_t led_state = (led_t)host_keyboard_leds();
     if (!rgblight_config.enable || dp60_led_mode) {
@@ -203,22 +180,22 @@ void indicator_led_task(void) {
             dp60_leds[i].b = 0;
         }
         if (led_state.caps_lock) {
-            dp60_leds[RGB_INDICATOR_NUM-1] = led[0];
+            dp60_leds[dp60_leds_index[0]] = led[0];
         }
         if (led_state.scroll_lock) {
-            dp60_leds[RGB_INDICATOR_NUM-1-1] = led[1];
+            dp60_leds[dp60_leds_index[1]] = led[1];
         }
         if (led_state.num_lock) {
-            dp60_leds[RGB_INDICATOR_NUM-1-2] = led[2];
+            dp60_leds[dp60_leds_index[2]] = led[2];
         }
         for (uint8_t j = 3; j < 8; j++) {
             if (layer_state_is(j)) {
-                dp60_leds[RGB_INDICATOR_NUM - 1 - j] = led[j];
+                dp60_leds[dp60_leds_index[j]] = led[j];
             }
         }
     } else {
         for (uint8_t i = 0; i < RGB_INDICATOR_NUM; i++) {
-            dp60_leds[i] = led[RGB_INDICATOR_NUM-1-i];
+            dp60_leds[dp60_leds_index[i]] = led[i];
         }
     }
 
@@ -240,3 +217,32 @@ __attribute__((weak)) void matrix_scan_user(void)
 }
 #endif
 #endif
+
+#ifndef RAW_ENABLE
+bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
+#else
+bool process_record_user(uint16_t keycode, keyrecord_t *record) {
+#endif
+  if (record->event.pressed) {
+    switch(keycode) {
+    #ifdef RGBLIGHT_ENABLE
+        #ifdef RGB_MATRIX_ENABLE
+        case KC_F13: // toggle rgb matrix
+            rgb_matrix_toggle();
+            return false;
+        case KC_F14:
+            rgb_matrix_step();
+            return false;
+        #ifdef RGB_INDICATOR_PIN
+        case KC_F24:
+            dp60_led_mode = !dp60_led_mode;
+            return false;
+        #endif
+        #endif
+    #endif
+        default:
+        break;
+    }
+  }
+  return true;
+}
