@@ -13,7 +13,6 @@ static void select_col(uint8_t col);
 
 __attribute__((weak)) void matrix_init_kb(void) {}
 __attribute__((weak)) void matrix_scan_kb(void) {}
-extern void indicator_led_task(void);
 void matrix_init(void)
 {
   setPinOutput(B4);
@@ -60,7 +59,6 @@ uint8_t matrix_scan(void)
   }
 
   matrix_scan_quantum();
-  indicator_led_task();
   return 1;
 }
 

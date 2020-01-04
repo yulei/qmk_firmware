@@ -189,3 +189,7 @@ void indicator_led_task(void) {
     _delay_us(50);
     //ws2812_setleds_pin(dp60_leds, RGB_INDICATOR_NUM, RGB_INDICATOR_PIN);
 }
+
+void matrix_scan_kb() {
+    indicator_led_task();
+}
