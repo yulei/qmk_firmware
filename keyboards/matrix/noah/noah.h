@@ -45,7 +45,7 @@
     {k10, k11, k12, k13, k14, k15, k16, k17, k18, k19, k1a, k1b, k1c,KC_NO, KC_NO}, \
     {k20, k21, k22, k23, k24, k25, k26, k27, k28, k29, k2a, k2b, k2c, k2d, KC_NO}, \
     {k30, k31, k32, k33, k34, k35, k36, k37, k38, k39, k3a, k3b, k3c, k3d, KC_NO}, \
-    {k40, k41, k42,KC_NO,k43,k44,KC_NO, k45, k46, k47, k48, k1e, k2e, k3e, k0f}  \
+    {k40, k41, k42,KC_NO,k43,KC_NO,k44,k45, k46, k47, k48, k1e, k2e, k3e, k0f}  \
 }
 
 #define LAYOUT_default_splitspace( \
