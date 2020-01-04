@@ -143,81 +143,6 @@ led_config_t g_led_config = {
 
 #endif
 
-#ifdef WEBUSB_ENABLE
-#include "webusb.h"
-#include "dynamic_keymap.h"
-
-
-webusb_pos_t webusb_keymap[] = {
-    {0, 0}, {0, 1}, {0, 2}, {0, 3}, {0, 4}, {0, 5}, {0, 6}, {4, 7}, {0, 7}, {0, 8}, {0, 9}, {0, 10}, {0, 11}, {0, 13},
-
-    {1, 0}, {1, 1}, {1, 2}, {1, 3}, {1, 4}, {1, 5}, {1, 6}, {1, 7}, {1, 8}, {1, 9}, {1, 10}, {1, 11}, {1, 12}, {1, 13},
-
-    {2, 0}, {2, 1}, {2, 2}, {2, 3}, {2, 4}, {2, 5}, {2, 6}, {2, 7}, {2, 8}, {2, 9}, {2, 10}, {2, 11}, {2, 13},
-
-    {3, 0}, {3, 2}, {3, 3}, {3, 4}, {3, 5}, {3, 6}, {3, 7}, {3, 8}, {3, 9}, {3, 10}, {3, 11}, {3, 13},
-
-    {4, 0}, {4, 1}, {4, 2}, {4, 6}, {4, 10}, {4, 11}, {4, 12}, {4, 13},
-};
-#endif
-
-#ifdef RGBLIGHT_ENABLE
-#ifdef RGB_INDICATOR_PIN
-extern rgblight_config_t rgblight_config;
-
-// led 0 for caps lock, led 1 for scroll lock, led 2 for num lock
-// led 3~7 for layer 1~5
-LED_TYPE dp60_leds[RGB_INDICATOR_NUM];
-uint8_t     dp60_leds_index[] = {7, 6, 5, 4, 3, 2, 1, 0};
-static bool dp60_led_mode     = true;
-void indicator_led_task(void) {
-    led_t led_state = (led_t)host_keyboard_leds();
-    if (!rgblight_config.enable || dp60_led_mode) {
-        // only use indicator mode
-        for (uint8_t i = 0; i < RGB_INDICATOR_NUM; i++) {
-            dp60_leds[i].r = 0;
-            dp60_leds[i].g = 0;
-            dp60_leds[i].b = 0;
-        }
-        if (led_state.caps_lock) {
-            dp60_leds[dp60_leds_index[0]] = led[0];
-        }
-        if (led_state.scroll_lock) {
-            dp60_leds[dp60_leds_index[1]] = led[1];
-        }
-        if (led_state.num_lock) {
-            dp60_leds[dp60_leds_index[2]] = led[2];
-        }
-        for (uint8_t j = 3; j < 8; j++) {
-            if (layer_state_is(j)) {
-                dp60_leds[dp60_leds_index[j]] = led[j];
-            }
-        }
-    } else {
-        for (uint8_t i = 0; i < RGB_INDICATOR_NUM; i++) {
-            dp60_leds[dp60_leds_index[i]] = led[i];
-        }
-    }
-
-    ws2812_setleds_pin(dp60_leds, RGB_INDICATOR_NUM, RGB_INDICATOR_PIN);
-}
-
-#ifndef RAW_ENABLE
-__attribute__((weak)) void matrix_scan_user(void) {}
-void matrix_scan_kb(void)
-#else
-__attribute__((weak)) void matrix_scan_user(void)
-#endif
-{
-    indicator_led_task();
-
-#ifndef RAW_ENABLE
-    matrix_scan_user();
-#endif
-}
-#endif
-#endif
-
 #ifndef RAW_ENABLE
 bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
 #else
@@ -233,11 +158,6 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
         case KC_F14:
             rgb_matrix_step();
             return false;
-        #ifdef RGB_INDICATOR_PIN
-        case KC_F24:
-            dp60_led_mode = !dp60_led_mode;
-            return false;
-        #endif
         #endif
     #endif
         default:
