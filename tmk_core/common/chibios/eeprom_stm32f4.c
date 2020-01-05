@@ -145,7 +145,7 @@ static uint32_t FLASH_FindValidAddress(void)
 {
     uint32_t begin = EE_SECTOR_START;
     uint32_t end = begin + EE_SECTOR_SIZE;
-    while( begin != end) {
+    while( begin < end) {
         uint32_t data = *(__IO uint32_t*)(begin);
         if (data == FLASH_EMPTY_VALUE) {
             return begin;
@@ -171,10 +171,12 @@ static void FLASH_Backup(void)
 
 static uint16_t FLASH_Tranfer(void)
 {
+    uint32_t current = EE_SECTOR_START;
     for (uint8_t i = 0; i < EE_MAX_BYTES; i++) {
         if (DataBuf[i] != 0xFF) {
-            flash_data_t flash_data = {.flash.addr=i, .flash.addr=DataBuf[i]};
-            FLASH_ProgramWordF4(INDEX_TO_ADDRESS(i), flash_data.value);
+            flash_data_t flash_data = {.flash.addr=i, .flash.data=DataBuf[i]};
+            FLASH_ProgramWordF4(current, flash_data.value);
+            current += 4;
         }
     }
     return FLASH_COMPLETE;
@@ -221,7 +223,7 @@ uint8_t  EEPROM_ReadDataByte(uint16_t Address)
     }
     return 0xFF;
 }
-#define EE_EMU 1
+#define EE_EMU 0
 #if EE_EMU
 #    define EEPROM_SIZE 128
 static uint8_t buffer[EEPROM_SIZE];
