@@ -8,15 +8,16 @@
 #include <string.h>
 #include "rgblight.h"
 #include "ws2812_f4.h"
+#include "eeprom.h"
 extern rgblight_config_t rgblight_config;
-
+#define EECONFIG_NOAH_MODE  64
+static bool noah_led_mode;
 // led 0 for caps lock, led 1 for scroll lock, led 3 for num lock
 // led 4 for layer 1, led 5 for layer 2, led 6 for layer 3, led 7 for layer 4
 #if RGBLED_NUM < 7
 #error "MUST set the RGBLED_NUM bigger than 7"
 #endif
 LED_TYPE noah_leds[RGBLED_NUM];
-static bool noah_led_mode = true;
 void rgblight_set(void) {
     memset(&noah_leds[0], 0, sizeof(noah_leds));
     if (!rgblight_config.enable) {
@@ -55,7 +56,10 @@ void rgblight_set(void) {
 void matrix_scan_kb(void) { matrix_scan_user(); }
 
 void matrix_init_kb(void) {
-  matrix_init_user();
+#ifdef RGBLIGHT_ENABLE
+    noah_led_mode = eeprom_read_byte((uint8_t*)(uint32_t*)EECONFIG_NOAH_MODE);
+#endif
+    matrix_init_user();
 }
 __attribute__((weak))
 void matrix_init_user(void) {
@@ -223,6 +227,7 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
     #ifdef RGBLIGHT_ENABLE
         case KC_F24: // switch the led mode on or off
         noah_led_mode = !noah_led_mode;
+        eeprom_write_byte((uint8_t*)(uint32_t*)EECONFIG_NOAH_MODE, noah_led_mode);
         return false;
 
     #ifdef RGB_MATRIX_ENABLE

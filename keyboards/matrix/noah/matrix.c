@@ -25,6 +25,7 @@ static matrix_row_t matrix_debouncing[MATRIX_COLS];
 static bool debouncing = false;
 static uint16_t debouncing_time = 0;
 
+
 void matrix_init(void)
 {
     //debug_enable = true;
