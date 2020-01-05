@@ -195,7 +195,6 @@ int main(void) {
                 /* Remote wakeup */
                 if (suspend_wakeup_condition()) {
                     usbWakeupHost(&USB_DRIVER);
-                    NVIC_SystemReset();
                 }
             }
             /* Woken up */

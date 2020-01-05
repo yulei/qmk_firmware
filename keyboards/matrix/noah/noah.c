@@ -228,6 +228,7 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
         case KC_F24: // switch the led mode on or off
         noah_led_mode = !noah_led_mode;
         eeprom_write_byte((uint8_t*)(uint32_t*)EECONFIG_NOAH_MODE, noah_led_mode);
+        rgblight_set();
         return false;
 
     #ifdef RGB_MATRIX_ENABLE
@@ -245,3 +246,18 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
   }
   return true;
 }
+
+#ifdef RGBLIGHT_ENABLE
+bool led_update_kb(led_t led_state) {
+    bool res = led_update_user(led_state);
+    rgblight_set();
+    return res;
+}
+
+layer_state_t layer_state_set_kb(layer_state_t state) {
+    layer_state_t ls = layer_state_set_user(state);
+    rgblight_set();
+    return ls;
+}
+
+#endif
