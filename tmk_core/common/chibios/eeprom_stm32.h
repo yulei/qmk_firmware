@@ -51,7 +51,7 @@
 #        define FEE_DENSITY_PAGES 4            // How many pages are used
 #    elif defined(MCU_STM32F411xE)
 #        define FEE_PAGE_SIZE (uint16_t)0x4000  // Page size = 16KByte
-#        define FEE_DENSITY_PAGES 2            // How many pages are used
+#        define FEE_DENSITY_PAGES 1            // How many pages are used
 #    else
 #        error "No MCU type specified. Add something like -DMCU_STM32F103RB to your compiler arguments (probably in a Makefile)."
 #    endif

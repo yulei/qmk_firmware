@@ -12,7 +12,7 @@
 #define EE_SECTOR_ID 3
 #define EE_MAX_BYTES 1024 //compatible with avr which has 1024 bytes eeprom
 #define IS_VALID_ADDRESS(ADDRESS) (((ADDRESS) >= 0) && ((ADDRESS) < EE_MAX_BYTES))
-#define INDEX_TO_ADDRESS(ADDRESS) (EE_SECTOR_START + ADDRESS*4)
+#define INDEX_TO_ADDRESS(INDEX) (EE_SECTOR_START + INDEX*4)
 
 #define FLASH_PSIZE_BYTE 0
 #define FLASH_PSIZE_HFWORD FLASH_CR_PSIZE_0
@@ -27,7 +27,7 @@ uint8_t DataBuf[EE_MAX_BYTES];
 typedef union {
     struct {
         uint16_t addr;
-        uint16_t val;
+        uint16_t data;
     } flash;
     uint32_t value;
 } __attribute__((packed)) flash_data_t;
@@ -54,7 +54,7 @@ static FLASH_Status FLASH_WaitF4(void)
 {
     /* Check for the Flash Status */
     FLASH_Status status = FLASH_StatusF4();
-    /* Wait for a Flash operation to complete or a TIMEOUT to occur */
+    /* Wait for a Flash operation to complete */
     while( status == FLASH_BUSY) {
         FLASH_DelayF4();
         status = FLASH_StatusF4();
@@ -72,6 +72,7 @@ static FLASH_Status FLASH_EraseSectorF4(uint32_t sector) {
     FLASH_Status status = FLASH_WaitF4();
     if (status == FLASH_COMPLETE) {
         /* if the previous operation is completed, proceed to erase the page */
+        FLASH->CR &= ~FLASH_CR_SNB;
         FLASH->CR |= FLASH_CR_SER | (sector << FLASH_CR_SNB_Pos);
         FLASH->CR |= FLASH_CR_STRT;
 
@@ -159,10 +160,10 @@ static void FLASH_Backup(void)
     uint32_t begin = EE_SECTOR_START;
     uint32_t end = begin + EE_SECTOR_SIZE;
     memset(&DataBuf[0], 0xFF, sizeof(DataBuf));
-    while( begin != end) {
+    while( begin < end) {
         flash_data_t flash_data = *(__IO flash_data_t*)(begin);
         if (IS_VALID_ADDRESS(flash_data.flash.addr)){
-            DataBuf[flash_data.flash.addr] = flash_data.flash.val;
+            DataBuf[flash_data.flash.addr] = flash_data.flash.data;
         }
         begin += 4;
     }
@@ -195,7 +196,7 @@ void EEPROM_Erase(void)
 
 uint16_t EEPROM_WriteDataByte(uint16_t Address, uint8_t DataByte)
 {
-    flash_data_t flash_data = {.flash.addr=Address, .flash.val = DataByte};
+    flash_data_t flash_data = {.flash.addr=Address, .flash.data= DataByte};
     uint32_t addr = FLASH_FindValidAddress();
     if (addr == FLASH_EMPTY_VALUE) {
         FLASH_Backup();
@@ -211,17 +212,17 @@ uint8_t  EEPROM_ReadDataByte(uint16_t Address)
 {
     uint32_t begin = EE_SECTOR_START;
     uint32_t end = begin + EE_SECTOR_SIZE-4;
-    while( end != begin - 4) {
+    while( end >= begin) {
         flash_data_t data = *(__IO flash_data_t*)(end);
         if ( data.flash.addr == Address) {
-            return (uint8_t)data.flash.val;
+            return (uint8_t)data.flash.data;
         }
         end -= 4;
     }
     return 0xFF;
 }
-#define EE_EMU
-#ifdef EE_EMU
+#define EE_EMU 1
+#if EE_EMU
 #    define EEPROM_SIZE 128
 static uint8_t buffer[EEPROM_SIZE];
 
