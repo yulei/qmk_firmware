@@ -4,9 +4,16 @@
 
 #include "ble_keyboard.h"
 #include "ble_hid_service.h"
+#include "app_timer.h"
 #include "report.h"
 #include "host.h"
 #include "keyboard.h"
+
+#define KEYBOARD_SCAN_INTERVAL APP_TIMER_TICKS(10) // keyboard scan interval
+APP_TIMER_DEF(m_keyboard_timer_id); // keyboard scan timer id
+
+static void keyboard_timer_init(void);
+static void keyboard_timout_handler(void *p_context);
 
 /* Host driver */
 static uint8_t keyboard_leds(void);
@@ -16,11 +23,30 @@ static void    send_system(uint16_t data);
 static void    send_consumer(uint16_t data);
 host_driver_t  ble_driver = { keyboard_leds, send_keyboard, send_mouse, send_system, send_consumer };
 
+void keyboard_timout_handler(void *p_context) { keyboard_task(); }
+void keyboard_timer_init(void)
+{
+    ret_code_t err_code;
+    err_code = app_timer_create(&m_keyboard_timer_id,
+                            APP_TIMER_MODE_REPEATED,
+                            keyboard_timout_handler);
+    APP_ERROR_CHECK(err_code);
+}
+
 void ble_keyboard_init(void)
 {
     keyboard_setup();
     keyboard_init();
     host_set_driver(&ble_driver);
+    keyboard_timer_init();
+}
+
+void ble_keyboard_timer_start(void)
+{
+    ret_code_t err_code;
+
+    err_code = app_timer_start(m_keyboard_timer_id, KEYBOARD_SCAN_INTERVAL, NULL);
+    APP_ERROR_CHECK(err_code);
 }
 
 uint8_t keyboard_leds(void) { return keyboard_led_val_ble; }

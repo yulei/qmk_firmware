@@ -18,4 +18,4 @@ CUSTOM_MATRIX = yes
 SDK_ROOT := $(TOP_DIR)/lib/nRF5_SDK_16.0.0_98a08e2
 
 # project specific files
-SRC += matrix.c
+#SRC += matrix.c
