@@ -53,24 +53,19 @@ void rgblight_set(void) {
 }
 #endif
 
+__attribute__((weak))
 void matrix_scan_kb(void) { matrix_scan_user(); }
 
 void matrix_init_kb(void) {
 #ifdef RGBLIGHT_ENABLE
     noah_led_mode = eeprom_read_byte((uint8_t*)(uint32_t*)EECONFIG_NOAH_MODE);
+    ws2812_init();
 #endif
     matrix_init_user();
 }
 __attribute__((weak))
 void matrix_init_user(void) {
-#ifdef RGBLIGHT_ENABLE
-  ws2812_init();
-  rgblight_enable();
-#endif
 
-#ifdef RGB_MATRIX_ENABLE
-  rgb_matrix_disable();
-#endif
 }
 
 __attribute__((weak))
@@ -246,18 +241,3 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
   }
   return true;
 }
-
-#ifdef RGBLIGHT_ENABLE
-bool led_update_kb(led_t led_state) {
-    bool res = led_update_user(led_state);
-    rgblight_set();
-    return res;
-}
-
-layer_state_t layer_state_set_kb(layer_state_t state) {
-    layer_state_t ls = layer_state_set_user(state);
-    rgblight_set();
-    return ls;
-}
-
-#endif
