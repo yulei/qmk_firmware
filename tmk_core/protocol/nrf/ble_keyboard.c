@@ -65,8 +65,3 @@ void send_consumer(uint16_t data) { hid_send_report(NRF_REPORT_ID_CONSUMER, size
 void send_system(uint16_t data) { (void)data; }
 void send_consumer(uint16_t data) { (void)data; }
 #endif
-
-void trig_event_param(enum user_event event, uint8_t arg)
-{
-    //trig_event(event, (void*)(uint32_t)arg);
-}

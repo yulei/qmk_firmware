@@ -417,19 +417,4 @@ void hid_service_init(ble_srv_error_handler_t err_handler)
     buffer_init();
 }
 
-void hid_event_handler(enum user_event evt, void* arg)
-{
-    uint8_t subevt = (uint32_t)arg;
-    if (evt == USER_EVT_BLE_STATE_CHANGE && subevt == BLE_STATE_DISCONNECT)
-        buffer_dequeue(false); // 断开后清空所有未发送的按键
-    else if (evt == USER_EVT_INTERNAL && subevt == INTERNAL_EVT_GATTS_TX_COMPLETE)
-        buffer_dequeue(true); // 发送完毕后出队列
-}
-
-/**
- * 蓝牙hid队列是否为空
- */
-bool hid_queue_empty()
-{
-    return BUFFER_LIST_EMPTY();
-}
+void hid_flush_report(void) { buffer_dequeue(true); }

@@ -37,22 +37,6 @@
  * OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  */
-/*
-    Copyright (C) 2019 Jim Jiang <jim@lotlab.org>
-
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
 
 /** @file
  *
@@ -87,7 +71,6 @@
 #include "ble/ble_services.h"
 
 #include "ble_keyboard.h"
-#include "main.h"
 
 #define DEAD_BEEF 0xDEADBEEF /**< Value used as error code on stack dump, can be used to identify stack location on stack unwind. */
 
@@ -97,11 +80,6 @@
 #else
 #define SCHED_QUEUE_SIZE 20 /**< Maximum number of events in the scheduler queue. */
 #endif
-
-static void set_stage(enum keyboard_state stage)
-{
-    trig_event_param(USER_EVT_STAGE, stage);
-}
 
 /**@brief Callback function for asserts in the SoftDevice.
  *
@@ -132,15 +110,11 @@ void service_error_handler(uint32_t nrf_error)
 }
 
 /**
- * @brief 准备RESET
+ * @brief prepare reset
  *
  */
 static void reset_prepare(void)
 {
-    // 禁用键盘LED
-    //keyboard_led_deinit();
-    set_stage(KBD_STATE_SLEEP);
-
     ret_code_t err_code;
     err_code = app_timer_stop_all();
     APP_ERROR_CHECK(err_code);
@@ -204,58 +178,7 @@ static void services_init(void)
 static void timers_start(void)
 {
     battery_timer_start();
-//    ble_keyboard_timer_start();
-}
-
-/**@brief Function for putting the chip into sleep mode.
- *
- * @note This function will not return.
- */
-static void sleep_mode_enter(void)
-{
-    reset_prepare();
-//    matrix_sleep_prepare(); // 准备按键阵列用于唤醒
-
-    // Go to system-off mode (this function will not return; wakeup will cause a reset).
-    ret_code_t err_code = sd_power_system_off();
-    APP_ERROR_CHECK(err_code);
-}
-
-/**
- * @brief 发送键盘睡眠通知
- *
- * @param reason
- */
-void notify_sleep(enum sleep_evt_type mode)
-{
-    trig_event_param(USER_EVT_SLEEP, mode);
-}
-
-/**
- * @brief 使键盘进入睡眠状态
- *
- * @param reason
- */
-void sleep(enum SLEEP_REASON reason)
-{
-    switch (reason) {
-    case SLEEP_NO_CONNECTION:
-    case SLEEP_TIMEOUT:
-        app_timer_stop_all();
-        notify_sleep(SLEEP_EVT_AUTO);
-        sleep_mode_enter();
-        break;
-    case SLEEP_MANUALLY:
-        app_timer_stop_all();
-        notify_sleep(SLEEP_EVT_MANUAL);
-        sleep_mode_enter();
-        break;
-    case SLEEP_NOT_PWRON:
-        sleep_mode_enter();
-        break;
-    default:
-        break;
-    }
+    ble_keyboard_timer_start();
 }
 
 /**@brief Function for the Event Scheduler initialization.
@@ -283,7 +206,6 @@ static void power_management_init(void)
 static void idle_state_handle(void)
 {
     app_sched_execute();
-   // execute_event();
     nrf_pwr_mgmt_run();
 }
 
@@ -297,26 +219,14 @@ int main(void)
     timers_init();
     power_management_init();
 
-    set_stage(KBD_STATE_PRE_INIT);
-
     ble_stack_init();
     scheduler_init();
     services_init();
     ble_keyboard_init();
 
-#ifndef BOOTMAGIC_ENABLE
-    // use internal function to check if should boot.
-    boot_check();
-#endif
-
-    // call custom init function
-    set_stage(KBD_STATE_POST_INIT);
-
     // Start execution.
     timers_start();
     advertising_start(erase_bonds);
-
-    set_stage(KBD_STATE_INITED);
 
     // Enter main loop.
     for (;;) {

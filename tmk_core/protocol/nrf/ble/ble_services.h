@@ -1,7 +1,6 @@
 #pragma once
 
 #include "ble.h"
-#include "../main.h"
 #include <stdbool.h>
 #include <stdint.h>
 
