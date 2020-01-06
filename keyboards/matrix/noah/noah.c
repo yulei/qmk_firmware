@@ -60,6 +60,7 @@ void matrix_init_kb(void) {
 #ifdef RGBLIGHT_ENABLE
     noah_led_mode = eeprom_read_byte((uint8_t*)(uint32_t*)EECONFIG_NOAH_MODE);
     ws2812_init();
+    rgblight_set();
 #endif
     matrix_init_user();
 }
