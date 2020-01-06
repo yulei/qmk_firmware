@@ -109,16 +109,6 @@ void service_error_handler(uint32_t nrf_error)
     APP_ERROR_HANDLER(nrf_error);
 }
 
-/**
- * @brief prepare reset
- *
- */
-static void reset_prepare(void)
-{
-    ret_code_t err_code;
-    err_code = app_timer_stop_all();
-    APP_ERROR_CHECK(err_code);
-}
 
 /**@brief Handler for shutdown preparation.
  *
@@ -133,8 +123,7 @@ static void reset_prepare(void)
 static bool app_shutdown_handler(nrf_pwr_mgmt_evt_t event)
 {
     switch (event) {
-    case NRF_PWR_MGMT_EVT_PREPARE_DFU:;
-        reset_prepare();
+    case NRF_PWR_MGMT_EVT_PREPARE_SYSOFF:
         break;
 
     default:
