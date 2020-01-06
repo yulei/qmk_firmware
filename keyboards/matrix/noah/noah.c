@@ -234,6 +234,15 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
         case KC_F14:
         rgb_matrix_step();
         return false;
+        case KC_F15:
+        rgb_matrix_increase_hue();
+        return false;
+        case KC_F16:
+        rgb_matrix_increase_sat();
+        return false;
+        case KC_F17:
+        rgb_matrix_increase_val();
+        return false;
     #endif
     #endif
         default:
