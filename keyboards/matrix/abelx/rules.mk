@@ -15,7 +15,7 @@ MCU_STARTUP = stm32f1xx
 
 # Board: it should exist either in <chibios>/os/hal/boards/
 #  or <this_dir>/boards
-BOARD = abelx_keyboard
+BOARD = MAPLEMINI_STM32_F103
 
 # Cortex version
 MCU  = cortex-m3
@@ -46,7 +46,3 @@ COMMAND_ENABLE = no # Commands for debug and configuration
 NKRO_ENABLE = no # USB Nkey Rollover
 AUDIO_ENABLE = no
 RGBLIGHT_ENABLE = yes
-
-CUSTOM_MATRIX = yes
-
-SRC += matrix.c
