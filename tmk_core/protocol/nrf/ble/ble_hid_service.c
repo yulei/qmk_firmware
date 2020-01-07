@@ -332,9 +332,9 @@ void hid_send_report(uint8_t report_id, uint8_t key_pattern_len, uint8_t* p_key_
     if (report_id >= sizeof(hid_report_map_table))
         return;
     // convert report id to index
-    uint8_t report_index = hid_report_map_table[report_id];
+    uint8_t report_index = hid_report_map_table[report_id-1];
     // check if this function is disable
-    if (report_id > 0 && report_index == hid_report_map_table[report_id - 1])
+    if (report_id > 0 && report_index == hid_report_map_table[report_id - 2])
         return;
 
     err_code = send_key(&m_hids, report_index, p_key_pattern, key_pattern_len);

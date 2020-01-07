@@ -21,7 +21,8 @@
 #define SEC_PARAM_MIN_KEY_SIZE 7 /**< Minimum encryption key size. */
 #define SEC_PARAM_MAX_KEY_SIZE 16 /**< Maximum encryption key size. */
 
-#define NAME_STR(x) #x
+#define NAME_XSTR(x) #x
+#define NAME_STR(x) NAME_XSTR(x)
 #define DEVICE_NAME NAME_STR(PRODUCT)
 #define MANUFACTURER_NAME NAME_STR(MANUFACTURER)
 
