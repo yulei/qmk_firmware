@@ -381,7 +381,7 @@ static uint16_t get_hword(uint8_t *p) {
  * Other Device    Required    Optional    Optional    Optional    Optional    Optional
  */
 
-#ifdef SHARED_EP_ENABLE
+#if defined(SHARED_EP_ENABLE)
 static uint8_t set_report_buf[2] __attribute__((aligned(2)));
 static void    set_led_transfer_cb(USBDriver *usbp) {
     if ((set_report_buf[0] == REPORT_ID_KEYBOARD) || (set_report_buf[0] == REPORT_ID_NKRO)) {
@@ -445,19 +445,19 @@ static bool usb_request_hook_cb(USBDriver *usbp) {
                 switch (usbp->setup[1]) { /* bRequest */
                     case HID_SET_REPORT:
                         switch (usbp->setup[4]) { /* LSB(wIndex) (check MSB==0 and wLength==1?) */
-#if defined(SHARED_EP_ENABLE) && !defined(KEYBOARD_SHARED_EP)
+#if defined(SHARED_EP_ENABLE) || defined(KEYBOARD_SHARED_EP)
                             case SHARED_INTERFACE:
                                 usbSetupTransfer(usbp, set_report_buf, sizeof(set_report_buf), set_led_transfer_cb);
                                 return TRUE;
                                 break;
-#endif
-
+#else
                             case KEYBOARD_INTERFACE:
                                 /* keyboard_led_stats = <read byte from next OUT report>
                                  * keyboard_led_stats needs be word (or dword), otherwise we get an exception on F0 */
                                 usbSetupTransfer(usbp, (uint8_t *)&keyboard_led_stats, 1, NULL);
                                 return TRUE;
                                 break;
+#endif
                         }
                         break;
 
