@@ -189,7 +189,12 @@ enum usb_endpoints {
 
 #ifdef RAW_ENABLE
     RAW_IN_EPNUM  = NEXT_EPNUM,
+    #if STM32_USB_USE_OTG1
+    #define RAW_OUT_EPNUM RAW_IN_EPNUM
+    #else
     RAW_OUT_EPNUM = NEXT_EPNUM,
+    #endif
+
 #endif
 
 #ifdef SHARED_EP_ENABLE

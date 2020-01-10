@@ -174,6 +174,37 @@ typedef struct {
     QMKUSBDriver        driver;
 } usb_driver_config_t;
 
+#if defined(RAW_ENABLE) && STM32_USE_OTG1
+usb_driver_config_t raw_driver = {
+    .queue_capacity_in = 4,
+    .queue_capacity_out = 4,
+    .in_ep_config = {
+        USB_EP_MODE_TYPE_INTR,
+        NULL,
+        qmkusbDataTransmitted,
+        qmkusbDataReceived,
+        RAW_EPSIZE,
+        RAW_EPSIZE,
+        NULL,
+        NULL,
+        2,
+        NULL
+    },
+    .config = {
+        .usbp        = &USB_DRIVER,
+        .bulk_in     = RAW_IN_EPNUM,
+        .bulk_out    = RAW_OUT_EPNUM,
+        .int_in      = notification,
+        .in_buffers  = 4,
+        .out_buffers = 4,
+        .in_size     = RAW_EPSIZE,
+        .out_size    = RAW_EPSIZE,
+        .fixed_size  = false,
+        .ib          = (uint8_t[BQ_BUFFER_SIZE(4, RAW_EPSIZE)]){},
+        .ob          = (uint8_t[BQ_BUFFER_SIZE(4, RAW_EPSIZE)]){},
+    }
+}
+#endif
 /* Reusable initialization structure - see USBEndpointConfig comment at top of file */
 #define QMK_USB_DRIVER_CONFIG(stream, notification, fixedsize)                                  \
     {                                                                                           \
@@ -238,7 +269,7 @@ typedef struct {
 #ifdef CONSOLE_ENABLE
             usb_driver_config_t console_driver;
 #endif
-#ifdef RAW_ENABLE
+#if defined(RAW_ENABLE) && !STM32_USE_OTG1
             usb_driver_config_t raw_driver;
 #endif
 #ifdef MIDI_ENABLE
@@ -260,12 +291,13 @@ static usb_driver_configs_t drivers = {
 #    define CONSOLE_OUT_MODE USB_EP_MODE_TYPE_INTR
     .console_driver = QMK_USB_DRIVER_CONFIG(CONSOLE, 0, true),
 #endif
-#ifdef RAW_ENABLE
+#if defined(RAW_ENABLE) && !STM32_USE_OTG1
 #    define RAW_IN_CAPACITY 4
 #    define RAW_OUT_CAPACITY 4
 #    define RAW_IN_MODE USB_EP_MODE_TYPE_INTR
 #    define RAW_OUT_MODE USB_EP_MODE_TYPE_INTR
     .raw_driver = QMK_USB_DRIVER_CONFIG(RAW, 0, false),
+
 #endif
 
 #ifdef MIDI_ENABLE
@@ -310,6 +342,11 @@ static void usb_event_cb(USBDriver *usbp, usbevent_t event) {
 #endif
 #ifdef SHARED_EP_ENABLE
             usbInitEndpointI(usbp, SHARED_IN_EPNUM, &shared_ep_config);
+#endif
+
+#if defined(RAW_ENABLE) && STM32_USE_OTG1
+            usbInitEndpointI(usbp, raw_driver.config.bulk_in, &raw_driver.in_ep_config);
+            qmkusbConfigureHookI(&raw_driver.driver);
 #endif
             for (int i = 0; i < NUM_USB_DRIVERS; i++) {
                 usbInitEndpointI(usbp, drivers.array[i].config.bulk_in, &drivers.array[i].in_ep_config);
@@ -381,7 +418,7 @@ static uint16_t get_hword(uint8_t *p) {
  * Other Device    Required    Optional    Optional    Optional    Optional    Optional
  */
 
-#if defined(SHARED_EP_ENABLE)
+#if defined(SHARED_EP_ENABLE) && !defined(KEYBOARD_SHARED_EP)
 static uint8_t set_report_buf[2] __attribute__((aligned(2)));
 static void    set_led_transfer_cb(USBDriver *usbp) {
     if ((set_report_buf[0] == REPORT_ID_KEYBOARD) || (set_report_buf[0] == REPORT_ID_NKRO)) {
@@ -445,19 +482,18 @@ static bool usb_request_hook_cb(USBDriver *usbp) {
                 switch (usbp->setup[1]) { /* bRequest */
                     case HID_SET_REPORT:
                         switch (usbp->setup[4]) { /* LSB(wIndex) (check MSB==0 and wLength==1?) */
-#if defined(SHARED_EP_ENABLE) || defined(KEYBOARD_SHARED_EP)
+#if defined(SHARED_EP_ENABLE) && !defined(KEYBOARD_SHARED_EP)
                             case SHARED_INTERFACE:
                                 usbSetupTransfer(usbp, set_report_buf, sizeof(set_report_buf), set_led_transfer_cb);
                                 return TRUE;
                                 break;
-#else
+#endif
                             case KEYBOARD_INTERFACE:
                                 /* keyboard_led_stats = <read byte from next OUT report>
                                  * keyboard_led_stats needs be word (or dword), otherwise we get an exception on F0 */
                                 usbSetupTransfer(usbp, (uint8_t *)&keyboard_led_stats, 1, NULL);
                                 return TRUE;
                                 break;
-#endif
                         }
                         break;
 
@@ -548,7 +584,15 @@ void init_usb_driver(USBDriver *usbp) {
         qmkusbObjectInit(driver, &drivers.array[i].config);
         qmkusbStart(driver, &drivers.array[i].config);
     }
-
+#if defined(RAW_ENABLE) && STM32_USE_OTG1
+    {
+        QMKUSBDriver *driver                    = &raw_driver.driver;
+        raw_driver.in_ep_config.in_state     = &raw_driver.in_ep_state;
+        raw_driver.in_ep_config.out_state    = &raw_driver.out_ep_state;
+        qmkusbObjectInit(driver, &raw_driver.config);
+        qmkusbStart(driver, &raw_driver.config);
+    }
+#endif
     /*
      * Activates the USB driver and then the USB bus pull-up on D+.
      * Note, a delay is inserted in order to not have to disconnect the cable
