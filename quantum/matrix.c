@@ -98,6 +98,7 @@ static void unselect_rows(void) {
 static void init_pins(void) {
     unselect_rows();
     for (uint8_t x = 0; x < MATRIX_COLS; x++) {
+        setPinOutput(col_pins[x]);
         setPinInputHigh(col_pins[x]);
     }
 }

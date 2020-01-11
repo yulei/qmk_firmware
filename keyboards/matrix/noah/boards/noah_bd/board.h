@@ -32,7 +32,6 @@
 #define BOARD_MATRIX_NOAH
 #define BOARD_NAME                  "Matrix noah65 keyboard"
 #define BOARD_OTG_NOVBUSSENS
-
 /*
  * Board oscillators-related settings.
  * NOTE: LSE not fitted.
