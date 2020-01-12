@@ -60,13 +60,9 @@ uint8_t matrix_scan(void)
         // need wait to settle pin state
         wait_us(20);
 
-        data = (
-            ((nrf_gpio_pin_read(row_pins[0]) ? 1 : 0) << 0 ) |
-            ((nrf_gpio_pin_read(row_pins[1]) ? 1 : 0) << 0 ) |
-            ((nrf_gpio_pin_read(row_pins[2]) ? 1 : 0) << 0 ) |
-            ((nrf_gpio_pin_read(row_pins[3]) ? 1 : 0) << 0 ) |
-            ((nrf_gpio_pin_read(row_pins[4]) ? 1 : 0) << 0 )
-        );
+        for( int row = 0; row < MATRIX_ROWS; row++) {
+            data |= (nrf_gpio_pin_read(row_pins[row]) ? 1 : 0) << row;
+        };
 
         nrf_gpio_pin_clear(col_pins[col]);
 

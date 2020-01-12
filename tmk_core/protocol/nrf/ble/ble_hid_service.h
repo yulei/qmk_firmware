@@ -1,62 +1,58 @@
 /**
  * @file ble_hid_service.h
+ * @brief defined the hid service related part
  */
 
 #pragma once
 
-#include <stdbool.h>
-#include <stdint.h>
+#include "ble_config.h"
 
-#include "ble_hids.h"
-#include "ble_services.h"
-#include "ble_hid_descriptor.h"
+const static uint8_t hid_report_descriptor[] = {
+    0x05, 0x01,       // Usage Page (Generic Desktop)
+    0x09, 0x06,       // Usage (Keyboard)
+    0xA1, 0x01,       // Collection (Application)
+    0x05, 0x07,       // Usage Page (Key Codes)
+    0x19, 0xe0,       // Usage Minimum (224)
+    0x29, 0xe7,       // Usage Maximum (231)
+    0x15, 0x00,       // Logical Minimum (0)
+    0x25, 0x01,       // Logical Maximum (1)
+    0x75, 0x01,       // Report Size (1)
+    0x95, 0x08,       // Report Count (8)
+    0x81, 0x02,       // Input (Data, Variable, Absolute)
 
-void hid_service_init(ble_srv_error_handler_t err_handler);
-void hid_send_report(uint8_t report_index, uint8_t key_pattern_len, uint8_t* p_key_pattern);
-void hid_flush_report(void);
+    0x95, 0x01,       // Report Count (1)
+    0x75, 0x08,       // Report Size (8)
+    0x81, 0x01,       // Input (Constant) reserved byte(1)
 
-extern uint8_t keyboard_led_val_ble;
+    0x95, 0x05,       // Report Count (5)
+    0x75, 0x01,       // Report Size (1)
+    0x05, 0x08,       // Usage Page (Page# for LEDs)
+    0x19, 0x01,       // Usage Minimum (1)
+    0x29, 0x05,       // Usage Maximum (5)
+    0x91, 0x02,       // Output (Data, Variable, Absolute), Led report
+    0x95, 0x01,       // Report Count (1)
+    0x75, 0x03,       // Report Size (3)
+    0x91, 0x01,       // Output (Data, Variable, Absolute), Led report padding
 
-/** Quick HID param setup macro
- *
- * @param _name: name to setup
- * @param _len: report max length
- * @param _id: report id
- * @param _type: report type
- */
-#define HID_REP_SETUP(_name, _len, _id, _type) \
-    {                                          \
-        _name.max_len = _len;                  \
-        _name.rep_ref.report_id = _id;         \
-        _name.rep_ref.report_type = _type;     \
-        _name.sec.wr = SEC_CURRENT;            \
-        _name.sec.rd = SEC_CURRENT;            \
-    }
+    0x95, 0x06,       // Report Count (6)
+    0x75, 0x08,       // Report Size (8)
+    0x15, 0x00,       // Logical Minimum (0)
+    0x25, 0x65,       // Logical Maximum (101)
+    0x05, 0x07,       // Usage Page (Key codes)
+    0x19, 0x00,       // Usage Minimum (0)
+    0x29, 0x65,       // Usage Maximum (101)
+    0x81, 0x00,       // Input (Data, Array) Key array(6 bytes)
 
-/** Setup Input report
- *
- * @param _name: name to setup
- * @param _len: report max length
- * @param _id: report id
- */
-#define HID_REP_IN_SETUP(_name, _len, _id)                       \
-    {                                                            \
-        HID_REP_SETUP(_name, _len, _id, BLE_HIDS_REP_TYPE_INPUT) \
-        _name.sec.cccd_wr = SEC_CURRENT;                         \
-    }
+    0x09, 0x05,       // Usage (Vendor Defined)
+    0x15, 0x00,       // Logical Minimum (0)
+    0x26, 0xFF, 0x00, // Logical Maximum (255)
+    0x75, 0x08,       // Report Size (8 bit)
+    0x95, 0x02,       // Report Count (2)
+    0xB1, 0x02,       // Feature (Data, Variable, Absolute)
 
-/** Setup Output report
- *
- * @param _name: name to setup
- * @param _len: report max length
- * @param _id: report id
- */
-#define HID_REP_OUT_SETUP(_name, _len, _id) HID_REP_SETUP(_name, _len, _id, BLE_HIDS_REP_TYPE_OUTPUT)
+    0xC0              // End Collection (Application)
+};
 
-/** Setup Feature report
- *
- * @param _name: name to setup
- * @param _len: report max length
- * @param _id: report id
- */
-#define HID_REP_FEATURE_SETUP(_name, _len, _id) HID_REP_SETUP(_name, _len, _id, BLE_HIDS_REP_TYPE_FEATURE)
+void ble_hids_init(void);
+void ble_hids_start(void);
+void ble_hids_send_report(void);

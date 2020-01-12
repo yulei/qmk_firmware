@@ -37,7 +37,6 @@
  * OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  */
-
 /** @file
  *
  * @defgroup ble_sdk_app_hids_keyboard_main main.c
@@ -54,32 +53,35 @@
  * Also it would accept pairing requests from any peer device.
  */
 
-#include "app_error.h"
+#include <stdint.h>
+#include <string.h>
 #include "nordic_common.h"
 #include "nrf.h"
 #include "nrf_assert.h"
-#include "nrf_soc.h"
-#include <stdint.h>
-#include <string.h>
-
+#include "app_error.h"
+#include "ble.h"
+#include "ble_err.h"
+#include "ble_hci.h"
+#include "ble_srv_common.h"
+#include "ble_conn_params.h"
 #include "app_scheduler.h"
+#include "nrf_sdh.h"
+#include "nrf_sdh_soc.h"
+#include "nrf_sdh_ble.h"
 #include "app_timer.h"
+#include "fds.h"
+#include "ble_conn_state.h"
 #include "nrf_pwr_mgmt.h"
 
-#include "ble/ble_bas_service.h"
-#include "ble/ble_hid_service.h"
-#include "ble/ble_services.h"
+#include "nrf_log.h"
+#include "nrf_log_ctrl.h"
+#include "nrf_log_default_backends.h"
 
-#include "ble_keyboard.h"
+#include "ble_config.h"
 
-#define DEAD_BEEF 0xDEADBEEF /**< Value used as error code on stack dump, can be used to identify stack location on stack unwind. */
 
-#define SCHED_MAX_EVENT_DATA_SIZE APP_TIMER_SCHED_EVENT_DATA_SIZE /**< Maximum size of scheduler events. */
-#ifdef SVCALL_AS_NORMAL_FUNCTION
-#define SCHED_QUEUE_SIZE 30 /**< Maximum number of events in the scheduler queue. More is needed in case of Serialization. */
-#else
-#define SCHED_QUEUE_SIZE 20 /**< Maximum number of events in the scheduler queue. */
-#endif
+static uint16_t          m_conn_handle  = BLE_CONN_HANDLE_INVALID;  /**< Handle of the current connection. */
+
 
 /**@brief Callback function for asserts in the SoftDevice.
  *
@@ -92,10 +94,12 @@
  * @param[in]   line_num   Line number of the failing ASSERT call.
  * @param[in]   file_name  File name of the failing ASSERT call.
  */
-void assert_nrf_callback(uint16_t line_num, const uint8_t* p_file_name)
+void assert_nrf_callback(uint16_t line_num, const uint8_t * p_file_name)
 {
     app_error_handler(DEAD_BEEF, line_num, p_file_name);
 }
+
+
 
 /**@brief Function for handling Service errors.
  *
@@ -104,42 +108,11 @@ void assert_nrf_callback(uint16_t line_num, const uint8_t* p_file_name)
  *
  * @param[in]   nrf_error   Error code containing information about what went wrong.
  */
-void service_error_handler(uint32_t nrf_error)
+static void service_error_handler(uint32_t nrf_error)
 {
     APP_ERROR_HANDLER(nrf_error);
 }
 
-
-/**@brief Handler for shutdown preparation.
- *
- * @details During shutdown procedures, this function will be called at a 1 second interval
- *          untill the function returns true. When the function returns true, it means that the
- *          app is ready to reset to DFU mode.
- *
- * @param[in]   event   Power manager event.
- *
- * @retval  True if shutdown is allowed by this power manager handler, otherwise false.
- */
-static bool app_shutdown_handler(nrf_pwr_mgmt_evt_t event)
-{
-    switch (event) {
-    case NRF_PWR_MGMT_EVT_PREPARE_SYSOFF:
-        break;
-
-    default:
-        // YOUR_JOB: Implement any of the other events available from the power management module:
-        //      -NRF_PWR_MGMT_EVT_PREPARE_SYSOFF
-        //      -NRF_PWR_MGMT_EVT_PREPARE_WAKEUP
-        //      -NRF_PWR_MGMT_EVT_PREPARE_RESET
-        return true;
-    }
-    return true;
-}
-
-//lint -esym(528, m_app_shutdown_handler)
-/**@brief Register application shutdown handler with priority 0.
- */
-NRF_PWR_MGMT_HANDLER_REGISTER(app_shutdown_handler, 0);
 
 /**@brief Function for the Timer initialization.
  *
@@ -151,24 +124,112 @@ static void timers_init(void)
 
     err_code = app_timer_init();
     APP_ERROR_CHECK(err_code);
+
 }
 
-/**@brief Function for initializing services that will be used by the application.
+
+
+/**@brief Function for handling BLE events.
+ *
+ * @param[in]   p_ble_evt   Bluetooth stack event.
+ * @param[in]   p_context   Unused.
  */
-static void services_init(void)
+static void ble_evt_handler(ble_evt_t const * p_ble_evt, void * p_context)
 {
-    ble_services_init();
-    battery_service_init();
-    hid_service_init(service_error_handler);
+    ret_code_t err_code;
+
+    switch (p_ble_evt->header.evt_id)
+    {
+        case BLE_GAP_EVT_CONNECTED:
+            NRF_LOG_INFO("Connected");
+            //err_code = bsp_indication_set(BSP_INDICATE_CONNECTED);
+            //APP_ERROR_CHECK(err_code);
+            m_conn_handle = p_ble_evt->evt.gap_evt.conn_handle;
+            err_code = nrf_ble_qwr_conn_handle_assign(&m_qwr, m_conn_handle);
+            APP_ERROR_CHECK(err_code);
+            break;
+
+        case BLE_GAP_EVT_DISCONNECTED:
+            NRF_LOG_INFO("Disconnected");
+            // Dequeue all keys without transmission.
+            (void) buffer_dequeue(false);
+
+            m_conn_handle = BLE_CONN_HANDLE_INVALID;
+
+            // Reset m_caps_on variable. Upon reconnect, the HID host will re-send the Output
+            // report containing the Caps lock state.
+            m_caps_on = false;
+            // disabling alert 3. signal - used for capslock ON
+            //err_code = bsp_indication_set(BSP_INDICATE_ALERT_OFF);
+            //APP_ERROR_CHECK(err_code);
+
+            break; // BLE_GAP_EVT_DISCONNECTED
+
+        case BLE_GAP_EVT_PHY_UPDATE_REQUEST:
+        {
+            NRF_LOG_DEBUG("PHY update request.");
+            ble_gap_phys_t const phys =
+            {
+                .rx_phys = BLE_GAP_PHY_AUTO,
+                .tx_phys = BLE_GAP_PHY_AUTO,
+            };
+            err_code = sd_ble_gap_phy_update(p_ble_evt->evt.gap_evt.conn_handle, &phys);
+            APP_ERROR_CHECK(err_code);
+        } break;
+
+        case BLE_GATTS_EVT_HVN_TX_COMPLETE:
+            // Send next key event
+            (void) buffer_dequeue(true);
+            break;
+
+        case BLE_GATTC_EVT_TIMEOUT:
+            // Disconnect on GATT Client timeout event.
+            NRF_LOG_DEBUG("GATT Client Timeout.");
+            err_code = sd_ble_gap_disconnect(p_ble_evt->evt.gattc_evt.conn_handle,
+                                             BLE_HCI_REMOTE_USER_TERMINATED_CONNECTION);
+            APP_ERROR_CHECK(err_code);
+            break;
+
+        case BLE_GATTS_EVT_TIMEOUT:
+            // Disconnect on GATT Server timeout event.
+            NRF_LOG_DEBUG("GATT Server Timeout.");
+            err_code = sd_ble_gap_disconnect(p_ble_evt->evt.gatts_evt.conn_handle,
+                                             BLE_HCI_REMOTE_USER_TERMINATED_CONNECTION);
+            APP_ERROR_CHECK(err_code);
+            break;
+
+        default:
+            // No implementation needed.
+            break;
+    }
 }
 
-/**@brief Function for starting timers.
+
+/**@brief Function for initializing the BLE stack.
+ *
+ * @details Initializes the SoftDevice and the BLE event interrupt.
  */
-static void timers_start(void)
+static void ble_stack_init(void)
 {
-    battery_timer_start();
-    ble_keyboard_timer_start();
+    ret_code_t err_code;
+
+    err_code = nrf_sdh_enable_request();
+    APP_ERROR_CHECK(err_code);
+
+    // Configure the BLE stack using the default settings.
+    // Fetch the start address of the application RAM.
+    uint32_t ram_start = 0;
+    err_code = nrf_sdh_ble_default_cfg_set(APP_BLE_CONN_CFG_TAG, &ram_start);
+    APP_ERROR_CHECK(err_code);
+
+    // Enable BLE stack.
+    err_code = nrf_sdh_ble_enable(&ram_start);
+    APP_ERROR_CHECK(err_code);
+
+    // Register a handler for BLE events.
+    NRF_SDH_BLE_OBSERVER(m_ble_observer, APP_BLE_OBSERVER_PRIO, ble_evt_handler, NULL);
 }
+
 
 /**@brief Function for the Event Scheduler initialization.
  */
@@ -177,6 +238,19 @@ static void scheduler_init(void)
     APP_SCHED_INIT(SCHED_MAX_EVENT_DATA_SIZE, SCHED_QUEUE_SIZE);
 }
 
+
+
+/**@brief Function for initializing the nrf log module.
+ */
+static void log_init(void)
+{
+    ret_code_t err_code = NRF_LOG_INIT(NULL);
+    APP_ERROR_CHECK(err_code);
+
+    NRF_LOG_DEFAULT_BACKENDS_INIT();
+}
+
+
 /**@brief Function for initializing power management.
  */
 static void power_management_init(void)
@@ -184,9 +258,8 @@ static void power_management_init(void)
     ret_code_t err_code;
     err_code = nrf_pwr_mgmt_init();
     APP_ERROR_CHECK(err_code);
-
-    sd_power_dcdc_mode_set(1);
 }
+
 
 /**@brief Function for handling the idle state (main loop).
  *
@@ -195,33 +268,41 @@ static void power_management_init(void)
 static void idle_state_handle(void)
 {
     app_sched_execute();
-    nrf_pwr_mgmt_run();
+    if (NRF_LOG_PROCESS() == false)
+    {
+        nrf_pwr_mgmt_run();
+    }
 }
 
-bool erase_bonds = false;
 
 /**@brief Function for application main entry.
  */
 int main(void)
 {
-    // Initialize.
-    timers_init();
-    power_management_init();
+    bool erase_bonds = true;
 
+    // Initialize.
+    log_init();
+    timers_init();
+
+    power_management_init();
     ble_stack_init();
     scheduler_init();
-    services_init();
-    ble_keyboard_init();
+
+    ble_services_init();
 
     // Start execution.
-    timers_start();
-    advertising_start(erase_bonds);
+    NRF_LOG_INFO("HID Keyboard started.");
+
+    ble_services_start(erase_bonds);
 
     // Enter main loop.
-    for (;;) {
+    for (;;)
+    {
         idle_state_handle();
     }
 }
+
 
 /**
  * @}
