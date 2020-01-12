@@ -63,7 +63,7 @@ static void init(void) {
 #    ifdef IS31FL3731
 static void flush(void) {
     IS31FL3731_update_pwm_buffers(DRIVER_ADDR_1, 0);
-    IS31FL3731_update_pwm_buffers(DRIVER_ADDR_2, 1);
+   // IS31FL3731_update_pwm_buffers(DRIVER_ADDR_2, 1);
 }
 
 const rgb_matrix_driver_t rgb_matrix_driver = {
