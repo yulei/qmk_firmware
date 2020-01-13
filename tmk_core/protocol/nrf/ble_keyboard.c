@@ -23,12 +23,17 @@ static void    send_system(uint16_t data);
 static void    send_consumer(uint16_t data);
 host_driver_t  kbd_driver = { keyboard_leds, send_keyboard, send_mouse, send_system, send_consumer };
 
-void keyboard_timout_handler(void *p_context) { keyboard_task(); }
+void keyboard_timout_handler(void *p_context) {
+    keyboard_task();
+    app_timer_start(m_keyboard_timer_id, KEYBOARD_SCAN_INTERVAL, NULL);
+}
+
 void keyboard_timer_init(void)
 {
     ret_code_t err_code;
     err_code = app_timer_create(&m_keyboard_timer_id,
-                            APP_TIMER_MODE_REPEATED,
+                            //APP_TIMER_MODE_REPEATED,
+                            APP_TIMER_MODE_SINGLE_SHOT,
                             keyboard_timout_handler);
     APP_ERROR_CHECK(err_code);
 }

@@ -55,7 +55,7 @@ uint8_t matrix_scan(void)
 {
     for (int col = 0; col < MATRIX_COLS; col++) {
         matrix_row_t data = 0;
-        nrf_gpio_pin_write(col_pins[col], 1);
+        nrf_gpio_pin_set(col_pins[col]);
 
         // need wait to settle pin state
         wait_us(20);

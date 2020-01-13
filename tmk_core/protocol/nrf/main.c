@@ -108,7 +108,7 @@ static void ble_evt_handler(ble_evt_t const * p_ble_evt, void * p_context) {
         case BLE_GAP_EVT_DISCONNECTED:
             NRF_LOG_INFO("Disconnected");
             // Dequeue all keys without transmission.
-            ble_hid_service_flush(false);
+            //ble_hid_service_flush(false);
 
             ble_driver.m_conn_handle = BLE_CONN_HANDLE_INVALID;
 
@@ -127,7 +127,7 @@ static void ble_evt_handler(ble_evt_t const * p_ble_evt, void * p_context) {
 
         case BLE_GATTS_EVT_HVN_TX_COMPLETE:
             // Send next key event
-            ble_hid_service_flush(true);
+            //ble_hid_service_flush(true);
             break;
 
         case BLE_GATTC_EVT_TIMEOUT:
@@ -223,11 +223,11 @@ int main(void) {
     ble_stack_init();
     scheduler_init();
     ble_services_init();
-    ble_keyboard_init();
+    //ble_keyboard_init();
 
     // Start execution.
     ble_services_start(erase_bonds);
-    ble_keyboard_start();
+    //ble_keyboard_start();
 
     // Enter main loop.
     for (;;) {
