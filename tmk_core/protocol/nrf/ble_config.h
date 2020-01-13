@@ -9,6 +9,8 @@
 #include <stdbool.h>
 
 #include "ble_srv_common.h"
+#include "peer_manager.h"
+#include "app_timer.h"
 
 #include "nrf_sdh.h"
 #include "nrf_sdh_soc.h"
@@ -17,8 +19,6 @@
 #include "nrf_log.h"
 #include "nrf_log_ctrl.h"
 #include "nrf_log_default_backends.h"
-
-#define SHIFT_BUTTON_ID                     1                                          /**< Button used as 'SHIFT' Key. */
 
 #define DEVICE_NAME                         "Ble_Keyboard"                             /**< Name of device. Will be included in the advertising data. */
 #define MANUFACTURER_NAME                   "Astro"                                    /**< Manufacturer. Will be passed to Device Information Service. */
@@ -64,10 +64,12 @@
 
 #define OUTPUT_REPORT_INDEX                 0                                          /**< Index of Output Report. */
 #define OUTPUT_REPORT_MAX_LEN               1                                          /**< Maximum length of Output Report. */
-#define INPUT_REPORT_KEYS_INDEX             0                                          /**< Index of Input Report. */
-#define OUTPUT_REPORT_BIT_MASK_CAPS_LOCK    0x02                                       /**< CAPS LOCK bit in Output Report (based on 'LED Page (0x08)' of the Universal Serial Bus HID Usage Tables). */
-#define INPUT_REP_REF_ID                    0                                          /**< Id of reference to Keyboard Input Report. */
 #define OUTPUT_REP_REF_ID                   0                                          /**< Id of reference to Keyboard Output Report. */
+
+#define INPUT_REPORT_KEYS_INDEX             0                                          /**< Index of Input Report. */
+#define INPUT_REPORT_KEYS_MAX_LEN           8                                          /**< Maximum length of the Input Report characteristic. */
+#define INPUT_REP_REF_ID                    0                                          /**< Id of reference to Keyboard Input Report. */
+
 #define FEATURE_REP_REF_ID                  0                                          /**< ID of reference to Keyboard Feature Report. */
 #define FEATURE_REPORT_MAX_LEN              2                                          /**< Maximum length of Feature Report. */
 #define FEATURE_REPORT_INDEX                0                                          /**< Index of Feature Report. */
@@ -75,8 +77,6 @@
 #define MAX_BUFFER_ENTRIES                  5                                          /**< Number of elements that can be enqueued */
 
 #define BASE_USB_HID_SPEC_VERSION           0x0101                                     /**< Version number of base USB HID Specification implemented by this application. */
-
-#define INPUT_REPORT_KEYS_MAX_LEN           8                                          /**< Maximum length of the Input Report characteristic. */
 
 #define DEAD_BEEF                           0xDEADBEEF                                 /**< Value used as error code on stack dump, can be used to identify stack location on stack unwind. */
 
@@ -87,8 +87,18 @@
 #define SCHED_QUEUE_SIZE                    10                                         /**< Maximum number of events in the scheduler queue. */
 #endif
 
-#define MODIFIER_KEY_POS                    0                                          /**< Position of the modifier byte in the Input Report. */
-#define SCAN_CODE_POS                       2                                          /**< The start position of the key scan code in a HID Report. */
-#define SHIFT_KEY_CODE                      0x02                                       /**< Key code indicating the press of the Shift Key. */
+typedef enum {
+    NRF_REPORT_ID_KEYBOARD = 0,
+    NRF_REPORT_ID_MOUSE,
+    NRF_REPORT_ID_SYSTEM,
+    NRF_REPORT_ID_CONSUMER,
+    NRF_REPORT_ID_MAX,
+} nrf_report_code;
 
-#define MAX_KEYS_IN_ONE_REPORT              (INPUT_REPORT_KEYS_MAX_LEN - SCAN_CODE_POS)/**< Maximum number of key presses that can be sent in one Input Report. */
+typedef struct {
+    uint16_t m_conn_handle;     /**< Handle of the current connection. */
+    pm_peer_id_t m_peer_id;     /**< Device reference handle to the current bonded central. */
+    uint8_t      keyboard_led;  /**< keyboard led status */
+} ble_driver_t;
+
+extern ble_driver_t ble_driver;

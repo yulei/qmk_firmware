@@ -53,6 +53,7 @@ const static uint8_t hid_report_descriptor[] = {
     0xC0              // End Collection (Application)
 };
 
-void ble_hids_init(void);
-void ble_hids_start(void);
-void ble_hids_send_report(void);
+void ble_hid_service_init(void);
+void ble_hid_service_start(void);
+void ble_hid_service_send_report(uint8_t report_id, uint8_t* report_data);
+void ble_hid_service_flush(bool send);

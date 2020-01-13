@@ -7,42 +7,55 @@
 #include "nrf_ble_qwr.h"
 #include "peer_manager_handler.h"
 #include "peer_manager.h"
+#include "ble_conn_params.h"
+#include "ble_conn_state.h"
 #include "ble_dis.h"
+#include "ble_adv_service.h"
+#include "ble_bat_service.h"
+#include "ble_hid_service.h"
 #include "ble_services.h"
 
 NRF_BLE_GATT_DEF(m_gatt);                                           /**< GATT module instance. */
 NRF_BLE_QWR_DEF(m_qwr);                                             /**< Context for the Queued Write module.*/
 
-static pm_peer_id_t      m_peer_id;                                 /**< Device reference handle to the current bonded central. */
+static void pm_evt_handler(pm_evt_t const *p_evt);
+static void nrf_qwr_error_handler(uint32_t nrf_error);
+static void conn_params_error_handler(uint32_t nrf_error);
 
-void ble_services_init(void)
-{
+static void gap_params_init(void);
+static void gatt_init(void);
+static void qwr_init(void);
+static void dis_init(void);
+static void conn_params_init(void);
+static void peer_manager_init(void);
+
+void ble_services_init(void) {
     gap_params_init();
     gatt_init();
 
-    ble_advs_init();
+    ble_adv_service_init();
 
     qwr_init();
     dis_init();
 
-    ble_bats_init();
-    ble_hids_init();
+    ble_bat_service_init();
+    ble_hid_service_init();
 
     conn_params_init();
     peer_manager_init();
 }
 
-void ble_services_start(bool erase_bond)
-{
-    ble_advs_start(erase_bond);
+void ble_services_start(bool erase_bond) {
+    ble_adv_service_start(erase_bond);
+    ble_bat_service_start();
+    ble_hid_service_start();
 }
 
 /**@brief Function for setting filtered whitelist.
  *
  * @param[in] skip  Filter passed to @ref pm_peer_id_list.
  */
-void ble_pm_whitelist_set(pm_peer_id_list_skip_t skip)
-{
+void ble_pm_whitelist_set(pm_peer_id_list_skip_t skip) {
     pm_peer_id_t peer_ids[BLE_GAP_WHITELIST_ADDR_MAX_COUNT];
     uint32_t     peer_id_count = BLE_GAP_WHITELIST_ADDR_MAX_COUNT;
 
@@ -62,8 +75,7 @@ void ble_pm_whitelist_set(pm_peer_id_list_skip_t skip)
  *
  * @param[in] skip  Filter passed to @ref pm_peer_id_list.
  */
-void ble_pm_identities_set(pm_peer_id_list_skip_t skip)
-{
+void ble_pm_identities_set(pm_peer_id_list_skip_t skip) {
     pm_peer_id_t peer_ids[BLE_GAP_DEVICE_IDENTITIES_MAX_COUNT];
     uint32_t     peer_id_count = BLE_GAP_DEVICE_IDENTITIES_MAX_COUNT;
 
@@ -76,8 +88,7 @@ void ble_pm_identities_set(pm_peer_id_list_skip_t skip)
 
 /**@brief Clear bond information from persistent storage.
  */
-void ble_pm_delete_bonds(void)
-{
+void ble_pm_delete_bonds(void) {
     ret_code_t err_code;
 
     NRF_LOG_INFO("Erase bonds!");
@@ -86,36 +97,42 @@ void ble_pm_delete_bonds(void)
     APP_ERROR_CHECK(err_code);
 }
 
+/**@brief Function for updating qwr's connection handle.
+ *
+ * @param[in] conn_handle the current connection handle.
+ */
+void ble_qwr_update_handle(uint16_t conn_handle) {
+    ret_code_t err_code;
 
+    err_code = nrf_ble_qwr_conn_handle_assign(&m_qwr, ble_driver.m_conn_handle);
+    APP_ERROR_CHECK(err_code);
+}
 
 /**@brief Function for handling Peer Manager events.
  *
  * @param[in] p_evt  Peer Manager event.
  */
-static void pm_evt_handler(pm_evt_t const * p_evt)
-{
+static void pm_evt_handler(pm_evt_t const * p_evt) {
     pm_handler_on_pm_evt(p_evt);
     pm_handler_flash_clean(p_evt);
 
-    switch (p_evt->evt_id)
-    {
-        case PM_EVT_PEERS_DELETE_SUCCEEDED:
-            advertising_start(false);
-            break;
+    switch (p_evt->evt_id) {
+    case PM_EVT_PEERS_DELETE_SUCCEEDED:
+        ble_adv_service_start(false);
+        break;
 
-        case PM_EVT_PEER_DATA_UPDATE_SUCCEEDED:
-            if (     p_evt->params.peer_data_update_succeeded.flash_changed
-                 && (p_evt->params.peer_data_update_succeeded.data_id == PM_PEER_DATA_ID_BONDING))
-            {
-                NRF_LOG_INFO("New Bond, add the peer to the whitelist if possible");
-                // Note: You should check on what kind of white list policy your application should use.
+    case PM_EVT_PEER_DATA_UPDATE_SUCCEEDED:
+        if (p_evt->params.peer_data_update_succeeded.flash_changed
+            && (p_evt->params.peer_data_update_succeeded.data_id == PM_PEER_DATA_ID_BONDING)) {
+            NRF_LOG_INFO("New Bond, add the peer to the whitelist if possible");
+            // Note: You should check on what kind of white list policy your application should use.
 
-                whitelist_set(PM_PEER_ID_LIST_SKIP_NO_ID_ADDR);
-            }
-            break;
+            ble_pm_whitelist_set(PM_PEER_ID_LIST_SKIP_NO_ID_ADDR);
+        }
+        break;
 
-        default:
-            break;
+    default:
+        break;
     }
 }
 
@@ -124,8 +141,7 @@ static void pm_evt_handler(pm_evt_t const * p_evt)
  * @details This function sets up all the necessary GAP (Generic Access Profile) parameters of the
  *          device including the device name, appearance, and the preferred connection parameters.
  */
-static void gap_params_init(void)
-{
+static void gap_params_init(void) {
     ret_code_t              err_code;
     ble_gap_conn_params_t   gap_conn_params;
     ble_gap_conn_sec_mode_t sec_mode;
@@ -154,8 +170,7 @@ static void gap_params_init(void)
 
 /**@brief Function for initializing the GATT module.
  */
-static void gatt_init(void)
-{
+static void gatt_init(void) {
     ret_code_t err_code = nrf_ble_gatt_init(&m_gatt, NULL);
     APP_ERROR_CHECK(err_code);
 }
@@ -168,16 +183,14 @@ static void gatt_init(void)
  *
  * @param[in]   nrf_error   Error code containing information about what went wrong.
  */
-static void nrf_qwr_error_handler(uint32_t nrf_error)
-{
+static void nrf_qwr_error_handler(uint32_t nrf_error) {
     APP_ERROR_HANDLER(nrf_error);
 }
 
 
 /**@brief Function for initializing the Queued Write Module.
  */
-static void qwr_init(void)
-{
+static void qwr_init(void) {
     ret_code_t         err_code;
     nrf_ble_qwr_init_t qwr_init_obj = {0};
 
@@ -190,8 +203,7 @@ static void qwr_init(void)
 
 /**@brief Function for initializing Device Information Service.
  */
-static void dis_init(void)
-{
+static void dis_init(void) {
     ret_code_t       err_code;
     ble_dis_init_t   dis_init_obj;
     ble_dis_pnp_id_t pnp_id;
@@ -216,16 +228,14 @@ static void dis_init(void)
  *
  * @param[in]   nrf_error   Error code containing information about what went wrong.
  */
-static void conn_params_error_handler(uint32_t nrf_error)
-{
+static void conn_params_error_handler(uint32_t nrf_error) {
     APP_ERROR_HANDLER(nrf_error);
 }
 
 
 /**@brief Function for initializing the Connection Parameters module.
  */
-static void conn_params_init(void)
-{
+static void conn_params_init(void) {
     ret_code_t             err_code;
     ble_conn_params_init_t cp_init;
 
@@ -246,8 +256,7 @@ static void conn_params_init(void)
 
 /**@brief Function for the Peer Manager initialization.
  */
-static void peer_manager_init(void)
-{
+static void peer_manager_init(void) {
     ble_gap_sec_params_t sec_param;
     ret_code_t           err_code;
 

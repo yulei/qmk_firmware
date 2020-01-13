@@ -5,6 +5,8 @@
 
 #pragma once
 
+#include "ble_config.h"
+
 void ble_keyboard_init(void);
 
-void ble_keyboard_timer_start(void);
+void ble_keyboard_start(void);

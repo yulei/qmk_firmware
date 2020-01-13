@@ -5,7 +5,8 @@
 
 #include "ble_bas.h"
 #include "sensorsim.h"
-#include "app_timer.h"
+
+#include "ble_bat_service.h"
 
 APP_TIMER_DEF(m_battery_timer_id);                                  /**< Battery timer. */
 BLE_BAS_DEF(m_bas);                                                 /**< Structure used to identify the battery service. */
@@ -13,8 +14,11 @@ BLE_BAS_DEF(m_bas);                                                 /**< Structu
 static sensorsim_cfg_t   m_battery_sim_cfg;                         /**< Battery Level sensor simulator configuration. */
 static sensorsim_state_t m_battery_sim_state;                       /**< Battery Level sensor simulator state. */
 
-void ble_bats_init(void);
-{
+static void sensor_simulator_init(void);
+static void battery_level_update(void);
+static void battery_level_meas_timeout_handler(void* p_context);
+
+void ble_bat_service_init(void) {
     ret_code_t     err_code;
     ble_bas_init_t bas_init_obj;
 
@@ -37,10 +41,11 @@ void ble_bats_init(void);
                                 APP_TIMER_MODE_REPEATED,
                                 battery_level_meas_timeout_handler);
     APP_ERROR_CHECK(err_code);
+
+    sensor_simulator_init();
 }
 
-void ble_bats_start(void)
-{
+void ble_bat_service_start(void) {
     ret_code_t     err_code;
     err_code = app_timer_start(m_battery_timer_id, BATTERY_LEVEL_MEAS_INTERVAL, NULL);
     APP_ERROR_CHECK(err_code);
@@ -48,8 +53,7 @@ void ble_bats_start(void)
 
 /**@brief Function for performing a battery measurement, and update the Battery Level characteristic in the Battery Service.
  */
-static void battery_level_update(void)
-{
+static void battery_level_update(void) {
     ret_code_t err_code;
     uint8_t  battery_level;
 
@@ -62,8 +66,7 @@ static void battery_level_update(void)
         (err_code != NRF_ERROR_FORBIDDEN) &&
         (err_code != NRF_ERROR_INVALID_STATE) &&
         (err_code != BLE_ERROR_GATTS_SYS_ATTR_MISSING)
-       )
-    {
+       ) {
         APP_ERROR_HANDLER(err_code);
     }
 }
@@ -76,16 +79,14 @@ static void battery_level_update(void)
  * @param[in]   p_context   Pointer used for passing some arbitrary information (context) from the
  *                          app_start_timer() call to the timeout handler.
  */
-static void battery_level_meas_timeout_handler(void * p_context)
-{
+static void battery_level_meas_timeout_handler(void * p_context) {
     UNUSED_PARAMETER(p_context);
     battery_level_update();
 }
 
 /**@brief Function for initializing the battery sensor simulator.
  */
-static void sensor_simulator_init(void)
-{
+static void sensor_simulator_init(void) {
     m_battery_sim_cfg.min          = MIN_BATTERY_LEVEL;
     m_battery_sim_cfg.max          = MAX_BATTERY_LEVEL;
     m_battery_sim_cfg.incr         = BATTERY_LEVEL_INCREMENT;

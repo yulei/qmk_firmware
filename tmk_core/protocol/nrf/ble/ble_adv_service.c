@@ -21,8 +21,7 @@ static void on_adv_evt(ble_adv_evt_t ble_adv_evt);
 static void ble_advertising_error_handler(uint32_t nrf_error);
 static void sleep_mode_enter(void);
 
-void ble_advs_init(void)
-{
+void ble_adv_service_init(void) {
     uint32_t               err_code;
     uint8_t                adv_flags;
     ble_advertising_init_t init;
@@ -57,15 +56,11 @@ void ble_advs_init(void)
     ble_advertising_conn_cfg_tag_set(&m_advertising, APP_BLE_CONN_CFG_TAG);
 }
 
-void ble_advs_start(bool erase_bonds)
-{
-    if (erase_bonds == true)
-    {
+void ble_adv_service_start(bool erase_bonds) {
+    if (erase_bonds == true) {
         ble_pm_delete_bonds();
         // Advertising is started by PM_EVT_PEERS_DELETE_SUCCEEDED event.
-    }
-    else
-    {
+    } else {
         ble_pm_whitelist_set(PM_PEER_ID_LIST_SKIP_NO_ID_ADDR);
 
         ret_code_t ret = ble_advertising_start(&m_advertising, BLE_ADV_MODE_FAST);
@@ -77,8 +72,7 @@ void ble_advs_start(bool erase_bonds)
  *
  * @param[in] nrf_error  Error code containing information about what went wrong.
  */
-static void ble_advertising_error_handler(uint32_t nrf_error)
-{
+static void ble_advertising_error_handler(uint32_t nrf_error) {
     APP_ERROR_HANDLER(nrf_error);
 }
 
@@ -88,101 +82,76 @@ static void ble_advertising_error_handler(uint32_t nrf_error)
  *
  * @param[in] ble_adv_evt  Advertising event.
  */
-static void on_adv_evt(ble_adv_evt_t ble_adv_evt)
-{
+static void on_adv_evt(ble_adv_evt_t ble_adv_evt) {
     ret_code_t err_code;
 
-    switch (ble_adv_evt)
-    {
-        case BLE_ADV_EVT_DIRECTED_HIGH_DUTY:
-            NRF_LOG_INFO("High Duty Directed advertising.");
-            //err_code = bsp_indication_set(BSP_INDICATE_ADVERTISING_DIRECTED);
-            //APP_ERROR_CHECK(err_code);
-            break;
+    switch (ble_adv_evt) {
+    case BLE_ADV_EVT_DIRECTED_HIGH_DUTY:
+        NRF_LOG_INFO("High Duty Directed advertising.");
+        break;
 
-        case BLE_ADV_EVT_DIRECTED:
-            NRF_LOG_INFO("Directed advertising.");
-            //err_code = bsp_indication_set(BSP_INDICATE_ADVERTISING_DIRECTED);
-            //APP_ERROR_CHECK(err_code);
-            break;
+    case BLE_ADV_EVT_DIRECTED:
+        NRF_LOG_INFO("Directed advertising.");
+        break;
 
-        case BLE_ADV_EVT_FAST:
-            NRF_LOG_INFO("Fast advertising.");
-            //err_code = bsp_indication_set(BSP_INDICATE_ADVERTISING);
-            //APP_ERROR_CHECK(err_code);
-            break;
+    case BLE_ADV_EVT_FAST:
+        NRF_LOG_INFO("Fast advertising.");
+        break;
 
-        case BLE_ADV_EVT_SLOW:
-            NRF_LOG_INFO("Slow advertising.");
-            //err_code = bsp_indication_set(BSP_INDICATE_ADVERTISING_SLOW);
-            //APP_ERROR_CHECK(err_code);
-            break;
+    case BLE_ADV_EVT_SLOW:
+        NRF_LOG_INFO("Slow advertising.");
+        break;
 
-        case BLE_ADV_EVT_FAST_WHITELIST:
-            NRF_LOG_INFO("Fast advertising with whitelist.");
-            //err_code = bsp_indication_set(BSP_INDICATE_ADVERTISING_WHITELIST);
-            //APP_ERROR_CHECK(err_code);
-            break;
+    case BLE_ADV_EVT_FAST_WHITELIST:
+        NRF_LOG_INFO("Fast advertising with whitelist.");
+        break;
 
-        case BLE_ADV_EVT_SLOW_WHITELIST:
-            NRF_LOG_INFO("Slow advertising with whitelist.");
-            //err_code = bsp_indication_set(BSP_INDICATE_ADVERTISING_WHITELIST);
-            //APP_ERROR_CHECK(err_code);
-            break;
+    case BLE_ADV_EVT_SLOW_WHITELIST:
+        NRF_LOG_INFO("Slow advertising with whitelist.");
+        break;
 
-        case BLE_ADV_EVT_IDLE:
-            sleep_mode_enter();
-            break;
+    case BLE_ADV_EVT_IDLE:
+        sleep_mode_enter();
+        break;
 
-        case BLE_ADV_EVT_WHITELIST_REQUEST:
-        {
-            ble_gap_addr_t whitelist_addrs[BLE_GAP_WHITELIST_ADDR_MAX_COUNT];
-            ble_gap_irk_t  whitelist_irks[BLE_GAP_WHITELIST_ADDR_MAX_COUNT];
-            uint32_t       addr_cnt = BLE_GAP_WHITELIST_ADDR_MAX_COUNT;
-            uint32_t       irk_cnt  = BLE_GAP_WHITELIST_ADDR_MAX_COUNT;
+    case BLE_ADV_EVT_WHITELIST_REQUEST: {
+        ble_gap_addr_t whitelist_addrs[BLE_GAP_WHITELIST_ADDR_MAX_COUNT];
+        ble_gap_irk_t  whitelist_irks[BLE_GAP_WHITELIST_ADDR_MAX_COUNT];
+        uint32_t       addr_cnt = BLE_GAP_WHITELIST_ADDR_MAX_COUNT;
+        uint32_t       irk_cnt  = BLE_GAP_WHITELIST_ADDR_MAX_COUNT;
 
-            err_code = pm_whitelist_get(whitelist_addrs, &addr_cnt,
-                                        whitelist_irks,  &irk_cnt);
-            APP_ERROR_CHECK(err_code);
-            NRF_LOG_DEBUG("pm_whitelist_get returns %d addr in whitelist and %d irk whitelist",
-                          addr_cnt, irk_cnt);
+        err_code = pm_whitelist_get(whitelist_addrs, &addr_cnt, whitelist_irks,  &irk_cnt);
+        APP_ERROR_CHECK(err_code);
+        NRF_LOG_DEBUG("pm_whitelist_get returns %d addr in whitelist and %d irk whitelist", addr_cnt, irk_cnt);
+        // Set the correct identities list (no excluding peers with no Central Address Resolution).
+        ble_pm_identities_set(PM_PEER_ID_LIST_SKIP_NO_IRK);
 
-            // Set the correct identities list (no excluding peers with no Central Address Resolution).
-            ble_pm_identities_set(PM_PEER_ID_LIST_SKIP_NO_IRK);
+        // Apply the whitelist.
+        err_code = ble_advertising_whitelist_reply(&m_advertising, whitelist_addrs, addr_cnt, whitelist_irks, irk_cnt);
+        APP_ERROR_CHECK(err_code);
+    } break; //BLE_ADV_EVT_WHITELIST_REQUEST
 
-            // Apply the whitelist.
-            err_code = ble_advertising_whitelist_reply(&m_advertising,
-                                                       whitelist_addrs,
-                                                       addr_cnt,
-                                                       whitelist_irks,
-                                                       irk_cnt);
-            APP_ERROR_CHECK(err_code);
-        } break; //BLE_ADV_EVT_WHITELIST_REQUEST
+    case BLE_ADV_EVT_PEER_ADDR_REQUEST: {
+        pm_peer_data_bonding_t peer_bonding_data;
 
-        case BLE_ADV_EVT_PEER_ADDR_REQUEST:
-        {
-            pm_peer_data_bonding_t peer_bonding_data;
+        // Only Give peer address if we have a handle to the bonded peer.
+        if (ble_driver.m_peer_id != PM_PEER_ID_INVALID) {
+            err_code = pm_peer_data_bonding_load(ble_driver.m_peer_id, &peer_bonding_data);
+            if (err_code != NRF_ERROR_NOT_FOUND) {
+                APP_ERROR_CHECK(err_code);
 
-            // Only Give peer address if we have a handle to the bonded peer.
-            if (m_peer_id != PM_PEER_ID_INVALID)
-            {
-                err_code = pm_peer_data_bonding_load(m_peer_id, &peer_bonding_data);
-                if (err_code != NRF_ERROR_NOT_FOUND)
-                {
-                    APP_ERROR_CHECK(err_code);
+                // Manipulate identities to exclude peers with no Central Address Resolution.
+                ble_pm_identities_set(PM_PEER_ID_LIST_SKIP_ALL);
 
-                    // Manipulate identities to exclude peers with no Central Address Resolution.
-                    ble_pm_identities_set(PM_PEER_ID_LIST_SKIP_ALL);
-
-                    ble_gap_addr_t * p_peer_addr = &(peer_bonding_data.peer_ble_id.id_addr_info);
-                    err_code = ble_advertising_peer_addr_reply(&m_advertising, p_peer_addr);
-                    APP_ERROR_CHECK(err_code);
-                }
+                ble_gap_addr_t * p_peer_addr = &(peer_bonding_data.peer_ble_id.id_addr_info);
+                err_code = ble_advertising_peer_addr_reply(&m_advertising, p_peer_addr);
+                APP_ERROR_CHECK(err_code);
             }
-        } break; //BLE_ADV_EVT_PEER_ADDR_REQUEST
+        }
+    } break; //BLE_ADV_EVT_PEER_ADDR_REQUEST
 
-        default:
-            break;
+    default:
+        break;
     }
 }
 
@@ -190,16 +159,8 @@ static void on_adv_evt(ble_adv_evt_t ble_adv_evt)
  *
  * @note This function will not return.
  */
-static void sleep_mode_enter(void)
-{
+static void sleep_mode_enter(void) {
     ret_code_t err_code;
-
-    //err_code = bsp_indication_set(BSP_INDICATE_IDLE);
-    //APP_ERROR_CHECK(err_code);
-
-    // Prepare wakeup buttons.
-    //err_code = bsp_btn_ble_sleep_mode_prepare();
-    //APP_ERROR_CHECK(err_code);
 
     // Go to system-off mode (this function will not return; wakeup will cause a reset).
     err_code = sd_power_system_off();

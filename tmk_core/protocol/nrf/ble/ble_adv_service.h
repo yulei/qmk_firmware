@@ -7,5 +7,5 @@
 
 #include "ble_config.h"
 
-void ble_advs_init(void);
-void ble_advs_start(bool erase_bonds);
+void ble_adv_service_init(void);
+void ble_adv_service_start(bool erase_bonds);
