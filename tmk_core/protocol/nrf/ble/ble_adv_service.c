@@ -5,8 +5,6 @@
 #include <stdint.h>
 #include <string.h>
 
-#include "peer_manager.h"
-
 #include "ble_advertising.h"
 #include "ble_advdata.h"
 

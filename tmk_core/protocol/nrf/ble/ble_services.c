@@ -2,11 +2,9 @@
  * @file ble_services.c
  */
 
-#include "ble_srv_common.h"
 #include "nrf_ble_gatt.h"
 #include "nrf_ble_qwr.h"
 #include "peer_manager_handler.h"
-#include "peer_manager.h"
 #include "ble_conn_params.h"
 #include "ble_conn_state.h"
 #include "ble_dis.h"
@@ -208,10 +206,10 @@ static void dis_init(void) {
     ble_dis_init_t   dis_init_obj;
     ble_dis_pnp_id_t pnp_id;
 
-    pnp_id.vendor_id_source = PNP_ID_VENDOR_ID_SOURCE;
-    pnp_id.vendor_id        = PNP_ID_VENDOR_ID;
-    pnp_id.product_id       = PNP_ID_PRODUCT_ID;
-    pnp_id.product_version  = PNP_ID_PRODUCT_VERSION;
+    pnp_id.vendor_id_source = VENDOR_ID_SOURCE;
+    pnp_id.vendor_id        = VENDOR_ID;
+    pnp_id.product_id       = PRODUCT_ID;
+    pnp_id.product_version  = DEVICE_VER;
 
     memset(&dis_init_obj, 0, sizeof(dis_init_obj));
 

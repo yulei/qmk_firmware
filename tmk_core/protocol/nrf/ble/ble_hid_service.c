@@ -5,50 +5,55 @@
 
 #include "ble_hids.h"
 #include "ble_hid_service.h"
+#include "ble_hid_descriptor.h"
 
 typedef struct {
     uint8_t report_index;
     uint8_t report_len;
 } report_entry_t;
 
-static report_entry_t report_entries[NRF_REPORT_ID_MAX] = {{INPUT_REPORT_KEYS_INDEX, INPUT_REPORT_KEYS_MAX_LEN}};
+static report_entry_t report_entries[NRF_INPUT_REPORT_MAX_INDEX] = {
+    {NRF_INPUT_REPORT_KEYBOARD_INDEX, NRF_INPUT_REPORT_KEYBOARD_MAX_LEN},
+#ifdef MOUSE_ENABLE
+    {NRF_INPUT_REPORT_MOUSE_INDEX, NRF_INPUT_REPORT_MOUSE_MAX_LEN},
+#endif
+#ifdef EXTRAKEY_ENABLE
+    {NRF_INPUT_REPORT_SYSTEM_INDEX, NRF_INPUT_REPORT_SYSTEM_MAX_LEN},
+    {NRF_INPUT_REPORT_CONSUMER_INDEX, NRF_INPUT_REPORT_CONSUMER_MAX_LEN},
+#endif
+    };
 
 /**Buffer queue access macros
  *
  * @{ */
 /** Initialization of buffer list */
 #define BUFFER_LIST_INIT()     \
-    do                         \
-    {                          \
+    do {                       \
         buffer_list.rp    = 0; \
         buffer_list.wp    = 0; \
         buffer_list.count = 0; \
     } while (0)
 
 /** Provide status of data list is full or not */
-#define BUFFER_LIST_FULL() \
-    ((MAX_BUFFER_ENTRIES == buffer_list.count - 1) ? true : false)
+#define BUFFER_LIST_FULL() ((MAX_BUFFER_ENTRIES == buffer_list.count - 1) ? true : false)
 
 /** Provides status of buffer list is empty or not */
-#define BUFFER_LIST_EMPTY() \
-    ((0 == buffer_list.count) ? true : false)
+#define BUFFER_LIST_EMPTY() ((0 == buffer_list.count) ? true : false)
 
-#define BUFFER_ELEMENT_INIT(i)                 \
-    do                                         \
-    {                                          \
-        memset(&(buffer_list.buffer[(i)].report_data[0]), \
-                0, \
-                sizeof(buffer_list.buffer[(i)].report_data)); \
+#define BUFFER_ELEMENT_INIT(i)                                  \
+    do {                                                        \
+        memset(&(buffer_list.buffer[(i)].report_data[0]), 0,    \
+                sizeof(buffer_list.buffer[(i)].report_data));   \
     } while (0)
 
 /** @} */
 
 /** Abstracts buffer element */
 typedef struct hid_key_buffer {
-    uint8_t report_index;                           /**< report index*/
-    uint8_t report_len;                             /**< report size*/
-    uint8_t report_data[INPUT_REPORT_KEYS_MAX_LEN]; /**< report body*/
-    ble_hids_t * p_instance;  /**< Identifies peer and service instance */
+    uint8_t report_index;                                   /**< report index*/
+    uint8_t report_len;                                     /**< report size*/
+    uint8_t report_data[NRF_INPUT_REPORT_KEYBOARD_MAX_LEN]; /**< report body*/
+    ble_hids_t * p_instance;                                /**< Identifies peer and service instance */
 } buffer_entry_t;
 
 STATIC_ASSERT(sizeof(buffer_entry_t) % 4 == 0);
@@ -68,7 +73,7 @@ static bool              m_in_boot_mode = false;                    /**< Current
 
 BLE_HIDS_DEF(m_hids,                                                /**< Structure used to identify the HID service. */
              NRF_SDH_BLE_TOTAL_LINK_COUNT,
-             INPUT_REPORT_KEYS_MAX_LEN,
+             NRF_INPUT_REPORT_KEYBOARD_MAX_LEN,
              OUTPUT_REPORT_MAX_LEN,
              FEATURE_REPORT_MAX_LEN);
 
@@ -88,7 +93,7 @@ void ble_hid_service_init(void) {
     ble_hids_feature_rep_init_t * p_feature_report;
     uint8_t                       hid_info_flags;
 
-    static ble_hids_inp_rep_init_t     input_report_array[1];
+    static ble_hids_inp_rep_init_t     input_report_array[NRF_INPUT_REPORT_MAX_INDEX];
     static ble_hids_outp_rep_init_t    output_report_array[1];
     static ble_hids_feature_rep_init_t feature_report_array[1];
 
@@ -96,15 +101,17 @@ void ble_hid_service_init(void) {
     memset((void *)output_report_array, 0, sizeof(ble_hids_outp_rep_init_t));
     memset((void *)feature_report_array, 0, sizeof(ble_hids_feature_rep_init_t));
 
-    // Initialize HID Service
-    p_input_report                      = &input_report_array[INPUT_REPORT_KEYS_INDEX];
-    p_input_report->max_len             = INPUT_REPORT_KEYS_MAX_LEN;
-    p_input_report->rep_ref.report_id   = INPUT_REP_REF_ID;
-    p_input_report->rep_ref.report_type = BLE_HIDS_REP_TYPE_INPUT;
+    for (int i = 0; i < NRF_INPUT_REPORT_MAX_INDEX; i++) {
+        // Initialize HID Service
+        p_input_report = &input_report_array[i];
+        p_input_report->max_len             = report_entries[i].report_len;
+        p_input_report->rep_ref.report_id   = report_entries[i].report_index;
+        p_input_report->rep_ref.report_type = BLE_HIDS_REP_TYPE_INPUT;
 
-    p_input_report->sec.cccd_wr = SEC_JUST_WORKS;
-    p_input_report->sec.wr      = SEC_JUST_WORKS;
-    p_input_report->sec.rd      = SEC_JUST_WORKS;
+        p_input_report->sec.cccd_wr = SEC_JUST_WORKS;
+        p_input_report->sec.wr      = SEC_JUST_WORKS;
+        p_input_report->sec.rd      = SEC_JUST_WORKS;
+    }
 
     p_output_report                      = &output_report_array[OUTPUT_REPORT_INDEX];
     p_output_report->max_len             = OUTPUT_REPORT_MAX_LEN;
@@ -130,11 +137,11 @@ void ble_hid_service_init(void) {
     hids_init_obj.error_handler                  = service_error_handler;
     hids_init_obj.is_kb                          = true;
     hids_init_obj.is_mouse                       = false;
-    hids_init_obj.inp_rep_count                  = 1;
+    hids_init_obj.inp_rep_count                  = sizeof(input_report_array)/sizeof(input_report_array[0]);
     hids_init_obj.p_inp_rep_array                = input_report_array;
-    hids_init_obj.outp_rep_count                 = 1;
+    hids_init_obj.outp_rep_count                 = sizeof(output_report_array)/sizeof(output_report_array[0]);
     hids_init_obj.p_outp_rep_array               = output_report_array;
-    hids_init_obj.feature_rep_count              = 1;
+    hids_init_obj.feature_rep_count              = sizeof(feature_report_array)/sizeof(feature_report_array[0]);
     hids_init_obj.p_feature_rep_array            = feature_report_array;
     hids_init_obj.rep_map.data_len               = sizeof(hid_report_descriptor);
     hids_init_obj.rep_map.p_data                 = (uint8_t*)&(hid_report_descriptor[0]);
@@ -183,8 +190,8 @@ void ble_hid_service_send_report(uint8_t report_id, uint8_t* report_data) {
         NRF_LOG_WARNING("Invalid report_id: %d", report_id);
         return;
     }
-    report_index = report_entries[report_id].report_index;
-    report_len = report_entries[report_id].report_len;
+    report_index = report_entries[report_id-1].report_index;
+    report_len = report_entries[report_id-1].report_len;
 
     err_code = send_report(&m_hids, report_index, report_data, report_len);
 

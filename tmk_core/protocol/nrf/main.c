@@ -221,15 +221,11 @@ int main(void) {
 
     power_management_init();
     ble_stack_init();
-
     scheduler_init();
-
     ble_services_init();
-
     ble_keyboard_init();
-    // Start execution.
-    NRF_LOG_INFO("HID Keyboard started.");
 
+    // Start execution.
     ble_services_start(erase_bonds);
     ble_keyboard_start();
 

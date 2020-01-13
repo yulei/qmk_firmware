@@ -20,8 +20,36 @@
 #include "nrf_log_ctrl.h"
 #include "nrf_log_default_backends.h"
 
-#define DEVICE_NAME                         "Ble_Keyboard"                             /**< Name of device. Will be included in the advertising data. */
-#define MANUFACTURER_NAME                   "Astro"                                    /**< Manufacturer. Will be passed to Device Information Service. */
+#define NRF_XSTR(x) #x
+#define NRF_NAME(x) NRF_XSTR(x)
+
+#ifndef PRODUCT
+    #define PRODUCT                         "BLE keyboard"
+#endif
+
+#ifndef MANUFACTURER
+    #define MANUFACTURER                    "astro"
+#endif
+
+#define DEVICE_NAME                         NRF_NAME(PRODUCT)                           /**< Name of device. Will be included in the advertising data. */
+#define MANUFACTURER_NAME                   NRF_NAME(MANUFACTURER)                      /**< Manufacturer. Will be passed to Device Information Service. */
+
+#define VENDOR_ID_SOURCE                    0x02                                       /**< Vendor ID Source. */
+#ifndef VENDER_ID
+    #define VENDER_ID                       0x4154                                     /**< Vendor ID. */
+#endif
+#ifndef PRODUCT_ID
+    #define PRODUCT_ID                      0x00BE                                     /**< Product ID. */
+#endif
+#ifndef DEVICE_VER
+    #define DEVICE_VER                      0x0001                                     /**< Product Version. */
+#endif
+
+#define APP_ADV_FAST_INTERVAL               0x0028                                     /**< Fast advertising interval (in units of 0.625 ms. This value corresponds to 25 ms.). */
+#define APP_ADV_SLOW_INTERVAL               0x0C80                                     /**< Slow advertising interval (in units of 0.625 ms. This value corrsponds to 2 seconds). */
+
+#define APP_ADV_FAST_DURATION               3000                                       /**< The advertising duration of fast advertising in units of 10 milliseconds. */
+#define APP_ADV_SLOW_DURATION               18000                                      /**< The advertising duration of slow advertising in units of 10 milliseconds. */
 
 #define APP_BLE_OBSERVER_PRIO               3                                          /**< Application's BLE observer priority. You shouldn't need to modify this value. */
 #define APP_BLE_CONN_CFG_TAG                1                                          /**< A tag identifying the SoftDevice BLE configuration. */
@@ -30,18 +58,6 @@
 #define MIN_BATTERY_LEVEL                   81                                         /**< Minimum simulated battery level. */
 #define MAX_BATTERY_LEVEL                   100                                        /**< Maximum simulated battery level. */
 #define BATTERY_LEVEL_INCREMENT             1                                          /**< Increment between each simulated battery level measurement. */
-
-#define PNP_ID_VENDOR_ID_SOURCE             0x02                                       /**< Vendor ID Source. */
-#define PNP_ID_VENDOR_ID                    0x1915                                     /**< Vendor ID. */
-#define PNP_ID_PRODUCT_ID                   0xEEEE                                     /**< Product ID. */
-#define PNP_ID_PRODUCT_VERSION              0x0001                                     /**< Product Version. */
-
-#define APP_ADV_FAST_INTERVAL               0x0028                                     /**< Fast advertising interval (in units of 0.625 ms. This value corresponds to 25 ms.). */
-#define APP_ADV_SLOW_INTERVAL               0x0C80                                     /**< Slow advertising interval (in units of 0.625 ms. This value corrsponds to 2 seconds). */
-
-#define APP_ADV_FAST_DURATION               3000                                       /**< The advertising duration of fast advertising in units of 10 milliseconds. */
-#define APP_ADV_SLOW_DURATION               18000                                      /**< The advertising duration of slow advertising in units of 10 milliseconds. */
-
 
 /*lint -emacro(524, MIN_CONN_INTERVAL) // Loss of precision */
 #define MIN_CONN_INTERVAL                   MSEC_TO_UNITS(7.5, UNIT_1_25_MS)           /**< Minimum connection interval (7.5 ms) */
@@ -66,10 +82,6 @@
 #define OUTPUT_REPORT_MAX_LEN               1                                          /**< Maximum length of Output Report. */
 #define OUTPUT_REP_REF_ID                   0                                          /**< Id of reference to Keyboard Output Report. */
 
-#define INPUT_REPORT_KEYS_INDEX             0                                          /**< Index of Input Report. */
-#define INPUT_REPORT_KEYS_MAX_LEN           8                                          /**< Maximum length of the Input Report characteristic. */
-#define INPUT_REP_REF_ID                    0                                          /**< Id of reference to Keyboard Input Report. */
-
 #define FEATURE_REP_REF_ID                  0                                          /**< ID of reference to Keyboard Feature Report. */
 #define FEATURE_REPORT_MAX_LEN              2                                          /**< Maximum length of Feature Report. */
 #define FEATURE_REPORT_INDEX                0                                          /**< Index of Feature Report. */
@@ -88,12 +100,38 @@
 #endif
 
 typedef enum {
-    NRF_REPORT_ID_KEYBOARD = 0,
+    NRF_REPORT_ID_KEYBOARD = 1,
+#ifdef MOUSEKEY_ENABLE
     NRF_REPORT_ID_MOUSE,
+#endif
+#ifdef EXTRAKEY_ENABELE
     NRF_REPORT_ID_SYSTEM,
     NRF_REPORT_ID_CONSUMER,
+#endif
     NRF_REPORT_ID_MAX,
 } nrf_report_code;
+
+typedef enum {
+    NRF_INPUT_REPORT_KEYBOARD_INDEX = 0,
+#ifdef MOUSEKEY_ENABLE
+    NRF_INPUT_REPORT_MOUSE_INDEX,
+#endif
+#ifdef EXTRAKEY_ENABELE
+    NRF_INPUT_REPORT_SYSTEM_INDEX,
+    NRF_INPUT_REPORT_CONSUMER_INDEX,
+#endif
+    NRF_INPUT_REPORT_MAX_INDEX
+} nrf_report_index;
+
+#define NRF_INPUT_REPORT_KEYBOARD_MAX_LEN 8
+#ifdef MOUSEKEY_ENABLE
+#define NRF_INPUT_REPORT_MOUSE_MAX_LEN 5
+#endif
+
+#ifdef EXTRAKEY_ENABLE
+#define NRF_INPUT_REPORT_SYSTEM_MAX_LEN 2
+#define NRF_INPUT_REPORT_CONSUMER_MAX_LEN 2
+#endif
 
 typedef struct {
     uint16_t m_conn_handle;     /**< Handle of the current connection. */
