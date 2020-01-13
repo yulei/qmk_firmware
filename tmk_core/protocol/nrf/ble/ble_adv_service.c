@@ -16,20 +16,17 @@ static ble_uuid_t m_adv_uuids[] = {{BLE_UUID_HUMAN_INTERFACE_DEVICE_SERVICE, BLE
 BLE_ADVERTISING_DEF(m_advertising);                                 /**< Advertising module instance. */
 
 static void on_adv_evt(ble_adv_evt_t ble_adv_evt);
-static void ble_advertising_error_handler(uint32_t nrf_error);
+static void adv_error_handler(uint32_t nrf_error);
 static void sleep_mode_enter(void);
 
 void ble_adv_service_init(void) {
     uint32_t               err_code;
-    uint8_t                adv_flags;
     ble_advertising_init_t init;
 
     memset(&init, 0, sizeof(init));
-
-    adv_flags                            = BLE_GAP_ADV_FLAGS_LE_ONLY_GENERAL_DISC_MODE;
     init.advdata.name_type               = BLE_ADVDATA_FULL_NAME;
     init.advdata.include_appearance      = true;
-    init.advdata.flags                   = adv_flags;
+    init.advdata.flags                   = BLE_GAP_ADV_FLAGS_LE_ONLY_GENERAL_DISC_MODE;
     init.advdata.uuids_complete.uuid_cnt = sizeof(m_adv_uuids) / sizeof(m_adv_uuids[0]);
     init.advdata.uuids_complete.p_uuids  = m_adv_uuids;
 
@@ -46,7 +43,7 @@ void ble_adv_service_init(void) {
     init.config.ble_adv_slow_timeout               = APP_ADV_SLOW_DURATION;
 
     init.evt_handler   = on_adv_evt;
-    init.error_handler = ble_advertising_error_handler;
+    init.error_handler = adv_error_handler;
 
     err_code = ble_advertising_init(&m_advertising, &init);
     APP_ERROR_CHECK(err_code);
@@ -70,7 +67,7 @@ void ble_adv_service_start(bool erase_bonds) {
  *
  * @param[in] nrf_error  Error code containing information about what went wrong.
  */
-static void ble_advertising_error_handler(uint32_t nrf_error) {
+static void adv_error_handler(uint32_t nrf_error) {
     APP_ERROR_HANDLER(nrf_error);
 }
 
@@ -113,40 +110,42 @@ static void on_adv_evt(ble_adv_evt_t ble_adv_evt) {
         break;
 
     case BLE_ADV_EVT_WHITELIST_REQUEST: {
-        ble_gap_addr_t whitelist_addrs[BLE_GAP_WHITELIST_ADDR_MAX_COUNT];
-        ble_gap_irk_t  whitelist_irks[BLE_GAP_WHITELIST_ADDR_MAX_COUNT];
-        uint32_t       addr_cnt = BLE_GAP_WHITELIST_ADDR_MAX_COUNT;
-        uint32_t       irk_cnt  = BLE_GAP_WHITELIST_ADDR_MAX_COUNT;
+            ble_gap_addr_t whitelist_addrs[BLE_GAP_WHITELIST_ADDR_MAX_COUNT];
+            ble_gap_irk_t  whitelist_irks[BLE_GAP_WHITELIST_ADDR_MAX_COUNT];
+            uint32_t       addr_cnt = BLE_GAP_WHITELIST_ADDR_MAX_COUNT;
+            uint32_t       irk_cnt  = BLE_GAP_WHITELIST_ADDR_MAX_COUNT;
 
-        err_code = pm_whitelist_get(whitelist_addrs, &addr_cnt, whitelist_irks,  &irk_cnt);
-        APP_ERROR_CHECK(err_code);
-        NRF_LOG_DEBUG("pm_whitelist_get returns %d addr in whitelist and %d irk whitelist", addr_cnt, irk_cnt);
-        // Set the correct identities list (no excluding peers with no Central Address Resolution).
-        ble_pm_identities_set(PM_PEER_ID_LIST_SKIP_NO_IRK);
+            err_code = pm_whitelist_get(whitelist_addrs, &addr_cnt, whitelist_irks,  &irk_cnt);
+            APP_ERROR_CHECK(err_code);
+            NRF_LOG_DEBUG("pm_whitelist_get returns %d addr in whitelist and %d irk whitelist", addr_cnt, irk_cnt);
+            // Set the correct identities list (no excluding peers with no Central Address Resolution).
+            ble_pm_identities_set(PM_PEER_ID_LIST_SKIP_NO_IRK);
 
-        // Apply the whitelist.
-        err_code = ble_advertising_whitelist_reply(&m_advertising, whitelist_addrs, addr_cnt, whitelist_irks, irk_cnt);
-        APP_ERROR_CHECK(err_code);
-    } break; //BLE_ADV_EVT_WHITELIST_REQUEST
+            // Apply the whitelist.
+            err_code = ble_advertising_whitelist_reply(&m_advertising, whitelist_addrs, addr_cnt, whitelist_irks, irk_cnt);
+            APP_ERROR_CHECK(err_code);
+        }
+        break; //BLE_ADV_EVT_WHITELIST_REQUEST
 
     case BLE_ADV_EVT_PEER_ADDR_REQUEST: {
-        pm_peer_data_bonding_t peer_bonding_data;
+            pm_peer_data_bonding_t peer_bonding_data;
 
-        // Only Give peer address if we have a handle to the bonded peer.
-        if (ble_driver.m_peer_id != PM_PEER_ID_INVALID) {
-            err_code = pm_peer_data_bonding_load(ble_driver.m_peer_id, &peer_bonding_data);
-            if (err_code != NRF_ERROR_NOT_FOUND) {
-                APP_ERROR_CHECK(err_code);
+            // Only Give peer address if we have a handle to the bonded peer.
+            if (ble_driver.m_peer_id != PM_PEER_ID_INVALID) {
+                err_code = pm_peer_data_bonding_load(ble_driver.m_peer_id, &peer_bonding_data);
+                if (err_code != NRF_ERROR_NOT_FOUND) {
+                    APP_ERROR_CHECK(err_code);
 
-                // Manipulate identities to exclude peers with no Central Address Resolution.
-                ble_pm_identities_set(PM_PEER_ID_LIST_SKIP_ALL);
+                    // Manipulate identities to exclude peers with no Central Address Resolution.
+                    ble_pm_identities_set(PM_PEER_ID_LIST_SKIP_ALL);
 
-                ble_gap_addr_t * p_peer_addr = &(peer_bonding_data.peer_ble_id.id_addr_info);
-                err_code = ble_advertising_peer_addr_reply(&m_advertising, p_peer_addr);
-                APP_ERROR_CHECK(err_code);
+                    ble_gap_addr_t * p_peer_addr = &(peer_bonding_data.peer_ble_id.id_addr_info);
+                    err_code = ble_advertising_peer_addr_reply(&m_advertising, p_peer_addr);
+                    APP_ERROR_CHECK(err_code);
+                }
             }
         }
-    } break; //BLE_ADV_EVT_PEER_ADDR_REQUEST
+        break; //BLE_ADV_EVT_PEER_ADDR_REQUEST
 
     default:
         break;

@@ -91,7 +91,6 @@ void ble_hid_service_init(void) {
     ble_hids_inp_rep_init_t     * p_input_report;
     ble_hids_outp_rep_init_t    * p_output_report;
     ble_hids_feature_rep_init_t * p_feature_report;
-    uint8_t                       hid_info_flags;
 
     static ble_hids_inp_rep_init_t     input_report_array[NRF_INPUT_REPORT_MAX_INDEX];
     static ble_hids_outp_rep_init_t    output_report_array[1];
@@ -129,8 +128,6 @@ void ble_hid_service_init(void) {
     p_feature_report->sec.rd              = SEC_JUST_WORKS;
     p_feature_report->sec.wr              = SEC_JUST_WORKS;
 
-    hid_info_flags = HID_INFO_FLAG_REMOTE_WAKE_MSK | HID_INFO_FLAG_NORMALLY_CONNECTABLE_MSK;
-
     memset(&hids_init_obj, 0, sizeof(hids_init_obj));
 
     hids_init_obj.evt_handler                    = on_hids_evt;
@@ -147,7 +144,7 @@ void ble_hid_service_init(void) {
     hids_init_obj.rep_map.p_data                 = (uint8_t*)&(hid_report_descriptor[0]);
     hids_init_obj.hid_information.bcd_hid        = BASE_USB_HID_SPEC_VERSION;
     hids_init_obj.hid_information.b_country_code = 0;
-    hids_init_obj.hid_information.flags          = hid_info_flags;
+    hids_init_obj.hid_information.flags          = HID_INFO_FLAG_REMOTE_WAKE_MSK | HID_INFO_FLAG_NORMALLY_CONNECTABLE_MSK;
     hids_init_obj.included_services_count        = 0;
     hids_init_obj.p_included_services_array      = NULL;
 
@@ -384,24 +381,24 @@ static void on_hid_rep_char_write(ble_hids_evt_t * p_evt) {
  */
 static void on_hids_evt(ble_hids_t * p_hids, ble_hids_evt_t * p_evt) {
     switch (p_evt->evt_type) {
-        case BLE_HIDS_EVT_BOOT_MODE_ENTERED:
-            m_in_boot_mode = true;
-            break;
+    case BLE_HIDS_EVT_BOOT_MODE_ENTERED:
+        m_in_boot_mode = true;
+        break;
 
-        case BLE_HIDS_EVT_REPORT_MODE_ENTERED:
-            m_in_boot_mode = false;
-            break;
+    case BLE_HIDS_EVT_REPORT_MODE_ENTERED:
+        m_in_boot_mode = false;
+        break;
 
-        case BLE_HIDS_EVT_REP_CHAR_WRITE:
-            on_hid_rep_char_write(p_evt);
-            break;
+    case BLE_HIDS_EVT_REP_CHAR_WRITE:
+        on_hid_rep_char_write(p_evt);
+        break;
 
-        case BLE_HIDS_EVT_NOTIF_ENABLED:
-            break;
+    case BLE_HIDS_EVT_NOTIF_ENABLED:
+        break;
 
-        default:
-            // No implementation needed.
-            break;
+    default:
+        // No implementation needed.
+        break;
     }
 }
 
