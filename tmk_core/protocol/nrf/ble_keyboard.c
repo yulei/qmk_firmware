@@ -3,7 +3,7 @@
  */
 
 #include "ble_keyboard.h"
-#include "ble_hid_service.h"
+//#include "ble_hid_service.h"
 #include "app_timer.h"
 #include "report.h"
 #include "host.h"
@@ -25,15 +25,15 @@ host_driver_t  kbd_driver = { keyboard_leds, send_keyboard, send_mouse, send_sys
 
 void keyboard_timout_handler(void *p_context) {
     keyboard_task();
-    app_timer_start(m_keyboard_timer_id, KEYBOARD_SCAN_INTERVAL, NULL);
+    //app_timer_start(m_keyboard_timer_id, KEYBOARD_SCAN_INTERVAL, NULL);
 }
 
 void keyboard_timer_init(void)
 {
     ret_code_t err_code;
     err_code = app_timer_create(&m_keyboard_timer_id,
-                            //APP_TIMER_MODE_REPEATED,
-                            APP_TIMER_MODE_SINGLE_SHOT,
+                            APP_TIMER_MODE_REPEATED,
+                            //APP_TIMER_MODE_SINGLE_SHOT,
                             keyboard_timout_handler);
     APP_ERROR_CHECK(err_code);
 }
@@ -52,14 +52,23 @@ void ble_keyboard_start(void)
 
     err_code = app_timer_start(m_keyboard_timer_id, KEYBOARD_SCAN_INTERVAL, NULL);
     APP_ERROR_CHECK(err_code);
+
+}
+
+static uint8_t keyboard_led_val = 0;
+void ble_keyboard_set_led(uint8_t led)
+{
+    keyboard_led_val = led;
 }
 
 uint8_t keyboard_leds(void) {
-    return ble_driver.keyboard_led;
+    return keyboard_led_val;
 }
 
+extern void ble_hid_service_send_report(uint8_t report_id, uint8_t* report_data);
+
 void send_keyboard(report_keyboard_t *report) {
-    ble_hid_service_send_report(NRF_REPORT_ID_KEYBOARD, report->raw);
+    ble_hid_service_send_report(1, report->raw);
 }
 
 #ifdef MOUSEKEY_ENABLE
