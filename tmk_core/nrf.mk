@@ -231,6 +231,7 @@ NM = arm-none-eabi-nm
 
 # C flags common to all targets
 #CFLAGS += $(OPT)
+CFLAGS += -DDEBUG
 CFLAGS += -DAPP_TIMER_V2
 CFLAGS += -DAPP_TIMER_V2_RTC1_ENABLED
 CFLAGS += -DBOARD_CUSTOM
