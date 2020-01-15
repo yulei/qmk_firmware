@@ -1,0 +1,50 @@
+<!DOCTYPE CrossStudio_Session_File>
+<session>
+ <Bookmarks/>
+ <Breakpoints groups="Breakpoints" active_group="Breakpoints"/>
+ <ExecutionProfileWindow/>
+ <FrameBufferWindow>
+  <FrameBufferWindow bufferHeight="-1" addressSpace="" addressText="" bufferWidth="-1"/>
+ </FrameBufferWindow>
+ <Memory1/>
+ <Memory2/>
+ <Memory3/>
+ <Memory4/>
+ <Project>
+  <ProjectSessionItem path="hids_keyboard"/>
+  <ProjectSessionItem path="hids_keyboard;hids_keyboard"/>
+  <ProjectSessionItem path="hids_keyboard;hids_keyboard;Application"/>
+  <ProjectSessionItem path="hids_keyboard;hids_keyboard;None"/>
+  <ProjectSessionItem path="hids_keyboard;hids_keyboard;nRF_SoftDevice"/>
+ </Project>
+ <Register1/>
+ <Register2/>
+ <Register3/>
+ <Register4/>
+ <Threads>
+  <ThreadsWindow showLists=""/>
+ </Threads>
+ <TraceWindow>
+  <Trace enabled="Yes"/>
+ </TraceWindow>
+ <Watch1>
+  <Watches active="1" update="Never"/>
+ </Watch1>
+ <Watch2>
+  <Watches active="0" update="Never"/>
+ </Watch2>
+ <Watch3>
+  <Watches active="0" update="Never"/>
+ </Watch3>
+ <Watch4>
+  <Watches active="0" update="Never"/>
+ </Watch4>
+ <Files>
+  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="1360" useTextEdit="1" useBinaryEdit="0" left="0" path="../main.c" selected="0" top="1344" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="263" useTextEdit="1" useBinaryEdit="0" left="0" path="../../../../lib/nRF5_SDK_16.0.0_98a08e2/modules/nrfx/mdk/ses_startup_nrf52.s" selected="0" top="247" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="14" useTextEdit="1" useBinaryEdit="0" left="0" path="../../../../lib/nRF5_SDK_16.0.0_98a08e2/modules/nrfx/mdk/ses_startup_nrf_common.s" selected="0" top="0" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="0" useTextEdit="1" useBinaryEdit="0" left="0" path="../../../../lib/nRF5_SDK_16.0.0_98a08e2/modules/nrfx/mdk/system_nrf52.c" selected="0" top="54" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="102" useTextEdit="1" useBinaryEdit="0" left="0" path="../../../../lib/nRF5_SDK_16.0.0_98a08e2/components/softdevice/common/nrf_sdh_ble.c" selected="1" top="86" codecName="Default"/>
+ </Files>
+ <ARMCrossStudioWindow activeProject="hids_keyboard" fileDialogDefaultFilter="*.c" autoConnectTarget="J-Link" buildConfiguration="Debug" sessionSettings="" debugSearchFileMap="" fileDialogInitialDirectory="" debugSearchPath="" autoConnectCapabilities="3199"/>
+</session>
