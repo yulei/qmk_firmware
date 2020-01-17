@@ -75,5 +75,5 @@ id_rsa_*
 __pycache__
 
 # NRF5 SDK
-lib/nRF5_SDK_16.0.0_98a08e2/
+lib/nRF5_SDK*
 tmk_core/protocol/nrf/ses/Output
