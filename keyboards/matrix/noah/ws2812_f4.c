@@ -106,7 +106,7 @@
  *
  * The duty cycle is calculated for a high period of 350 nS.
  */
-#define WS2812_DUTYCYCLE_0      (WS2812_PWM_FREQUENCY/(1000000000/450))
+#define WS2812_DUTYCYCLE_0      (WS2812_PWM_FREQUENCY/(1000000000/400))
 
 /**
  * @brief   High period for a one, in ticks
@@ -122,7 +122,7 @@
  * The duty cycle is calculated for a high period of 800 nS.
  * This is in the middle of the specifications of the WS2812 and WS2812B.
  */
-#define WS2812_DUTYCYCLE_1      (WS2812_PWM_FREQUENCY/(1000000000/900))
+#define WS2812_DUTYCYCLE_1      (WS2812_PWM_FREQUENCY/(1000000000/850))
 
 /* --- PRIVATE MACROS ------------------------------------------------------- */
 
