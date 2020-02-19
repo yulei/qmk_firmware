@@ -20,10 +20,12 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+#ifndef PACKED
 #if defined(__GNUC__)
 #    define PACKED __attribute__((__packed__))
 #else
 #    define PACKED
+#endif
 #endif
 
 #if defined(_MSC_VER)

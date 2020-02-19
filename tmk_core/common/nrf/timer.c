@@ -8,53 +8,30 @@
 #include "nrf_log_ctrl.h"
 #include "app_timer.h"
 
-#define TICK_INTERVAL 10
-/* Mill second tick count */
-volatile uint32_t timer_count = 0;
+/* ticks per ms*/
+#define TICKS_PER_MS (APP_TIMER_TICKS(1))
 
-APP_TIMER_DEF(one_ms_ticker_id);
+void timer_init(void) {}
 
-void timer_tick(uint8_t interval) {
-  timer_count += interval;
-}
-/* Timer interrupt handler */
-void ticker(void* context)  {
-    timer_count += TICK_INTERVAL;
-    app_timer_create(&one_ms_ticker_id, APP_TIMER_MODE_SINGLE_SHOT, ticker);
-    app_timer_start(one_ms_ticker_id, APP_TIMER_TICKS(TICK_INTERVAL), NULL);
-}
-
-/* Timer Initialize
- * Using single shot timer because task queue will overflow
- * if the timer runs in repeated mode during bonding
- */
-void timer_init(void)
-{
-  uint32_t err_code = app_timer_create(&one_ms_ticker_id, APP_TIMER_MODE_SINGLE_SHOT, ticker);
-  APP_ERROR_CHECK(err_code);
-}
-
-void timer_clear(void)
-{
-    timer_count = 0;
-}
+void timer_clear(void) {}
 
 uint16_t timer_read(void)
 {
-    return (uint16_t)(timer_count & 0xFFFF);
+  return (uint16_t)(timer_read32());
 }
 
 uint32_t timer_read32(void)
 {
-    return timer_count;
+  return (app_timer_cnt_get()/TICKS_PER_MS);
 }
 
 uint16_t timer_elapsed(uint16_t last)
 {
-    return TIMER_DIFF_16(timer_read(), last);
+  return (uint16_t)(timer_elapsed32(last));
 }
 
 uint32_t timer_elapsed32(uint32_t last)
 {
-    return TIMER_DIFF_32(timer_read32(), last);
+  uint32_t ticks = app_timer_cnt_diff_compute(app_timer_cnt_get(), APP_TIMER_TICKS(last));
+  return (ticks / TICKS_PER_MS);
 }

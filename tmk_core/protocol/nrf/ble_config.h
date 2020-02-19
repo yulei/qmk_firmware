@@ -24,11 +24,31 @@
 #define NRF_NAME(x) NRF_XSTR(x)
 
 #ifndef PRODUCT
-    #define PRODUCT                         "BLE keyboard"
+    #define PRODUCT                         BLE keyboard
 #endif
 
 #ifndef MANUFACTURER
-    #define MANUFACTURER                    "astro"
+    #define MANUFACTURER                    astro
+#endif
+
+#ifndef USB_SENSE_PIN
+    #define USB_SENSE_PIN                   26                                          /**< Default pin for usb sense */ 
+#endif
+
+#ifndef UART_RX_PIN
+    #define UART_RX_PIN                     24                                          /**< Default pin for uart rx */
+#endif
+
+#ifndef UART_TX_PIN
+    #define UART_TX_PIN                     23                                          /**< Default pin for uart tx */
+#endif
+
+#ifndef BATTERY_SAADC_ENABLE_PIN
+    #define BATTERY_SAADC_ENABLE_PIN        27                                          /**< Enable battery measurement pin */
+#endif
+
+#ifndef BATTERY_SAADC_PIN
+    #define BATTERY_SAADC_PIN               NRF_SAADC_INPUT_AIN4                        /**< Default pin for saadc */
 #endif
 
 #define DEVICE_NAME                         NRF_NAME(PRODUCT)                           /**< Name of device. Will be included in the advertising data. */
@@ -54,10 +74,9 @@
 #define APP_BLE_OBSERVER_PRIO               3                                          /**< Application's BLE observer priority. You shouldn't need to modify this value. */
 #define APP_BLE_CONN_CFG_TAG                1                                          /**< A tag identifying the SoftDevice BLE configuration. */
 
+
+#define BATTERY_LEVEL_MEAS_DELAY            APP_TIMER_TICKS(1)                         /**< Battery level measurement delay (ticks). */
 #define BATTERY_LEVEL_MEAS_INTERVAL         APP_TIMER_TICKS(2000)                      /**< Battery level measurement interval (ticks). */
-#define MIN_BATTERY_LEVEL                   81                                         /**< Minimum simulated battery level. */
-#define MAX_BATTERY_LEVEL                   100                                        /**< Maximum simulated battery level. */
-#define BATTERY_LEVEL_INCREMENT             1                                          /**< Increment between each simulated battery level measurement. */
 
 /*lint -emacro(524, MIN_CONN_INTERVAL) // Loss of precision */
 #define MIN_CONN_INTERVAL                   MSEC_TO_UNITS(7.5, UNIT_1_25_MS)           /**< Minimum connection interval (7.5 ms) */
@@ -82,11 +101,11 @@
 #define OUTPUT_REPORT_MAX_LEN               1                                          /**< Maximum length of Output Report. */
 #define OUTPUT_REP_REF_ID                   0                                          /**< Id of reference to Keyboard Output Report. */
 
-#define FEATURE_REP_REF_ID                  0                                          /**< ID of reference to Keyboard Feature Report. */
-#define FEATURE_REPORT_MAX_LEN              2                                          /**< Maximum length of Feature Report. */
 #define FEATURE_REPORT_INDEX                0                                          /**< Index of Feature Report. */
+#define FEATURE_REPORT_MAX_LEN              2                                          /**< Maximum length of Feature Report. */
+#define FEATURE_REP_REF_ID                  0                                          /**< ID of reference to Keyboard Feature Report. */
 
-#define MAX_BUFFER_ENTRIES                  5                                          /**< Number of elements that can be enqueued */
+#define MAX_BUFFER_ENTRIES                  6                                          /**< Number of elements that can be enqueued */
 
 #define BASE_USB_HID_SPEC_VERSION           0x0101                                     /**< Version number of base USB HID Specification implemented by this application. */
 
@@ -100,28 +119,23 @@
 #endif
 
 typedef enum {
+#if WITH_LUFA
     NRF_REPORT_ID_KEYBOARD = 1,
+#else
+    NRF_REPORT_ID_KEYBOARD = 0,
+#endif
+
 #ifdef MOUSEKEY_ENABLE
     NRF_REPORT_ID_MOUSE,
 #endif
-#ifdef EXTRAKEY_ENABELE
+#ifdef EXTRAKEY_ENABLE
     NRF_REPORT_ID_SYSTEM,
     NRF_REPORT_ID_CONSUMER,
 #endif
-    NRF_REPORT_ID_MAX,
-} nrf_report_code;
+    NRF_REPORT_ID_LAST,
+} nrf_report_id;
 
-typedef enum {
-    NRF_INPUT_REPORT_KEYBOARD_INDEX = 0,
-#ifdef MOUSEKEY_ENABLE
-    NRF_INPUT_REPORT_MOUSE_INDEX,
-#endif
-#ifdef EXTRAKEY_ENABELE
-    NRF_INPUT_REPORT_SYSTEM_INDEX,
-    NRF_INPUT_REPORT_CONSUMER_INDEX,
-#endif
-    NRF_INPUT_REPORT_MAX_INDEX
-} nrf_report_index;
+#define NRF_REPORT_ID_MAX (NRF_REPORT_ID_LAST-NRF_REPORT_ID_KEYBOARD)
 
 #define NRF_INPUT_REPORT_KEYBOARD_MAX_LEN 8
 #ifdef MOUSEKEY_ENABLE
@@ -133,10 +147,22 @@ typedef enum {
 #define NRF_INPUT_REPORT_CONSUMER_MAX_LEN 2
 #endif
 
+typedef enum {
+    RUN_MODE_INTERRUPT,             /**< running in interrupt mode when in battery supply */
+    RUN_MODE_POLLING,               /**< running in polling mode when in vbus supply */
+} run_mode_t;
+
+#define OUTPUT_BLE      0x01
+#define OUTPUT_USB      0x02
+
 typedef struct {
-    uint16_t m_conn_handle;     /**< Handle of the current connection. */
-    pm_peer_id_t m_peer_id;     /**< Device reference handle to the current bonded central. */
-    uint8_t      keyboard_led;  /**< keyboard led status */
+    pm_peer_id_t    peer_id;        /**< Device reference handle to the current bonded central. */
+    run_mode_t      run_mode;       /**< current running mode */
+    uint16_t        conn_handle;    /**< Handle of the current connection. */
+    uint8_t         keyboard_led;   /**< keyboard led status */
+    uint8_t         usb_enabled;    /**< usb status */
+    uint8_t         uart_enabled;   /**< uart status */
+    uint8_t         output_target;  /**< target of output */
 } ble_driver_t;
 
 extern ble_driver_t ble_driver;

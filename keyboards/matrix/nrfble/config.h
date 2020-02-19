@@ -4,8 +4,6 @@
  */
 #pragma once
 
-#include "config_common.h"
-
 /* USB Device descriptor parameter */
 #define VENDOR_ID       0x60BE
 #define PRODUCT_ID      0x00BE
@@ -15,11 +13,21 @@
 #define DESCRIPTION     60% rgb keyboard with ble extension
 
 /* key matrix size */
-#define MATRIX_ROWS 5
-#define MATRIX_COLS 14
+#ifndef MATRIX_ROWS
+  #define MATRIX_ROWS 5
+#endif
+
+#ifndef MATRIX_COLS
+  #define MATRIX_COLS 14
+#endif
 #define UNUSED_PINS
 #define DIODE_DIRECTION COL2ROW
 #define MATRIX_ROW_PINS { 3,  2, 31, 30, 29}
 #define MATRIX_COL_PINS { 4,  5,  6,  7,  8, 9, 10, 11, 12, 13, 14, 15, 16, 17}
 /* Debounce reduces chatter (unintended double-presses) - set 0 if debouncing is not needed */
 #define DEBOUNCE_DELAY 5
+
+#define RGBLED_NUM 18
+#define WS2812_RGB_PIN      20
+#define WS2812_EN_PIN       22
+#define RGBLIGHT_ANIMATIONS

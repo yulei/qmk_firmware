@@ -14,8 +14,11 @@ NKRO_ENABLE = no            # USB Nkey Rollover
 NO_USB_STARTUP_CHECK = yes  # Disable initialization only when usb is plugged in
 
 CUSTOM_MATRIX = yes
+RGBLIGHT_ENABLE = yes
+RGBLIGHT_CUSTOM_DRIVER = yes
 
 SDK_ROOT := $(TOP_DIR)/lib/nRF5_SDK_16.0.0_98a08e2
 
 # project specific files
-#SRC += matrix.c
+SRC += pca9554_nrf.c \
+		ws2812_nrf.c

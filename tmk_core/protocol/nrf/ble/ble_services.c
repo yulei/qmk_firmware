@@ -2,6 +2,7 @@
  * @file ble_services.c
  */
 
+#include "config.h"
 #include "nrf_ble_gatt.h"
 #include "nrf_ble_qwr.h"
 #include "peer_manager_handler.h"
@@ -102,7 +103,7 @@ void ble_pm_delete_bonds(void) {
 void ble_qwr_update_handle(uint16_t conn_handle) {
     ret_code_t err_code;
 
-    err_code = nrf_ble_qwr_conn_handle_assign(&m_qwr, ble_driver.m_conn_handle);
+    err_code = nrf_ble_qwr_conn_handle_assign(&m_qwr, ble_driver.conn_handle);
     APP_ERROR_CHECK(err_code);
 }
 

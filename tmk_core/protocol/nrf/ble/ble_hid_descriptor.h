@@ -3,16 +3,31 @@
  * @brief definition of hid descriptor
  */
 
+#pragma once
 
-#include "usb_descriptor.h"
 #include "ble_config.h"
 
+#if WITH_LUFA
+#define ATTR_PACKED __attribute__((packed))
+#define CONCAT(x, y) x##y
+#define CONCAT_EXPANDED(x, y) CONCAT(x, y)
+#define CPU_TO_LE16(x) (x)
+
+#define __LUFA_COMMON_H__
+#define __USBMODE_H__
+#define __USBEVENTS_H__
+#define __HIDPARSER_H__
+#define __USBCONTROLLER_AVR8_H__
+
+#define __INCLUDE_FROM_USB_DRIVER
+#define __INCLUDE_FROM_HID_DRIVER
+#include "LUFA/Drivers/USB/Class/Common/HIDClassCommon.h"
+#include "LUFA/Drivers/USB/Class/Common/HIDReportData.h"
 const static uint8_t hid_report_descriptor [] = {
-#if 0
     HID_RI_USAGE_PAGE(8, 0x01), /* Generic Desktop */
     HID_RI_USAGE(8, 0x06), /* Keyboard */
     HID_RI_COLLECTION(8, 0x01), /* Application */
-        HID_RI_REPORT_ID(8, COMPOSITE_REPORT_ID_KEYBOARD),
+        HID_RI_REPORT_ID(8, NRF_REPORT_ID_KEYBOARD),
         HID_RI_USAGE_PAGE(8, 0x07), /* Key Codes */
         HID_RI_USAGE_MINIMUM(8, 0xE0), /* Keyboard Left Control */
         HID_RI_USAGE_MAXIMUM(8, 0xE7), /* Keyboard Right GUI */
@@ -50,7 +65,7 @@ const static uint8_t hid_report_descriptor [] = {
     HID_RI_USAGE_PAGE(8, 0x01), /* Generic Desktop */
     HID_RI_USAGE(8, 0x02), /* Mouse */
     HID_RI_COLLECTION(8, 0x01), /* Application */
-        HID_RI_REPORT_ID(8, COMPOSITE_REPORT_ID_MOUSE),
+        HID_RI_REPORT_ID(8, NRF_REPORT_ID_MOUSE),
         HID_RI_USAGE(8, 0x01), /* Pointer */
         HID_RI_COLLECTION(8, 0x00), /* Physical */
 
@@ -97,7 +112,7 @@ const static uint8_t hid_report_descriptor [] = {
     HID_RI_USAGE_PAGE(8, 0x01), /* Generic Desktop */
     HID_RI_USAGE(8, 0x80), /* System Control */
     HID_RI_COLLECTION(8, 0x01), /* Application */
-        HID_RI_REPORT_ID(8, COMPOSITE_REPORT_ID_SYSTEM),
+        HID_RI_REPORT_ID(8, NRF_REPORT_ID_SYSTEM),
         HID_RI_LOGICAL_MINIMUM(16, 0x0001),
         HID_RI_LOGICAL_MAXIMUM(16, 0x0003),
         HID_RI_USAGE_MINIMUM(16, 0x0081), /* System Power Down */
@@ -110,7 +125,7 @@ const static uint8_t hid_report_descriptor [] = {
     HID_RI_USAGE_PAGE(8, 0x0C), /* Consumer */
     HID_RI_USAGE(8, 0x01), /* Consumer Control */
     HID_RI_COLLECTION(8, 0x01), /* Application */
-        HID_RI_REPORT_ID(8, COMPOSITE_REPORT_ID_CONSUMER),
+        HID_RI_REPORT_ID(8, NRF_REPORT_ID_CONSUMER),
         HID_RI_LOGICAL_MINIMUM(16, 0x0001),
         HID_RI_LOGICAL_MAXIMUM(16, 0x029C),
         HID_RI_USAGE_MINIMUM(16, 0x0001), /* +10 */
@@ -121,6 +136,7 @@ const static uint8_t hid_report_descriptor [] = {
     HID_RI_END_COLLECTION(0),
 #endif
 #else
+const static uint8_t hid_report_descriptor [] = {
     0x05, 0x01,       // Usage Page (Generic Desktop)
     0x09, 0x06,       // Usage (Keyboard)
     0xA1, 0x01,       // Collection (Application)

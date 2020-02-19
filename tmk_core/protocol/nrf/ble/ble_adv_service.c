@@ -131,8 +131,8 @@ static void on_adv_evt(ble_adv_evt_t ble_adv_evt) {
             pm_peer_data_bonding_t peer_bonding_data;
 
             // Only Give peer address if we have a handle to the bonded peer.
-            if (ble_driver.m_peer_id != PM_PEER_ID_INVALID) {
-                err_code = pm_peer_data_bonding_load(ble_driver.m_peer_id, &peer_bonding_data);
+            if (ble_driver.peer_id != PM_PEER_ID_INVALID) {
+                err_code = pm_peer_data_bonding_load(ble_driver.peer_id, &peer_bonding_data);
                 if (err_code != NRF_ERROR_NOT_FOUND) {
                     APP_ERROR_CHECK(err_code);
 

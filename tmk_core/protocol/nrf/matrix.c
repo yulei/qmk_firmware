@@ -6,9 +6,11 @@
 #include <stdbool.h>
 #include <string.h>
 #include "nrf_gpio.h"
-#include "quantum.h"
 #include "printf.h"
 #include "matrix.h"
+#include "config.h"
+#include "wait.h"
+#include "timer.h"
 
 /**
  *
@@ -22,17 +24,10 @@ static matrix_row_t matrix[MATRIX_ROWS];
 static matrix_row_t matrix_debouncing[MATRIX_COLS];
 static bool debouncing = false;
 static uint16_t debouncing_time = 0;
-static uint32_t row_pins[] = MATRIX_ROW_PINS;
-static uint32_t col_pins[] = MATRIX_COL_PINS;
+uint32_t row_pins[] = MATRIX_ROW_PINS;
+uint32_t col_pins[] = MATRIX_COL_PINS;
 
-__attribute__((weak))
-void matrix_init_kb(void) { matrix_init_user(); }
-__attribute__((weak))
-void matrix_scan_kb(void) { matrix_scan_user(); }
-__attribute__((weak))
-void matrix_init_user(void) {}
-__attribute__((weak))
-void matrix_scan_user(void) {}
+void matrix_setup(void) {}
 
 void matrix_init(void) {
     uint8_t i = 0;
@@ -82,6 +77,7 @@ uint8_t matrix_scan(void)
         }
         debouncing = false;
     }
+
     matrix_scan_quantum();
     return 1;
 }
@@ -105,3 +101,13 @@ void matrix_print(void)
         printf("\n");
     }
 }
+
+#if 0
+#include "keyboard.h"
+#include "nrf_log.h"
+void hook_matrix_change(keyevent_t event) {
+    NRF_LOG_INFO("Matrix: col:%d--row:%d\n", event.key.col, event.key.row);
+    NRF_LOG_INFO("press? %s\n", (event.pressed ? "true":"false"));
+    NRF_LOG_INFO("time: %d\n", event.time);
+}
+#endif
