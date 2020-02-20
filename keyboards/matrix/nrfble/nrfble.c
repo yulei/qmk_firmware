@@ -23,17 +23,14 @@ void rgblight_set(void)
     NRF_LOG_INFO("WS2812 setleds: enable=%d", rgblight_config.enable);
 }
 #endif
-void matrix_init_kb(void)
-{
-#ifdef RGBLIGHT_ENABLE
-  ws2812_init();
-#endif
-  matrix_init_user();
-}
+
+__attribute__((weak))
+void matrix_init_kb(void) { matrix_init_user(); }
 
 __attribute__((weak))
 void matrix_init_user(void) { }
 
+__attribute__((weak))
 void matrix_scan_kb(void) { matrix_scan_user(); }
 
 __attribute__((weak))

@@ -14,6 +14,7 @@
 #define WS2812_BUF_SIZE (WS2812_COLOR_SIZE+1)
 
 static uint16_t ws2812_data[WS2812_BUF_SIZE];
+static bool ws2812_ready = false;
 
 nrfx_pwm_t ws2812_pwm = NRFX_PWM_INSTANCE(0);
 nrf_pwm_sequence_t ws2812_pwm_seq = {
@@ -66,11 +67,16 @@ void ws2812_init(void)
         ws2812_data[i] = WS2812_VAL_0;
     }
     nrfx_pwm_simple_playback(&ws2812_pwm, &ws2812_pwm_seq, 1, NRFX_PWM_FLAG_STOP);
+    ws2812_ready = true;
     NRF_LOG_INFO("ws2812 init playback");
 }
 
 void ws2812_setleds(LED_TYPE* leds, uint16_t number)
 {
+    if (!ws2812_ready) {
+        ws2812_init();
+    }
+
     for (uint16_t i = 0; i < number; i++) {
         ws2812_write_led(leds[i].r, leds[i].g, leds[i].b, i);
     }

@@ -9,8 +9,8 @@
 #define PRODUCT_ID      0x00BE
 #define DEVICE_VER      0x0001
 #define MANUFACTURER    astro
-#define PRODUCT         Dumplings
-#define DESCRIPTION     60% rgb keyboard with ble extension
+#define PRODUCT         NRFBLE
+#define DESCRIPTION     60% BLE keyboard
 
 /* key matrix size */
 #ifndef MATRIX_ROWS
