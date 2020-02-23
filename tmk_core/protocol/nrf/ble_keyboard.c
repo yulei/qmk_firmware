@@ -242,8 +242,9 @@ static void usb_sense_handler(uint32_t const * p_low_to_high, uint32_t const * p
 static void usb_sense_init(void)
 {
     ret_code_t err_code;
-    app_gpiote_user_pin_config_t in_config = {.pin_number=USB_SENSE_PIN, .sense = NRF_GPIOTE_POLARITY_TOGGLE};
-    err_code = app_gpiote_user_register_ex(&usb_sense_user_id, &in_config, 1, usb_sense_handler);
+    static uint32_t usb_sense_h2l = 1ul << USB_SENSE_PIN;
+    static uint32_t usb_sense_l2h = 1ul << USB_SENSE_PIN;
+    err_code = app_gpiote_user_register(&usb_sense_user_id, &usb_sense_l2h, &usb_sense_h2l, usb_sense_handler);
     APP_ERROR_CHECK(err_code);
     int state = nrf_gpio_pin_read(USB_SENSE_PIN);
     if (state > 0) {
@@ -284,12 +285,12 @@ static void uart_init(void)
     }
 
     const app_uart_comm_params_t comm_params = {
-        .rx_pin_no = UART_RX_PIN,
+        .rx_pin_no = UART_RX_PIN,//NRF_UART_PSEL_DISCONNECTED,//UART_RX_PIN,
         .tx_pin_no = UART_TX_PIN,
         .flow_control = APP_UART_FLOW_CONTROL_DISABLED,
         .use_parity = false,
         .baud_rate = NRF_UART_BAUDRATE_115200,
-      };
+    };
 
     APP_UART_FIFO_INIT(&comm_params,
                          UART_RX_BUF_SIZE,
