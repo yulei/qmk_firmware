@@ -14,6 +14,12 @@
 #include "keyboard.h"
 #include "pca9554_nrf.h"
 
+// qmk stuff
+#include "quantum.h"
+#ifdef RGBLIGHT_ENABLE
+#include "rgblight.h"
+#endif
+
 // app gpiote
 #define MAX_GPIOTE_USERS  2 /**< usb sense and matrix scann */
 static uint32_t row_mask_all = 0;
@@ -114,7 +120,15 @@ static void keyboard_timer_init(void)
 
 static void keyboard_timout_handler(void *p_context)
 {
-    scan_count++;
+
+#ifdef RGBLIGHT_ENABLE
+    extern rgblight_config_t rgblight_config;
+    if ( !rgblight_config.enable) {
+#endif
+        scan_count++;
+#ifdef RGBLIGHT_ENABLE
+    }
+#endif
     keyboard_task();
     // scan count overflow, switch to trigger mode
     if (scan_count >= MAX_SCAN_COUNT) {

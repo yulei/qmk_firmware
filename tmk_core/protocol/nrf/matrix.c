@@ -6,11 +6,16 @@
 #include <stdbool.h>
 #include <string.h>
 #include "nrf_gpio.h"
-#include "printf.h"
+#include "quantum.h"
+//#include "printf.h"
 #include "matrix.h"
 #include "config.h"
 #include "wait.h"
 #include "timer.h"
+
+#ifdef RGBLIGHT_ENABLE
+#include "rgblight.h"
+#endif
 
 /**
  *
@@ -44,6 +49,8 @@ void matrix_init(void) {
     memset(matrix_debouncing, 0, MATRIX_COLS * sizeof(matrix_row_t));
 
     matrix_init_quantum();
+
+    //rgblight_disable();
 }
 
 uint8_t matrix_scan(void)

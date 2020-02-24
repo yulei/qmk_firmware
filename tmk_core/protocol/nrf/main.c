@@ -56,7 +56,8 @@ ble_driver_t ble_driver = {
     .keyboard_led = 0,
     .usb_enabled = 0,
     .uart_enabled = 0,
-    .output_target = OUTPUT_USB,// | OUTPUT_BLE,
+    .output_target = OUTPUT_USB,
+    .output_target = OUTPUT_BLE,
 };
 
 /**@brief Callback function for asserts in the SoftDevice.
