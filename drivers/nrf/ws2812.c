@@ -1,10 +1,10 @@
 /**
- * @file ws2812_nrf.c
+ * @file ws2812.c
  */
 
 #include "nrfx_pwm.h"
 #include "nrf_gpio.h"
-#include "ws2812_nrf.h"
+#include "ws2812.h"
 #include "nrf_log.h"
 #include "wait.h"
 
@@ -75,9 +75,9 @@ void ws2812_init(void)
     }
     ws2812_pwm_seq.length = WS2812_BUF_SIZE;
     nrfx_pwm_simple_playback(&ws2812_pwm, &ws2812_pwm_seq, 1, NRFX_PWM_FLAG_STOP);
+    wait_ms(2);
 
     ws2812_ready = true;
-    NRF_LOG_INFO("ws2812 init playback");
 }
 
 void ws2812_setleds(LED_TYPE* leds, uint16_t number)
@@ -96,6 +96,7 @@ void ws2812_setleds(LED_TYPE* leds, uint16_t number)
         }
         ws2812_pwm_seq.length = number*24 + WS2812_RESET_SIZE;
         nrfx_pwm_simple_playback(&ws2812_pwm, &ws2812_pwm_seq, 1, NRFX_PWM_FLAG_STOP);
-        NRF_LOG_INFO("ws2812 setleds playback");
+        wait_ms(2);
+        NRF_LOG_INFO("ws2812 setleds playback: number: %d", number);
     }
 }

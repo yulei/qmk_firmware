@@ -23,6 +23,7 @@
 #ifndef PACKED
 #if defined(__GNUC__)
 #    define PACKED __attribute__((__packed__))
+#    define PACKED_GUARD
 #else
 #    define PACKED
 #endif
@@ -68,5 +69,10 @@ typedef struct PACKED {
 RGB hsv_to_rgb(HSV hsv);
 #ifdef RGBW
 void convert_rgb_to_rgbw(LED_TYPE *led);
+#endif
+
+#ifdef PACKED_GUARD
+#undef PACKED
+#undef PACKED_GUARD
 #endif
 #endif  // COLOR_H

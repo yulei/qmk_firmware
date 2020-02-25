@@ -165,6 +165,9 @@ SIZE = arm-none-eabi-size
 AR = arm-none-eabi-ar
 NM = arm-none-eabi-nm
 
+
+COMMON_VPATH += $(DRIVER_PATH)/nrf
+
 # Optimization flags
 #OPT = -O3 -g3
 # Uncomment the line below to enable link time optimization

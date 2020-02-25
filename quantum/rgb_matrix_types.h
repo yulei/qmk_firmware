@@ -4,10 +4,13 @@
 #include <stdbool.h>
 #include "color.h"
 
+#ifndef PACKED
 #if defined(__GNUC__)
 #    define PACKED __attribute__((__packed__))
+#    define PACKED_GUARD
 #else
 #    define PACKED
+#endif
 #endif
 
 #if defined(_MSC_VER)
@@ -84,4 +87,9 @@ typedef union {
 
 #if defined(_MSC_VER)
 #    pragma pack(pop)
+#endif
+
+#ifdef PACKED_GUARD
+#undef PACKED
+#undef PACKED_GUARD
 #endif

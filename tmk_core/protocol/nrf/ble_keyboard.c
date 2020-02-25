@@ -12,7 +12,6 @@
 #include "report.h"
 #include "host.h"
 #include "keyboard.h"
-#include "pca9554_nrf.h"
 
 // qmk stuff
 #include "quantum.h"
@@ -94,7 +93,6 @@ void ble_keyboard_init(void)
     host_set_driver(&kbd_driver);
     keyboard_timer_init();
     keyboard_gpio_init();
-    pca9554_nrf_init();
 }
 
 void ble_keyboard_start(void)

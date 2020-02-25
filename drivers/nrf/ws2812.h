@@ -1,5 +1,6 @@
 /**
- * @file ws2812_nrf.h
+ * @file ws2812.h
+ * @brief ws2812 driver on nrf52
  */
 
 #pragma once
