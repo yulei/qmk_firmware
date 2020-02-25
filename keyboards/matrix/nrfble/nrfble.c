@@ -5,11 +5,11 @@
 #include "nrfble.h"
 #include "indicator_pca9554.h"
 
-static uint8_t indicator = 0;
+//static uint8_t indicator = 0;
 
 __attribute__((weak))
 void matrix_init_kb(void) {
-    indicator_pca9554_init();
+//    indicator_pca9554_init();
     matrix_init_user();
 }
 
@@ -160,6 +160,7 @@ led_config_t g_led_config = {
 };
 #endif
 
+#if 0
 
 layer_state_t layer_state_set_kb(layer_state_t state)
 {
@@ -194,3 +195,5 @@ void led_set_kb(uint8_t usb_led) {
 
     indicator_pca9554_write(indicator);
 }
+
+#endif
