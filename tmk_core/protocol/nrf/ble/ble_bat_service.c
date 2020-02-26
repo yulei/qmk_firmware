@@ -8,7 +8,6 @@
 
 #include "nrf_gpio.h"
 #include "nrf_drv_saadc.h"
-#include "nrfx_saadc.h"
 
 #define SAADC_SAMPLES 5
 static nrf_saadc_value_t m_saadc_buffers[2][SAADC_SAMPLES];
@@ -84,7 +83,8 @@ static void battery_level_update(uint8_t level) {
 static void battery_level_delay_timeout_handler(void* p_context)
 {
     UNUSED_PARAMETER(p_context);
-    nrfx_saadc_sample();
+    nrf_drv_saadc_sample();
+    NRF_LOG_INFO("battery sampling started.");
 }
 
 static void battery_level_meas_timeout_handler(void * p_context) {
@@ -131,21 +131,22 @@ static void battery_process_saadc_result(uint32_t result)
     // VP = INPUT, VN = GND, GAIN = 1/4, REFERENCE = 0.6V, RESOLUTION  = 10 bits, m = 0(single mode)
     // VP = (result/2^10) * (0.6 / 0.25) = (result*2.4)/1024
     // the Battery input was dived by 2 through two resistors
-    // battery: vp*2 
+    // battery voltage: vp*2
 
-    uint32_t v = (result*2400*2)/1024;
+    uint32_t mv = (result*2400*2)/1024;
     uint32_t percent = 0;
     for (int i = 0; i < sizeof(LIPO_TABLE)/sizeof(LIPO_TABLE[0]); i++) {
-        if (v >= LIPO_TABLE[i].value) {
+        if (mv >= LIPO_TABLE[i].value) {
             if (i==0) {
                 percent = 100;
             } else {
-                percent = compute_percent(v, i);
+                percent = compute_percent(mv, i);
             }
             break;
         }
     }
 
+    NRF_LOG_INFO("battery sampling finished: value=%d, mV=%d, percent=%d.", result, mv, percent);
     battery_level_update(percent);
 }
 

@@ -26,49 +26,26 @@
 #include <string.h>
 #include "app_util_platform.h"
 #include "app_error.h"
-#include "nrf_drv_twi.h"
+#include "nrfx_twi.h"
 
-#define TWI_INSTANCE_ID         0
-
+#define TWI_INSTANCE_ID     0
 #define TWI_SCL_PIN         18
 #define TWI_SDA_PIN         19
 
-/* Indicates if operation on TWI has ended. */
-static volatile bool m_xfer_done = false;
-
 /* TWI instance. */
-static const nrf_drv_twi_t m_twi = NRF_DRV_TWI_INSTANCE(TWI_INSTANCE_ID);
-
-/**
- * @brief TWI events handler.
- */
-static void twi_handler(nrf_drv_twi_evt_t const * p_event, void * p_context)
-{
-    switch (p_event->type)
-    {
-        case NRF_DRV_TWI_EVT_DONE:
-            m_xfer_done = true;
-            break;
-        case NRF_DRV_TWI_EVT_ADDRESS_NACK:
-        case NRF_DRV_TWI_EVT_DATA_NACK:
-
-            break;
-        default:
-            break;
-    }
-}
+static const nrfx_twi_t m_twi = NRFX_TWI_INSTANCE(TWI_INSTANCE_ID);
 
 void i2c_init(void)
 {
     ret_code_t err_code;
 
-    nrf_drv_twi_config_t twi_config = NRFX_TWI_DEFAULT_CONFIG;
+    nrfx_twi_config_t twi_config = NRFX_TWI_DEFAULT_CONFIG;
     twi_config.scl = TWI_SCL_PIN;
     twi_config.sda = TWI_SDA_PIN;
 
-    err_code = nrf_drv_twi_init(&m_twi, &twi_config, twi_handler, NULL);
+    err_code = nrfx_twi_init(&m_twi, &twi_config, NULL, NULL);
     APP_ERROR_CHECK(err_code);
-    nrf_drv_twi_enable(&m_twi);
+    nrfx_twi_enable(&m_twi);
 }
 
 i2c_status_t i2c_start(uint8_t address)
@@ -80,48 +57,41 @@ i2c_status_t i2c_start(uint8_t address)
 i2c_status_t i2c_transmit(uint8_t address, const uint8_t* data, uint16_t length, uint16_t timeout)
 {
     (void)timeout;
-    ret_code_t err_code;
-    m_xfer_done = false;
-    err_code    = nrf_drv_twi_tx(&m_twi, address >> 1, data, length, false);
-    if (err_code != NRF_SUCCESS) {
+    ret_code_t err_code = nrfx_twi_tx(&m_twi, address >> 1, data, length, false);
+    if (err_code != NRFX_SUCCESS) {
         return I2C_STATUS_ERROR;
     }
-    while (m_xfer_done == false);
     return I2C_STATUS_SUCCESS;
 }
 
 i2c_status_t i2c_receive(uint8_t address, uint8_t* data, uint16_t length, uint16_t timeout)
 {
     (void)timeout;
-    ret_code_t err_code;
-    m_xfer_done = false;
-    err_code    = nrf_drv_twi_rx(&m_twi, address >> 1, data, length);
-    if (err_code != NRF_SUCCESS) {
+    ret_code_t err_code = nrfx_twi_rx(&m_twi, address >> 1, data, length);
+    if (err_code != NRFX_SUCCESS) {
         return I2C_STATUS_ERROR;
     }
-    while (m_xfer_done == false);
     return I2C_STATUS_SUCCESS;
 }
 
 i2c_status_t i2c_writeReg(uint8_t devaddr, uint8_t regaddr, const uint8_t* data, uint16_t length, uint16_t timeout)
 {
     (void)timeout;
-    uint8_t complete_packet[length + 1];
-    for (uint8_t i = 0; i < length; i++) {
-        complete_packet[i + 1] = data[i];
-    }
-    complete_packet[0] = regaddr;
-    return i2c_transmit(devaddr, complete_packet, sizeof(complete_packet), 0);
+    uint8_t packet[length + 1];
+    memcpy(&packet[1], data, length);
+    packet[0] = regaddr;
+    return i2c_transmit(devaddr, packet, length + 1, 0);
 }
 
 i2c_status_t i2c_readReg(uint8_t devaddr, uint8_t regaddr, uint8_t* data, uint16_t length, uint16_t timeout)
 {
-    if (I2C_STATUS_SUCCESS != i2c_transmit(devaddr, &regaddr, 1, 0))
-    {
+    (void)timeout;
+    nrfx_twi_xfer_desc_t txrx = NRFX_TWI_XFER_DESC_TXRX((devaddr >> 1), &regaddr, 1, data, length);
+    ret_code_t err_code = nrfx_twi_xfer(&m_twi, &txrx, 0);
+    if (err_code != NRFX_SUCCESS) {
         return I2C_STATUS_ERROR;
     }
-
-    return i2c_receive(devaddr, data, length, 0);
+    return I2C_STATUS_SUCCESS;
 }
 
 void i2c_stop(void)

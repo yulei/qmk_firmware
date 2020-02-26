@@ -15,7 +15,7 @@ NO_USB_STARTUP_CHECK = yes  # Disable initialization only when usb is plugged in
 
 CUSTOM_MATRIX = yes
 RGBLIGHT_ENABLE = yes
-#RGB_MATRIX_ENABLE = yes
+RGB_MATRIX_ENABLE = yes
 
 SDK_ROOT := $(TOP_DIR)/lib/nRF5_SDK_16.0.0_98a08e2
 
