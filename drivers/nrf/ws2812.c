@@ -74,8 +74,9 @@ void ws2812_init(void)
         ws2812_data[WS2812_COLOR_SIZE+j] = 0x8000;
     }
     ws2812_pwm_seq.length = WS2812_BUF_SIZE;
-    nrfx_pwm_simple_playback(&ws2812_pwm, &ws2812_pwm_seq, 1, NRFX_PWM_FLAG_STOP);
-    wait_ms(2);
+    //nrfx_pwm_simple_playback(&ws2812_pwm, &ws2812_pwm_seq, 1, NRFX_PWM_FLAG_STOP);
+    //wait_ms(2);
+
 
     ws2812_ready = true;
 }

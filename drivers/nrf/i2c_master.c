@@ -34,17 +34,21 @@
 
 /* TWI instance. */
 static const nrfx_twi_t m_twi = NRFX_TWI_INSTANCE(TWI_INSTANCE_ID);
+static bool twi_ready = false;
 
 void i2c_init(void)
 {
-    ret_code_t err_code;
+    ret_code_t err_code = NRFX_SUCCESS;
 
     nrfx_twi_config_t twi_config = NRFX_TWI_DEFAULT_CONFIG;
     twi_config.scl = TWI_SCL_PIN;
     twi_config.sda = TWI_SDA_PIN;
 
-    err_code = nrfx_twi_init(&m_twi, &twi_config, NULL, NULL);
-    APP_ERROR_CHECK(err_code);
+    if (!twi_ready) {
+        err_code = nrfx_twi_init(&m_twi, &twi_config, NULL, NULL);
+        APP_ERROR_CHECK(err_code);
+        twi_ready = true;
+    }
     nrfx_twi_enable(&m_twi);
 }
 
