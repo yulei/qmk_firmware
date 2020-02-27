@@ -13,6 +13,10 @@
 #    include "eeprom_driver.h"
 #endif
 
+#if defined(PROTOCOL_NRF)
+#    include "eeprom_fds.h"
+#endif
+
 /** \brief eeconfig enable
  *
  * FIXME: needs doc
@@ -38,6 +42,9 @@ void eeconfig_init_quantum(void) {
 #endif
 #if defined(EEPROM_DRIVER)
     eeprom_driver_erase();
+#endif
+#if defined(PROTOCOL_NRF)
+    fds_eeprom_init();
 #endif
     eeprom_update_word(EECONFIG_MAGIC, EECONFIG_MAGIC_NUMBER);
     eeprom_update_byte(EECONFIG_DEBUG, 0);
@@ -90,6 +97,10 @@ void eeconfig_disable(void) {
 #endif
 #if defined(EEPROM_DRIVER)
     eeprom_driver_erase();
+#endif
+
+#if defined(PROTOCOL_NRF)
+    fds_eeprom_init();
 #endif
     eeprom_update_word(EECONFIG_MAGIC, EECONFIG_MAGIC_NUMBER_OFF);
 }

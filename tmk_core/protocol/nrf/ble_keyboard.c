@@ -46,11 +46,12 @@ typedef enum {
 #define KEYBOARD_SCAN_INTERVAL APP_TIMER_TICKS(10) // keyboard scan interval
 APP_TIMER_DEF(m_keyboard_timer_id); // keyboard scan timer id
 
-static void keyboard_gpio_init(void);
+static void keyboard_pins_init(void);
 static void keyboard_timer_init(void);
 static void keyboard_timout_handler(void *p_context);
 static void keybaord_timer_start(void);
 static void keybaord_timer_stop(void);
+
 static void usb_sense_init(void);
 static void usb_sense_handler(uint32_t const * p_low_to_high, uint32_t const * p_high_to_low);
 static void uart_init(void);
@@ -92,16 +93,15 @@ void ble_keyboard_init(void)
     keyboard_init();
     host_set_driver(&kbd_driver);
     keyboard_timer_init();
-    keyboard_gpio_init();
+    keyboard_pins_init();
 }
 
 void ble_keyboard_start(void)
 {
     keyboard_matrix_trigger_start();
-    matrix_trigger_enabled = true;
 }
 
-void keyboard_gpio_init(void)
+void keyboard_pins_init(void)
 {
     usb_sense_init();
     keyboard_matrix_trigger_init();
@@ -132,7 +132,6 @@ static void keyboard_timout_handler(void *p_context)
     if (scan_count >= MAX_SCAN_COUNT) {
         keybaord_timer_stop();
         keyboard_matrix_trigger_start();
-        matrix_trigger_enabled = true;
         NRF_LOG_INFO("keyboard matrix swtiched to trigger mode");
         scan_count = 0;
     }
@@ -362,7 +361,6 @@ static void keyboard_matrix_trigger_handler(uint32_t const * p_low_to_high, uint
         keyboard_matrix_scan_init();
         // start scan timer
         keybaord_timer_start();
-        matrix_trigger_enabled = false;
     }
 }
 
@@ -388,18 +386,28 @@ static void keyboard_matrix_trigger_init(void)
 
 static void keyboard_matrix_trigger_start(void)
 {
+    if (matrix_trigger_enabled) {
+        return;
+    }
+
     for (int i = 0; i < MATRIX_COLS; i++) {
         nrf_gpio_pin_set(col_pins[i]);
     }
     app_gpiote_user_enable(keyboard_user_id);
+    matrix_trigger_enabled = true;
 }
 
 static void keyboard_matrix_trigger_stop(void)
 {
+    if (!matrix_trigger_enabled) {
+        return;
+    }
+
     for (int i = 0; i < MATRIX_COLS; i++) {
         nrf_gpio_pin_clear(col_pins[i]);
     }
     app_gpiote_user_disable(keyboard_user_id);
+    matrix_trigger_enabled = false;
 }
 
 extern void matrix_init(void);
