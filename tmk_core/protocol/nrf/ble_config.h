@@ -32,7 +32,7 @@
 #endif
 
 #ifndef USB_SENSE_PIN
-    #define USB_SENSE_PIN                   26                                          /**< Default pin for usb sense */ 
+    #define USB_SENSE_PIN                   26                                          /**< Default pin for usb sense */
 #endif
 
 #ifndef UART_RX_PIN
@@ -53,6 +53,21 @@
 
 #define DEVICE_NAME                         NRF_NAME(PRODUCT)                           /**< Name of device. Will be included in the advertising data. */
 #define MANUFACTURER_NAME                   NRF_NAME(MANUFACTURER)                      /**< Manufacturer. Will be passed to Device Information Service. */
+
+#if COMMAND_ENABLE
+#ifndef CMD_BLE_TOGGLE
+    #define CMD_BLE_TOGGLE     F        // toggle the ble output
+#endif
+#ifndef CMD_USB_TOGGLE
+    #define CMD_USB_TOGGLE     G        // toggle the usb output
+#endif
+#ifndef CMD_ERASE_BOND
+    #define CMD_ERASE_BOND     O        // erase bonding, which will cause a full reset
+#endif
+#ifndef CMD_BOOTLOADER
+    #define CMD_BOOTLOADER     P        // reset the system to bootloader
+#endif
+#endif
 
 #define VENDOR_ID_SOURCE                    0x02                                       /**< Vendor ID Source. */
 #ifndef VENDER_ID
@@ -117,6 +132,11 @@
 #else
 #define SCHED_QUEUE_SIZE                    10                                         /**< Maximum number of events in the scheduler queue. */
 #endif
+
+// reset reason
+#define RST_REGISTER    0x00
+#define RST_BOOTLOADER  0x01
+#define RST_ERASE_BOND  0x02
 
 typedef enum {
 #if WITH_LUFA

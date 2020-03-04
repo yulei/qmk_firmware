@@ -8,7 +8,9 @@
 #include "eeprom.h"
 #include "fds.h"
 
-#define EE_FILEID 0x6565  //"ee"
+#define EE_FILEID 0x6565                //"ee"
+#define EE_ADDR2KEY(x) ((x)+1024)       // should in rage 0x0001-0xBFFF
+
 static bool ee_callback_registered  = false;
 static volatile bool ee_done        = false;
 static volatile bool ee_gc_done     = false;
@@ -57,10 +59,11 @@ void    fds_eeprom_write_byte(uint16_t addr, uint8_t data)
 {
     fds_record_desc_t desc  = {0};
     fds_find_token_t  token = {0};
-    ret_code_t        rc    = fds_record_find_by_key(addr, &desc, &token);
+    uint16_t          key   = EE_ADDR2KEY(addr);
+    ret_code_t        rc    = fds_record_find_by_key(key, &desc, &token);
     if (rc == NRF_SUCCESS) {
         ee_data = data;
-        ee_record.key = addr;
+        ee_record.key = key;
         rc = fds_record_update(&desc, &ee_record);
         if (rc == FDS_ERR_NO_SPACE_IN_FLASH) {
             ee_gc_done = false;
@@ -71,7 +74,7 @@ void    fds_eeprom_write_byte(uint16_t addr, uint8_t data)
         }
     } else {
         ee_data = data;
-        ee_record.key = addr;
+        ee_record.key = key;
         rc = fds_record_write(&desc, &ee_record);
         if (rc == FDS_ERR_NO_SPACE_IN_FLASH) {
             ee_gc_done = false;
@@ -89,8 +92,9 @@ uint8_t fds_eeprom_read_byte(uint16_t addr)
 {
     fds_record_desc_t desc = {0};
     fds_find_token_t token = {0};
+    uint16_t          key   = EE_ADDR2KEY(addr);
     uint32_t result = 0;
-    ret_code_t rc = fds_record_find_by_key(addr, &desc, &token);
+    ret_code_t rc = fds_record_find_by_key(key, &desc, &token);
     if (rc == NRF_SUCCESS) {
         fds_flash_record_t ee_data = {0};
         fds_record_open(&desc, &ee_data);

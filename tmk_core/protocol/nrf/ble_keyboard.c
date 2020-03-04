@@ -56,7 +56,7 @@ static void usb_sense_init(void);
 static void usb_sense_handler(uint32_t const * p_low_to_high, uint32_t const * p_high_to_low);
 static void uart_init(void);
 static void uart_uninit(void);
-static void uart_error_handle(app_uart_evt_t * p_event);
+static void uart_event_handle(app_uart_evt_t * p_event);
 static void uart_send_cmd(command_t cmd, const uint8_t* report, uint32_t size);
 static uint8_t compute_checksum(const uint8_t* data, uint32_t size);
 
@@ -269,7 +269,9 @@ static void usb_sense_init(void)
     app_gpiote_user_enable(usb_sense_user_id);
 }
 
-static void uart_error_handle(app_uart_evt_t * p_event)
+static volatile bool uart_tx_done = false;
+
+static void uart_event_handle(app_uart_evt_t *p_event)
 {
     switch (p_event->evt_type) {
         case APP_UART_COMMUNICATION_ERROR:
@@ -281,6 +283,7 @@ static void uart_error_handle(app_uart_evt_t * p_event)
         case APP_UART_DATA_READY:
             break;
         case APP_UART_TX_EMPTY:
+            uart_tx_done = true;
             break;
         default:
             break;
@@ -306,7 +309,7 @@ static void uart_init(void)
     APP_UART_FIFO_INIT(&comm_params,
                          UART_RX_BUF_SIZE,
                          UART_TX_BUF_SIZE,
-                         uart_error_handle,
+                         uart_event_handle,
                          APP_IRQ_PRIORITY_LOWEST,
                          err_code);
 
@@ -417,3 +420,60 @@ static void keyboard_matrix_scan_init(void)
 }
 
 //static void keyboard_matrix_scan_uninit(void) {}
+#ifdef COMMAND_ENABLE
+#include "command.h"
+#include "nrf_delay.h"
+
+static void send_reboot_cmd(void)
+{
+    if (!ble_driver.uart_enabled) {
+        NRF_LOG_INFO("uart not enabled, can't send reboot command");
+        return;
+    }
+    uint8_t checksum = CMD_RESET_TO_BOOTLOADER;
+    uart_tx_done = false;
+    app_uart_put(SYNC_BYTE_1);
+    app_uart_put(SYNC_BYTE_2);
+    app_uart_put(3);
+    app_uart_put(checksum);
+    app_uart_put(CMD_RESET_TO_BOOTLOADER);
+    while(!uart_tx_done) {
+        nrf_delay_ms(1);
+    }
+    sd_power_gpregret_set(RST_REGISTER, RST_BOOTLOADER);
+    sd_nvic_SystemReset();
+}
+
+// bluetooth control command, try to not confilict with the pre-defined key in command.h
+
+bool command_extra(uint8_t code)
+{
+    switch (code) {
+        case MAGIC_KC(CMD_BLE_TOGGLE):
+            if (ble_driver.output_target&OUTPUT_BLE) {
+                ble_driver.output_target &= ~OUTPUT_BLE;
+            } else {
+                ble_driver.output_target |= OUTPUT_BLE;
+            }
+            break;
+        case MAGIC_KC(CMD_USB_TOGGLE):
+            if (ble_driver.output_target&OUTPUT_USB) {
+                ble_driver.output_target &= ~OUTPUT_USB;
+            } else {
+                ble_driver.output_target |= OUTPUT_USB;
+            }
+            break;
+        case MAGIC_KC(CMD_ERASE_BOND):
+            sd_power_gpregret_set(RST_REGISTER, RST_ERASE_BOND);
+            sd_nvic_SystemReset();
+            break;
+        case MAGIC_KC(CMD_BOOTLOADER):
+            // send reboot command to peer mcu
+            send_reboot_cmd();
+            break;
+        default:
+            break;
+    }
+    return false;
+}
+#endif

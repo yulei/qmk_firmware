@@ -9,7 +9,7 @@ BOOTMAGIC_ENABLE = yes      # Virtual DIP switch configuration
 MOUSEKEY_ENABLE = no        # Mouse keys
 EXTRAKEY_ENABLE = no        # Audio control and System control
 CONSOLE_ENABLE = no         # Console for debug
-COMMAND_ENABLE = no         # Commands for debug and configuration
+COMMAND_ENABLE = yes        # Commands for debug and configuration
 NKRO_ENABLE = no            # USB Nkey Rollover
 NO_USB_STARTUP_CHECK = yes  # Disable initialization only when usb is plugged in
 

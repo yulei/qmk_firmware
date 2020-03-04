@@ -226,7 +226,8 @@ static void idle_state_handle(void)
  */
 int main(void)
 {
-    bool erase_bonds = true;
+    bool erase_bonds = false;
+    uint32_t reason = 0;
 #if CONFIG_JLINK_MONITOR_ENABLED
     NVIC_SetPriority(DebugMonitor_IRQn, _PRIO_SD_LOW);
 #endif
@@ -242,8 +243,18 @@ int main(void)
 
     // Start execution.
     NRF_LOG_INFO("NRF BLE Keyboard started.");
-    ble_services_start(erase_bonds);
-    ble_keyboard_start();
+    sd_power_gpregret_get(RST_REGISTER, &reason);
+    if (reason & RST_BOOTLOADER) {
+        NRF_LOG_INFO("reset for bootloader: go to sleep forever");
+        sd_power_gpregret_clr(RST_REGISTER, RST_BOOTLOADER);
+    } else {
+        if (reason & RST_ERASE_BOND) {
+            erase_bonds = true;
+            sd_power_gpregret_clr(RST_REGISTER, RST_ERASE_BOND);
+        }
+        ble_services_start(erase_bonds);
+        ble_keyboard_start();
+    }
 
     // Enter main loop.
     for (;;)
