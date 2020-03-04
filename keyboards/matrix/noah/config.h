@@ -20,7 +20,7 @@
 #define MATRIX_COL_PINS { C15, B10,  B7,  B6,  B5,  B4, A15, A10, A9,  A8, B15, B14, B13, B12,  B2}
 #define UNUSED_PINS
 #define DIODE_DIRECTION COL2ROW
-#define DEBOUNCING_DELAY 5
+#define DEBOUNCE 5
 
 // i2c setting
 #define I2C1_SCL 8
