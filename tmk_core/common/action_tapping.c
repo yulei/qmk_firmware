@@ -98,6 +98,7 @@ bool process_tapping(keyrecord_t *keyp) {
                 if (IS_TAPPING_KEY(event.key) && !event.pressed) {
                     // first tap!
                     debug("Tapping: First tap(0->1).\n");
+                    //SEGGER_RTT_printf(0, "Tapping: First tap(0->1).\n");
                     tapping_key.tap.count = 1;
                     debug_tapping_key();
                     process_record(&tapping_key);
@@ -194,6 +195,7 @@ bool process_tapping(keyrecord_t *keyp) {
         else {
             if (tapping_key.tap.count == 0) {
                 debug("Tapping: End. Timeout. Not tap(0): ");
+                //SEGGER_RTT_printf(0, "Tapping: End. Timeout. Not tap(0): ");
                 debug_event(event);
                 debug("\n");
                 process_record(&tapping_key);
@@ -203,6 +205,7 @@ bool process_tapping(keyrecord_t *keyp) {
             } else {
                 if (IS_TAPPING_KEY(event.key) && !event.pressed) {
                     debug("Tapping: End. last timeout tap release(>0).");
+                    //SEGGER_RTT_printf(0, "Tapping: End. last timeout tap release(>0).");
                     keyp->tap = tapping_key.tap;
                     process_record(keyp);
                     tapping_key = (keyrecord_t){};
@@ -283,6 +286,7 @@ bool process_tapping(keyrecord_t *keyp) {
     else {
         if (event.pressed && is_tap_key(event.key)) {
             debug("Tapping: Start(Press tap key).\n");
+            //SEGGER_RTT_printf(0, "Tapping: Start(Press tap key).\n");
             tapping_key = *keyp;
             process_record_tap_hint(&tapping_key);
             waiting_buffer_scan_tap();
@@ -375,14 +379,28 @@ void waiting_buffer_scan_tap(void) {
     }
 }
 
+static void rtt_record(keyrecord_t r)
+{
+    SEGGER_RTT_printf(0, "Record: row:%d, col:%d, pressed:%c, time:%d, int:%c, count:%d\n",
+    r.event.key.row,
+    r.event.key.col,
+    r.event.pressed ? 'd':'u',
+    r.event.time,
+    r.tap.interrupted ? 'y':'n',
+    r.tap.count);
+}
+
 /** \brief Tapping key debug print
  *
  * FIXME: Needs docs
  */
 static void debug_tapping_key(void) {
-    debug("TAPPING_KEY=");
-    debug_record(tapping_key);
-    debug("\n");
+    //debug("TAPPING_KEY=");
+    //debug_record(tapping_key);
+    //debug("\n");
+    SEGGER_RTT_printf(0, "TAPPING_KEY=");
+    rtt_record(tapping_key);
+    SEGGER_RTT_printf(0, "\n");
 }
 
 /** \brief Waiting buffer debug print
@@ -390,7 +408,7 @@ static void debug_tapping_key(void) {
  * FIXME: Needs docs
  */
 static void debug_waiting_buffer(void) {
-    debug("{ ");
+    /*debug("{ ");
     for (uint8_t i = waiting_buffer_tail; i != waiting_buffer_head; i = (i + 1) % WAITING_BUFFER_SIZE) {
         debug("[");
         debug_dec(i);
@@ -398,7 +416,14 @@ static void debug_waiting_buffer(void) {
         debug_record(waiting_buffer[i]);
         debug(" ");
     }
-    debug("}\n");
+    debug("}\n");*/
+    SEGGER_RTT_printf(0, "{ ");
+    for (uint8_t j = waiting_buffer_tail; j != waiting_buffer_head; j = (j + 1) % WAITING_BUFFER_SIZE) {
+        SEGGER_RTT_printf(0, "[%d]=", j);
+        rtt_record(waiting_buffer[j]);
+        SEGGER_RTT_printf(0, " ");
+    }
+    SEGGER_RTT_printf(0, "}\n");
 }
 
 #endif

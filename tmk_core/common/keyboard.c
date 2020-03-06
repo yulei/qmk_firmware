@@ -302,7 +302,7 @@ void keyboard_task(void) {
                     continue;
                 }
 #endif
-                if (debug_matrix) matrix_print();
+                if (1) matrix_print();
                 matrix_row_t col_mask = 1;
                 for (uint8_t c = 0; c < MATRIX_COLS; c++, col_mask <<= 1) {
                     if (matrix_change & col_mask) {

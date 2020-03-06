@@ -705,11 +705,13 @@ void process_action(keyrecord_t *record, action_t action) {
 #endif
 }
 
+#include "SEGGER_RTT.h"
 /** \brief Utilities for actions. (FIXME: Needs better description)
  *
  * FIXME: Needs documentation.
  */
 void register_code(uint8_t code) {
+    SEGGER_RTT_printf(0, "\nresiger_code:%d\n", code);
     if (code == KC_NO) {
         return;
     }
@@ -798,6 +800,7 @@ void register_code(uint8_t code) {
  * FIXME: Needs documentation.
  */
 void unregister_code(uint8_t code) {
+    SEGGER_RTT_printf(0, "\nunresiger_code:%d\n", code);
     if (code == KC_NO) {
         return;
     }

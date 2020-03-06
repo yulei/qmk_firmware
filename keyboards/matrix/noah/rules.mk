@@ -46,7 +46,7 @@ VIRTSER_ENABLE = no
 NO_USB_STARTUP_CHECK = no   # Disable initialization only when usb is plugged in
 
 CUSTOM_MATRIX = yes
-RGB_MATRIX_ENABLE = yes
+RGB_MATRIX_ENABLE = no
 
 RGBLIGHT_ENABLE = yes
 RGBLIGHT_CUSTOM_DRIVER = yes
@@ -55,3 +55,5 @@ RGBLIGHT_CUSTOM_DRIVER = yes
 SRC += \
     ws2812_f4.c \
     matrix.c
+
+SRC += SEGGER_RTT.c SEGGER_RTT_printf.c

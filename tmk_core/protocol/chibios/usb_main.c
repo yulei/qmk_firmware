@@ -658,10 +658,11 @@ static void keyboard_idle_timer_cb(void *arg) {
 
 /* LED status */
 uint8_t keyboard_leds(void) { return (uint8_t)(keyboard_led_stats & 0xFF); }
-
+#include "SEGGER_RTT.h"
 /* prepare and start sending a report IN
  * not callable from ISR or locked state */
 void send_keyboard(report_keyboard_t *report) {
+    SEGGER_RTT_printf(0, "in send_keyboard()\n");
     osalSysLock();
     if (usbGetDriverStateI(&USB_DRIVER) != USB_ACTIVE) {
         goto unlock;
@@ -712,6 +713,8 @@ void send_keyboard(report_keyboard_t *report) {
             data = &report->mods;
             size = 8;
         }
+        SEGGER_RTT_printf(0, "usbStartTransmitI\n");
+
         usbStartTransmitI(&USB_DRIVER, KEYBOARD_IN_EPNUM, data, size);
     }
     keyboard_report_sent = *report;

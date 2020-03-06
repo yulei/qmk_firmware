@@ -47,6 +47,7 @@ led_t host_keyboard_led_state(void) {
 
 /* send report */
 void host_keyboard_send(report_keyboard_t *report) {
+
     if (!driver) return;
 #if defined(NKRO_ENABLE) && defined(NKRO_SHARED_EP)
     if (keyboard_protocol && keymap_config.nkro) {
@@ -64,7 +65,7 @@ void host_keyboard_send(report_keyboard_t *report) {
     }
     (*driver->send_keyboard)(report);
 
-    if (debug_keyboard) {
+    if (1) {
         dprint("keyboard_report: ");
         for (uint8_t i = 0; i < KEYBOARD_REPORT_SIZE; i++) {
             dprintf("%02X ", report->raw[i]);

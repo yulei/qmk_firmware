@@ -134,7 +134,9 @@ bool is_oneshot_layer_active(void) { return get_oneshot_layer_state(); }
  *
  * FIXME: needs doc
  */
+#include "SEGGER_RTT.h"
 void send_keyboard_report(void) {
+    SEGGER_RTT_printf(0, "send keyboard report\n");
     keyboard_report->mods = real_mods;
     keyboard_report->mods |= weak_mods;
     keyboard_report->mods |= macro_mods;

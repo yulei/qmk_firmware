@@ -144,15 +144,16 @@ extern debug_config_t debug_config;
 
 #else /* NO_DEBUG */
 
-#    define dprint(s)
-#    define dprintln(s)
-#    define dprintf(fmt, ...)
-#    define dmsg(s)
-#    define debug(s)
-#    define debugln(s)
-#    define debug_msg(s)
-#    define debug_dec(data)
-#    define debug_decs(data)
+#include "SEGGER_RTT.h"
+#    define dprint(s) SEGGER_RTT_printf(0, s)
+#    define dprintln(s) //SEGGER_RTT_printf(0, "%s\n", s)
+#    define dprintf(fmt, ...) SEGGER_RTT_printf(0, fmt, ##__VA_ARGS__);
+#    define dmsg(s) SEGGER_RTT_printf(0, s)
+#    define debug(s) SEGGER_RTT_printf(0, s)
+#    define debugln(s) SEGGER_RTT_printf(0, "%s\n", s)
+#    define debug_msg(s) SEGGER_RTT_printf(0, s)
+#    define debug_dec(data) SEGGER_RTT_printf(0, "%u", data)
+#    define debug_decs(data) SEGGER_RTT_printf(0, "%d", data)
 #    define debug_hex4(data)
 #    define debug_hex8(data)
 #    define debug_hex16(data)
