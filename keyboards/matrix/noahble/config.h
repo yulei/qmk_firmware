@@ -25,7 +25,7 @@
 #define MATRIX_ROW_PINS { 3,  2, 27, 26, 25}
 #define MATRIX_COL_PINS { 4,  5,  6,  7,  8,  9, 16, 15, 14, 13, 12, 11, 24, 23, 22}
 /* Debounce reduces chatter (unintended double-presses) - set 0 if debouncing is not needed */
-#define DEBOUNCE_DELAY 5
+#define DEBOUNCE        5
 
 #define USB_SENSE_PIN   31
 #define UART_RX_PIN     20

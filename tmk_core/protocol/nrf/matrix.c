@@ -7,34 +7,21 @@
 #include <string.h>
 #include "nrf_gpio.h"
 #include "quantum.h"
-//#include "printf.h"
 #include "matrix.h"
 #include "config.h"
 #include "wait.h"
 #include "timer.h"
+#include "debounce.h"
 
-#ifdef RGBLIGHT_ENABLE
-#include "rgblight.h"
-#endif
-
-/**
- *
- * Row pins are input with internal pull-down.
- * Column pins are output and strobe with high.
- * Key is high or 1 when it turns on.
- *
- */
-/* matrix state(1:on, 0:off) */
-static matrix_row_t matrix[MATRIX_ROWS];
-static matrix_row_t matrix_debouncing[MATRIX_COLS];
-static bool debouncing = false;
-static uint16_t debouncing_time = 0;
 uint32_t row_pins[] = MATRIX_ROW_PINS;
 uint32_t col_pins[] = MATRIX_COL_PINS;
 
-void matrix_setup(void) {}
+/* matrix state(1:on, 0:off) */
+static matrix_row_t raw_matrix[MATRIX_ROWS];    //raw values
+static matrix_row_t matrix[MATRIX_ROWS];        //debounced values
 
-void matrix_init(void) {
+static void init_pins(void)
+{
     uint8_t i = 0;
     for (i = 0; i < MATRIX_COLS; i++) {
         nrf_gpio_cfg_output(col_pins[i]);
@@ -44,46 +31,67 @@ void matrix_init(void) {
     for (i = 0; i < MATRIX_ROWS; i++) {
         nrf_gpio_cfg_input(row_pins[i], NRF_GPIO_PIN_PULLDOWN);
     }
+}
 
-    memset(matrix, 0, MATRIX_ROWS * sizeof(matrix_row_t));
-    memset(matrix_debouncing, 0, MATRIX_COLS * sizeof(matrix_row_t));
+void matrix_init(void)
+{
+    // init pins
+    init_pins();
 
+    // initialize matrix state: all keys off
+    for (uint8_t i=0; i < MATRIX_ROWS; i++) {
+        raw_matrix[i] = 0;
+        matrix[i] = 0;
+    }
+
+    debounce_init(MATRIX_ROWS);
     matrix_init_quantum();
+}
 
-    //rgblight_disable();
+
+static bool read_rows_on_col(matrix_row_t current_matrix[], uint8_t current_col)
+{
+    bool matrix_changed = false;
+
+    // Select col and wait for col selecton to stabilize
+    nrf_gpio_pin_set(col_pins[current_col]);
+    wait_us(30);
+
+    // For each row...
+    for(uint8_t row_index = 0; row_index < MATRIX_ROWS; row_index++) {
+        uint8_t tmp = row_index;
+        // Store last value of row prior to reading
+        matrix_row_t last_row_value = current_matrix[tmp];
+
+        // Check row pin state
+        if (nrf_gpio_pin_read(row_pins[row_index])) {
+            // Pin HI, set col bit
+            current_matrix[tmp] |= (1 << current_col);
+        } else {
+            // Pin LOW, clear col bit
+            current_matrix[tmp] &= ~(1 << current_col);
+        }
+
+        // Determine if the matrix changed state
+        if ((last_row_value != current_matrix[tmp]) && !(matrix_changed)) {
+            matrix_changed = true;
+        }
+    }
+
+    // Unselect col
+    nrf_gpio_pin_clear(col_pins[current_col]);
+
+    return matrix_changed;
 }
 
 uint8_t matrix_scan(void)
 {
+    bool changed = false;
     for (int col = 0; col < MATRIX_COLS; col++) {
-        matrix_row_t data = 0;
-        nrf_gpio_pin_set(col_pins[col]);
-
-        // need wait to settle pin state
-        wait_us(20);
-
-        for( int row = 0; row < MATRIX_ROWS; row++) {
-            data |= (nrf_gpio_pin_read(row_pins[row]) ? 1 : 0) << row;
-        };
-
-        nrf_gpio_pin_clear(col_pins[col]);
-
-        if (matrix_debouncing[col] != data) {
-            matrix_debouncing[col] = data;
-            debouncing = true;
-            debouncing_time = timer_read();
-        }
+        changed |= read_rows_on_col(raw_matrix, col);
     }
 
-    if (debouncing && timer_elapsed(debouncing_time) > DEBOUNCE_DELAY) {
-        for (int row = 0; row < MATRIX_ROWS; row++) {
-            matrix[row] = 0;
-            for (int col = 0; col < MATRIX_COLS; col++) {
-                matrix[row] |= ((matrix_debouncing[col] & (1 << row) ? 1 : 0) << col);
-            }
-        }
-        debouncing = false;
-    }
+    debounce(raw_matrix, matrix, MATRIX_ROWS, changed);
 
     matrix_scan_quantum();
     return 1;
@@ -108,13 +116,3 @@ void matrix_print(void)
         printf("\n");
     }
 }
-
-#if 0
-#include "keyboard.h"
-#include "nrf_log.h"
-void hook_matrix_change(keyevent_t event) {
-    NRF_LOG_INFO("Matrix: col:%d--row:%d\n", event.key.col, event.key.row);
-    NRF_LOG_INFO("press? %s\n", (event.pressed ? "true":"false"));
-    NRF_LOG_INFO("time: %d\n", event.time);
-}
-#endif
