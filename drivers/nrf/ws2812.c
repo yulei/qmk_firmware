@@ -35,8 +35,8 @@ static void ws2812_write_color(uint8_t c, uint16_t offset)
 
 static void ws2812_write_led(uint8_t r, uint8_t g, uint8_t b, uint16_t index)
 {
-    ws2812_write_color(r, index*24);
-    ws2812_write_color(g, index*24 + 8);
+    ws2812_write_color(g, index*24);
+    ws2812_write_color(r, index*24 + 8);
     ws2812_write_color(b, index*24 + 16);
 }
 
