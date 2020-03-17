@@ -8,6 +8,7 @@
 #include "app_uart.h"
 #include "app_gpiote.h"
 #include "nrf_uart.h"
+#include "nrf_pwr_mgmt.h"
 
 #include "report.h"
 #include "host.h"
@@ -45,6 +46,10 @@ typedef enum {
 
 #define KEYBOARD_SCAN_INTERVAL APP_TIMER_TICKS(10) // keyboard scan interval
 APP_TIMER_DEF(m_keyboard_timer_id); // keyboard scan timer id
+
+
+static bool keyboard_pwr_mgmt_shutdown_handler(nrf_pwr_mgmt_evt_t event);
+NRF_PWR_MGMT_HANDLER_REGISTER(keyboard_pwr_mgmt_shutdown_handler, NRF_PWR_MGMT_CONFIG_HANDLER_PRIORITY_COUNT - 1);
 
 static void keyboard_pins_init(void);
 static void keyboard_timer_init(void);
@@ -94,6 +99,7 @@ void ble_keyboard_init(void)
     host_set_driver(&kbd_driver);
     keyboard_timer_init();
     keyboard_pins_init();
+    nrf_pwr_mgmt_feed();
 }
 
 void ble_keyboard_start(void)
@@ -135,6 +141,8 @@ static void keyboard_timout_handler(void *p_context)
         NRF_LOG_INFO("keyboard matrix swtiched to trigger mode");
         scan_count = 0;
     }
+    // feed the power manager
+    nrf_pwr_mgmt_feed();
 }
 
 static void keybaord_timer_start(void)
@@ -417,6 +425,33 @@ extern void matrix_init(void);
 static void keyboard_matrix_scan_init(void)
 {
     matrix_init();
+}
+
+static bool keyboard_pwr_mgmt_shutdown_handler(nrf_pwr_mgmt_evt_t event)
+{
+    // currently we did not handle case by case
+    switch (event) {
+        case NRF_PWR_MGMT_EVT_PREPARE_WAKEUP:
+            break;
+
+        case NRF_PWR_MGMT_EVT_PREPARE_SYSOFF:
+            break;
+
+        case NRF_PWR_MGMT_EVT_PREPARE_DFU:
+            break;
+
+        case NRF_PWR_MGMT_EVT_PREPARE_RESET:
+            break;
+        default:
+            break;
+    }
+    // stop all timer
+    app_timer_stop_all();
+
+    // turn matrix to trigger mode
+    keyboard_matrix_trigger_start();
+
+    return true;
 }
 
 //static void keyboard_matrix_scan_uninit(void) {}

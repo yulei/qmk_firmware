@@ -28,12 +28,20 @@
 #include "app_error.h"
 #include "nrfx_twi.h"
 
-#define TWI_INSTANCE_ID     0
-#define TWI_SCL_PIN         18
-#define TWI_SDA_PIN         19
+#ifndef I2C_INSTANCE_ID
+    #define I2C_INSTANCE_ID     0
+#endif
+
+#ifndef I2C_SCL_PIN
+    #define I2C_SCL_PIN         18
+#endif
+
+#ifndef I2C_SDA_PIN
+    #define I2C_SDA_PIN         19
+#endif
 
 /* TWI instance. */
-static const nrfx_twi_t m_twi = NRFX_TWI_INSTANCE(TWI_INSTANCE_ID);
+static const nrfx_twi_t m_twi = NRFX_TWI_INSTANCE(I2C_INSTANCE_ID);
 static bool twi_ready = false;
 
 void i2c_init(void)
@@ -41,8 +49,8 @@ void i2c_init(void)
     ret_code_t err_code = NRFX_SUCCESS;
 
     nrfx_twi_config_t twi_config = NRFX_TWI_DEFAULT_CONFIG;
-    twi_config.scl = TWI_SCL_PIN;
-    twi_config.sda = TWI_SDA_PIN;
+    twi_config.scl = I2C_SCL_PIN;
+    twi_config.sda = I2C_SDA_PIN;
 
     if (!twi_ready) {
         err_code = nrfx_twi_init(&m_twi, &twi_config, NULL, NULL);

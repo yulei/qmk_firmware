@@ -11,6 +11,8 @@
 #include "ble_adv_service.h"
 #include "ble_services.h"
 
+#include "nrf_pwr_mgmt.h"
+
 static ble_uuid_t m_adv_uuids[] = {{BLE_UUID_HUMAN_INTERFACE_DEVICE_SERVICE, BLE_UUID_TYPE_BLE}};
 
 BLE_ADVERTISING_DEF(m_advertising);                                 /**< Advertising module instance. */
@@ -106,7 +108,11 @@ static void on_adv_evt(ble_adv_evt_t ble_adv_evt) {
         break;
 
     case BLE_ADV_EVT_IDLE:
-        sleep_mode_enter();
+        if (ble_driver.usb_enabled) {
+            ble_advertising_start(&m_advertising, BLE_ADV_MODE_SLOW);
+        } else {
+            sleep_mode_enter();
+        }
         break;
 
     case BLE_ADV_EVT_WHITELIST_REQUEST: {
@@ -157,9 +163,7 @@ static void on_adv_evt(ble_adv_evt_t ble_adv_evt) {
  * @note This function will not return.
  */
 static void sleep_mode_enter(void) {
-    ret_code_t err_code;
 
-    // Go to system-off mode (this function will not return; wakeup will cause a reset).
-    err_code = sd_power_system_off();
-    APP_ERROR_CHECK(err_code);
+    // try to go to system-off mode
+    nrf_pwr_mgmt_shutdown(NRF_PWR_MGMT_SHUTDOWN_GOTO_SYSOFF);
 }
