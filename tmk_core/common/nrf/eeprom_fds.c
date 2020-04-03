@@ -5,7 +5,6 @@
  */
 
 #include <string.h>
-#include <stdbool.h>
 #include "eeconfig.h"
 #include "eeprom.h"
 #include "fds.h"
@@ -19,8 +18,8 @@ APP_TIMER_DEF(m_eeprom_update_timer_id);        // timer for update the eeprom
 
 static bool ee_callback_registered = false;
 static bool ee_update_timer_created = false;
-static uint8_t eeprom_buf[((EECONFIG_SIZE+3)/4)*4]; // pad to word size
-static bool eeprom_dirty = false;
+static uint8_t eeprom_buf[(EECONFIG_SIZE+3)&(~3)]; // pad to word size
+static volatile bool eeprom_dirty = false;
 
 static fds_record_t ee_record = {
     .file_id = EE_FILEID,
@@ -82,21 +81,25 @@ static void eeprom_update_timeout_handler(void* p_context)
     fds_eeprom_update();
 }
 
-void fds_eeprom_update(void)
+static void fds_eeprom_update(void)
 {
-    fds_record_desc_t desc  = {0};
-    fds_find_token_t  token = {0};
-    uint16_t          key   = EE_EEPROM_KEY;
-    ret_code_t        rc    = fds_record_find_by_key(key, &desc, &token);
-    if (rc == NRF_SUCCESS) {
-        rc = fds_record_update(&desc, &ee_record);
-        if (rc == FDS_ERR_NO_SPACE_IN_FLASH) {
+    fds_record_desc_t desc = {0};
+    fds_find_token_t token = {0};
+    uint16_t key = EE_EEPROM_KEY;
+    ret_code_t err_code = fds_record_find_by_key(key, &desc, &token);
+    if (err_code == NRF_SUCCESS) {
+        err_code  = fds_record_update(&desc, &ee_record);
+        if (err_code  == FDS_ERR_NO_SPACE_IN_FLASH) {
             fds_gc();
+        } else {
+            APP_ERROR_CHECK(err_code);
         }
     } else {
-        rc = fds_record_write(&desc, &ee_record);
-        if (rc == FDS_ERR_NO_SPACE_IN_FLASH) {
+        err_code = fds_record_write(&desc, &ee_record);
+        if (err_code == FDS_ERR_NO_SPACE_IN_FLASH) {
             fds_gc();
+        } else {
+            APP_ERROR_CHECK(err_code);
         }
     }
 }
@@ -133,43 +136,43 @@ void eeprom_update_byte(uint8_t *Address, uint8_t Value) {
 }
 
 uint16_t eeprom_read_word(const uint16_t *Address) {
-    const uint16_t p = (const uint32_t)Address;
-    return fds_eeprom_read_byte(p) | (fds_eeprom_read_byte(p + 1) << 8);
+    const uint8_t *p = (const uint8_t *)Address;
+    return eeprom_read_byte(p) | (eeprom_read_byte(p + 1) << 8);
 }
 
 void eeprom_write_word(uint16_t *Address, uint16_t Value) {
-    uint16_t p = (uint32_t)Address;
-    fds_eeprom_write_byte(p, (uint8_t)Value);
-    fds_eeprom_write_byte(p + 1, (uint8_t)(Value >> 8));
+    uint8_t *p = (uint8_t *)Address;
+    eeprom_write_byte(p, (uint8_t)Value);
+    eeprom_write_byte(p + 1, (uint8_t)(Value >> 8));
 }
 
 void eeprom_update_word(uint16_t *Address, uint16_t Value) {
-    uint16_t p = (uint32_t)Address;
-    fds_eeprom_write_byte(p, (uint8_t)Value);
-    fds_eeprom_write_byte(p + 1, (uint8_t)(Value >> 8));
+    uint8_t *p = (uint8_t *)Address;
+    eeprom_write_byte(p, (uint8_t)Value);
+    eeprom_write_byte(p + 1, (uint8_t)(Value >> 8));
 }
 
 uint32_t eeprom_read_dword(const uint32_t *Address) {
-    const uint16_t p = (const uint32_t)Address;
-    return fds_eeprom_read_byte(p) | (fds_eeprom_read_byte(p + 1) << 8) | (fds_eeprom_read_byte(p + 2) << 16) | (fds_eeprom_read_byte(p + 3) << 24);
+    const uint8_t *p = (const uint8_t *)Address;
+    return eeprom_read_byte(p) | (eeprom_read_byte(p + 1) << 8) | (eeprom_read_byte(p + 2) << 16) | (eeprom_read_byte(p + 3) << 24);
 }
 
 void eeprom_write_dword(uint32_t *Address, uint32_t Value) {
-    uint16_t p = (const uint32_t)Address;
-    fds_eeprom_write_byte(p, (uint8_t)Value);
-    fds_eeprom_write_byte(p + 1, (uint8_t)(Value >> 8));
-    fds_eeprom_write_byte(p + 2, (uint8_t)(Value >> 16));
-    fds_eeprom_write_byte(p + 3, (uint8_t)(Value >> 24));
+    uint8_t *p = (uint8_t *)Address;
+    eeprom_write_byte(p, (uint8_t)Value);
+    eeprom_write_byte(p + 1, (uint8_t)(Value >> 8));
+    eeprom_write_byte(p + 2, (uint8_t)(Value >> 16));
+    eeprom_write_byte(p + 3, (uint8_t)(Value >> 24));
 }
 
 void eeprom_update_dword(uint32_t *Address, uint32_t Value) {
-    uint16_t p             = (const uint32_t)Address;
-    uint32_t existingValue = fds_eeprom_read_byte(p) | (fds_eeprom_read_byte(p + 1) << 8) | (fds_eeprom_read_byte(p + 2) << 16) | (fds_eeprom_read_byte(p + 3) << 24);
+    uint8_t *p = (uint8_t *)Address;
+    uint32_t existingValue = eeprom_read_byte(p) | (eeprom_read_byte(p + 1) << 8) | (eeprom_read_byte(p + 2) << 16) | (eeprom_read_byte(p + 3) << 24);
     if (Value != existingValue) {
-        fds_eeprom_write_byte(p, (uint8_t)Value);
-        fds_eeprom_write_byte(p + 1, (uint8_t)(Value >> 8));
-        fds_eeprom_write_byte(p + 2, (uint8_t)(Value >> 16));
-        fds_eeprom_write_byte(p + 3, (uint8_t)(Value >> 24));
+        eeprom_write_byte(p, (uint8_t)Value);
+        eeprom_write_byte(p + 1, (uint8_t)(Value >> 8));
+        eeprom_write_byte(p + 2, (uint8_t)(Value >> 16));
+        eeprom_write_byte(p + 3, (uint8_t)(Value >> 24));
     }
 }
 
