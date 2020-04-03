@@ -5,29 +5,49 @@
  */
 
 #include <string.h>
+#include <stdbool.h>
+#include "eeconfig.h"
 #include "eeprom.h"
 #include "fds.h"
+#include "app_timer.h"
 
-#define EE_FILEID 0x6565                //"ee"
-#define EE_ADDR2KEY(x) ((x)+1024)       // should in rage 0x0001-0xBFFF
+APP_TIMER_DEF(m_eeprom_update_timer_id);        // timer for update the eeprom
+#define EEPROM_UPDATE_DELAY APP_TIMER_TICKS(10) // timeout delay
 
-static bool ee_callback_registered  = false;
-static volatile bool ee_done        = false;
-static volatile bool ee_gc_done     = false;
-static void ee_evt_handler(fds_evt_t const* p_evt)
+#define EE_FILEID 0x6565                        //"ee"
+#define EE_EEPROM_KEY 0x00AB                    // should in rage 0x0001-0xBFFF
+
+static bool ee_callback_registered = false;
+static bool ee_update_timer_created = false;
+static uint8_t eeprom_buf[((EECONFIG_SIZE+3)/4)*4]; // pad to word size
+static bool eeprom_dirty = false;
+
+static fds_record_t ee_record = {
+    .file_id = EE_FILEID,
+    .key = EE_EEPROM_KEY,
+    .data.p_data = &eeprom_buf[0],
+    .data.length_words = sizeof(eeprom_buf)/sizeof(uint32_t),
+};
+
+static void fds_eeprom_update(void);
+static void eeprom_update_timeout_handler(void *p_context);
+
+static void ee_evt_handler(fds_evt_t const *p_evt)
 {
     switch(p_evt->id) {
     case FDS_EVT_WRITE:
     case FDS_EVT_UPDATE:
+        eeprom_dirty = false;
         break;
     case FDS_EVT_DEL_RECORD:
     case FDS_EVT_DEL_FILE:
-        if (p_evt->del.file_id== EE_FILEID) {
-            ee_done = true;
-        }
         break;
     case FDS_EVT_GC:
-        ee_gc_done = true;
+        if (eeprom_dirty) {
+            ret_code_t err_code;
+            err_code = app_timer_start(m_eeprom_update_timer_id, EEPROM_UPDATE_DELAY, NULL);
+            APP_ERROR_CHECK(err_code);
+        }
         break;
     case FDS_EVT_INIT:
     default:
@@ -35,74 +55,64 @@ static void ee_evt_handler(fds_evt_t const* p_evt)
     }
 }
 
+
 void fds_eeprom_init(void)
 {
-    // fds should be initialized on peer manager
+    // fds should be already initialized on peer manager
     if (!ee_callback_registered) {
         fds_register(ee_evt_handler);
         ee_callback_registered = true;
     }
 
-    ee_done = false;
-    fds_file_delete(EE_FILEID);
-    while(!ee_done) { }
+    // create eeprom update timer
+    if (!ee_update_timer_created) {
+        ret_code_t err_code;
+        err_code = app_timer_create(&m_eeprom_update_timer_id,
+                                APP_TIMER_MODE_SINGLE_SHOT,
+                                eeprom_update_timeout_handler);
+        APP_ERROR_CHECK(err_code);
+        ee_update_timer_created = true;
+    }
 }
 
-static uint32_t     ee_data;
-static fds_record_t ee_record = {
-    .file_id = EE_FILEID,
-    .data.p_data = &ee_data,
-    .data.length_words = 1,
-};
+static void eeprom_update_timeout_handler(void* p_context)
+{
+    if (!eeprom_dirty) return;
 
-void    fds_eeprom_write_byte(uint16_t addr, uint8_t data)
+    fds_eeprom_update();
+}
+
+void fds_eeprom_update(void)
 {
     fds_record_desc_t desc  = {0};
     fds_find_token_t  token = {0};
-    uint16_t          key   = EE_ADDR2KEY(addr);
+    uint16_t          key   = EE_EEPROM_KEY;
     ret_code_t        rc    = fds_record_find_by_key(key, &desc, &token);
     if (rc == NRF_SUCCESS) {
-        ee_data = data;
-        ee_record.key = key;
         rc = fds_record_update(&desc, &ee_record);
         if (rc == FDS_ERR_NO_SPACE_IN_FLASH) {
-            ee_gc_done = false;
             fds_gc();
-            while (!ee_gc_done) {}
-            // update again
-            rc = fds_record_update(&desc, &ee_record);
         }
     } else {
-        ee_data = data;
-        ee_record.key = key;
         rc = fds_record_write(&desc, &ee_record);
         if (rc == FDS_ERR_NO_SPACE_IN_FLASH) {
-            ee_gc_done = false;
             fds_gc();
-            while (!ee_gc_done) {}
-            // write again
-            rc = fds_record_write(&desc, &ee_record);
         }
     }
-
-    APP_ERROR_CHECK(rc);
 }
 
-uint8_t fds_eeprom_read_byte(uint16_t addr)
+void fds_eeprom_write_byte(uint16_t addr, uint8_t data)
 {
-    fds_record_desc_t desc = {0};
-    fds_find_token_t token = {0};
-    uint16_t          key   = EE_ADDR2KEY(addr);
-    uint32_t result = 0;
-    ret_code_t rc = fds_record_find_by_key(key, &desc, &token);
-    if (rc == NRF_SUCCESS) {
-        fds_flash_record_t ee_data = {0};
-        fds_record_open(&desc, &ee_data);
-        memcpy(&result, ee_data.p_data, sizeof(result));
-        fds_record_close(&desc);
-    }
-    return (uint8_t)result;
+    ret_code_t err_code;
+    if (eeprom_buf[addr] == data) return;
+
+    eeprom_buf[addr] = data;
+    eeprom_dirty = true;
+    err_code = app_timer_start(m_eeprom_update_timer_id, EEPROM_UPDATE_DELAY, NULL);
+    APP_ERROR_CHECK(err_code);
 }
+
+uint8_t fds_eeprom_read_byte(uint16_t addr) { return eeprom_buf[addr]; }
 
 /*****************************************************************************
  *  Wrap library in AVR style functions.
