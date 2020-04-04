@@ -83,11 +83,11 @@
 /*
  * Port A setup.
  * Everything input with pull-up except:
- * PA9  - Alternate output  (USART1 TX).
- * PA10 - Normal input      (USART1 RX).
+ * PA9  - Alternate output      (USART1 TX).
+ * PA10 - Normal input pullup   (USART1 RX).
  */
 #define VAL_GPIOACRL            0x88888888      /*  PA7...PA0 */
-#define VAL_GPIOACRH            0x888884B8      /* PA15...PA8 */
+#define VAL_GPIOACRH            0x888888B8      /* PA15...PA8 */
 #define VAL_GPIOAODR            0xFFFFFFFF
 
 /*
