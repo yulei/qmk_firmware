@@ -17,7 +17,6 @@ SRC += \
   $(SDK_ROOT)/components/libraries/fifo/app_fifo.c \
   $(SDK_ROOT)/components/libraries/fstorage/nrf_fstorage.c \
   $(SDK_ROOT)/components/libraries/fstorage/nrf_fstorage_sd.c \
-  $(SDK_ROOT)/components/libraries/gpiote/app_gpiote.c \
   $(SDK_ROOT)/components/libraries/hardfault/hardfault_implementation.c \
   $(SDK_ROOT)/components/libraries/log/src/nrf_log_backend_rtt.c \
   $(SDK_ROOT)/components/libraries/log/src/nrf_log_backend_serial.c \

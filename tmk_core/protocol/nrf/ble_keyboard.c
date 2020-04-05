@@ -6,7 +6,8 @@
 #include "ble_hid_service.h"
 #include "app_timer.h"
 #include "app_uart.h"
-#include "app_gpiote.h"
+#include "nrf_gpio.h"
+#include "nrf_drv_gpiote.h"
 #include "nrf_uart.h"
 #include "nrf_pwr_mgmt.h"
 
@@ -19,13 +20,6 @@
 #ifdef RGBLIGHT_ENABLE
 #include "rgblight.h"
 #endif
-
-// app gpiote
-#define MAX_GPIOTE_USERS  2 /**< usb sense and matrix scann */
-static uint32_t row_mask_all = 0;
-static uint32_t col_mask_all = 0;
-app_gpiote_user_id_t keyboard_user_id;
-app_gpiote_user_id_t usb_sense_user_id;
 
 #define MAX_SCAN_COUNT 100
 static volatile uint32_t scan_count = 0;
@@ -47,18 +41,20 @@ typedef enum {
 #define KEYBOARD_SCAN_INTERVAL APP_TIMER_TICKS(10) // keyboard scan interval
 APP_TIMER_DEF(m_keyboard_timer_id); // keyboard scan timer id
 
-
 static bool keyboard_pwr_mgmt_shutdown_handler(nrf_pwr_mgmt_evt_t event);
 NRF_PWR_MGMT_HANDLER_REGISTER(keyboard_pwr_mgmt_shutdown_handler, NRF_PWR_MGMT_CONFIG_HANDLER_PRIORITY_COUNT - 1);
 
 static void keyboard_pins_init(void);
 static void keyboard_timer_init(void);
+
 static void keyboard_timout_handler(void *p_context);
 static void keybaord_timer_start(void);
 static void keybaord_timer_stop(void);
 
+static void pin_event_handler(nrf_drv_gpiote_pin_t pin, nrf_gpiote_polarity_t action);
+
 static void usb_sense_init(void);
-static void usb_sense_handler(uint32_t const * p_low_to_high, uint32_t const * p_high_to_low);
+
 static void uart_init(void);
 static void uart_uninit(void);
 static void uart_event_handle(app_uart_evt_t * p_event);
@@ -68,12 +64,11 @@ static uint8_t compute_checksum(const uint8_t* data, uint32_t size);
 extern uint32_t row_pins[];
 extern uint32_t col_pins[];
 static bool matrix_trigger_enabled = false;
-static void keyboard_matrix_trigger_handler(uint32_t const * p_low_to_high, uint32_t const * p_high_to_low);
+
 static void keyboard_matrix_trigger_init(void);
 static void keyboard_matrix_trigger_start(void);
 static void keyboard_matrix_trigger_stop(void);
 static void keyboard_matrix_scan_init(void);
-//static void keyboard_matrix_scan_uninit(void);
 
 /* Host driver */
 static uint8_t keyboard_leds(void);
@@ -93,13 +88,19 @@ host_driver_t kbd_driver = {
 
 void ble_keyboard_init(void)
 {
-    APP_GPIOTE_INIT(MAX_GPIOTE_USERS);
+    ret_code_t err_code;
+    err_code = nrf_drv_gpiote_init();
+    APP_ERROR_CHECK(err_code);
+
     keyboard_setup();
     keyboard_init();
     host_set_driver(&kbd_driver);
     keyboard_timer_init();
     keyboard_pins_init();
-    nrf_pwr_mgmt_feed();
+    if (0) {
+    uart_init();
+    }
+    //nrf_pwr_mgmt_feed();
 }
 
 void ble_keyboard_start(void)
@@ -244,37 +245,39 @@ static void send_consumer(uint16_t data) { (void)data; }
 
 #endif
 
-static void usb_sense_handler(uint32_t const * p_low_to_high, uint32_t const * p_high_to_low)
+static void pin_event_handler(nrf_drv_gpiote_pin_t pin, nrf_gpiote_polarity_t action)
 {
-    if ((*p_low_to_high) & (1ul<<USB_SENSE_PIN)) {
-        ble_driver.usb_enabled = 1;
-        uart_init();
+    NRF_LOG_INFO("PIN EVENT: pin=%d, action=%d", pin, action);
+    if (pin == USB_SENSE_PIN) {
+        if (nrf_drv_gpiote_in_is_set(USB_SENSE_PIN)) {
+            ble_driver.usb_enabled = 1;
+        } else {
+            ble_driver.usb_enabled = 0;
+        }
+    } else if (action == NRF_GPIOTE_POLARITY_LOTOHI) {
+        bool row_pressed = false;
+        for (uint32_t i = 0; i < MATRIX_ROWS; i++) {
+            if (pin == row_pins[i]) {
+                row_pressed = true;
+                break;
+            }
+        }
+        if (row_pressed) {
+            // disable row event
+            keyboard_matrix_trigger_stop();
+            keyboard_matrix_scan_init();
+            keybaord_timer_start();
+        }
     }
-
-    if ((*p_high_to_low) & (1ul<<USB_SENSE_PIN)) {
-        ble_driver.usb_enabled = 0;
-        uart_uninit();
-    }
-    NRF_LOG_INFO("usb sense: status = %d\n", ble_driver.usb_enabled);
 }
 
 static void usb_sense_init(void)
 {
     ret_code_t err_code;
-    static uint32_t usb_sense_h2l = 1ul << USB_SENSE_PIN;
-    static uint32_t usb_sense_l2h = 1ul << USB_SENSE_PIN;
-    err_code = app_gpiote_user_register(&usb_sense_user_id, &usb_sense_l2h, &usb_sense_h2l, usb_sense_handler);
+    nrf_drv_gpiote_in_config_t in_config = GPIOTE_CONFIG_IN_SENSE_TOGGLE(true);
+    err_code = nrf_drv_gpiote_in_init(USB_SENSE_PIN, &in_config, pin_event_handler);
     APP_ERROR_CHECK(err_code);
-    int state = nrf_gpio_pin_read(USB_SENSE_PIN);
-    if (state > 0) {
-        ble_driver.usb_enabled = 1;
-        uart_init();
-    } else {
-        ble_driver.usb_enabled = 0;
-        uart_uninit();
-    }
-    NRF_LOG_INFO("usb init state: status = %d\n", ble_driver.usb_enabled);
-    app_gpiote_user_enable(usb_sense_user_id);
+    nrf_drv_gpiote_in_event_enable(USB_SENSE_PIN, true);
 }
 
 static volatile bool uart_tx_done = false;
@@ -283,7 +286,7 @@ static void uart_event_handle(app_uart_evt_t *p_event)
 {
     switch (p_event->evt_type) {
         case APP_UART_COMMUNICATION_ERROR:
-            APP_ERROR_HANDLER(p_event->data.error_communication);
+            NRF_LOG_INFO("UART communication error: 0x%x", p_event->data.error_communication);
             break;
         case APP_UART_FIFO_ERROR:
             app_uart_flush();
@@ -302,10 +305,11 @@ static void uart_init(void)
 {
     uint32_t err_code;
     if (ble_driver.uart_enabled) {
-        NRF_LOG_INFO("uart alread enabled.\n");
+        NRF_LOG_INFO("uart already enabled.\n");
         return;
     }
 
+    NRF_LOG_INFO("uart tx pin: %d, rx pin: %d", UART_TX_PIN, UART_RX_PIN);
     const app_uart_comm_params_t comm_params = {
         .rx_pin_no = UART_RX_PIN,//NRF_UART_PSEL_DISCONNECTED,//UART_RX_PIN,
         .tx_pin_no = UART_TX_PIN,
@@ -362,37 +366,8 @@ static uint8_t compute_checksum(const uint8_t* data, uint32_t size)
     return checksum;
 }
 
-static void keyboard_matrix_trigger_handler(uint32_t const * p_low_to_high, uint32_t const * p_high_to_low)
-{
-    if (matrix_trigger_enabled) {
-        NRF_LOG_INFO("Row was pressed");
-        // turn off trigger
-        keyboard_matrix_trigger_stop();
-        // turn on scan mode
-        keyboard_matrix_scan_init();
-        // start scan timer
-        keybaord_timer_start();
-    }
-}
-
 static void keyboard_matrix_trigger_init(void)
 {
-    ret_code_t err_code;
-    uint32_t high_to_low = 0;
-    if (col_mask_all == 0) {
-        for (int i = 0; i < MATRIX_COLS; i++)  {
-            col_mask_all |= 1ul << col_pins[i];
-        }
-    }
-    if (row_mask_all == 0) {
-        for (int i = 0; i < MATRIX_ROWS; i++) {
-            row_mask_all |= 1ul << row_pins[i];
-        }
-    }
-
-    err_code = app_gpiote_user_register(&keyboard_user_id, &row_mask_all, &high_to_low, keyboard_matrix_trigger_handler);
-    APP_ERROR_CHECK(err_code);
-    NRF_LOG_INFO("keyboard matrix trigger mode initialized");
 }
 
 static void keyboard_matrix_trigger_start(void)
@@ -404,8 +379,18 @@ static void keyboard_matrix_trigger_start(void)
     for (int i = 0; i < MATRIX_COLS; i++) {
         nrf_gpio_pin_set(col_pins[i]);
     }
-    app_gpiote_user_enable(keyboard_user_id);
+
+    ret_code_t err_code;
+    nrf_drv_gpiote_in_config_t in_config = GPIOTE_CONFIG_IN_SENSE_LOTOHI(true);
+    in_config.pull = NRF_GPIO_PIN_PULLDOWN;
+    for (uint32_t i = 0; i < MATRIX_ROWS; i++) {
+        NRF_LOG_INFO("trigger init: pin=%d", row_pins[i]);
+        err_code = nrf_drv_gpiote_in_init(row_pins[i], &in_config, pin_event_handler);
+        APP_ERROR_CHECK(err_code);
+        nrf_drv_gpiote_in_event_enable(row_pins[i], true);
+    }
     matrix_trigger_enabled = true;
+    NRF_LOG_INFO("keyboard matrix trigger mode started");
 }
 
 static void keyboard_matrix_trigger_stop(void)
@@ -417,8 +402,14 @@ static void keyboard_matrix_trigger_stop(void)
     for (int i = 0; i < MATRIX_COLS; i++) {
         nrf_gpio_pin_clear(col_pins[i]);
     }
-    app_gpiote_user_disable(keyboard_user_id);
+
+    for (uint32_t i = 0; i < MATRIX_ROWS; i++) {
+        NRF_LOG_INFO("trigger uninit: pin=%d", row_pins[i]);
+        nrf_drv_gpiote_in_event_disable(row_pins[i]);
+        nrf_drv_gpiote_in_uninit(row_pins[i]);
+    }
     matrix_trigger_enabled = false;
+    NRF_LOG_INFO("keyboard matrix trigger mode stopped");
 }
 
 extern void matrix_init(void);
@@ -445,6 +436,8 @@ static bool keyboard_pwr_mgmt_shutdown_handler(nrf_pwr_mgmt_evt_t event)
         default:
             break;
     }
+    // stop uart
+    uart_uninit();
     // stop all timer
     app_timer_stop_all();
 
