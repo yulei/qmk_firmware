@@ -12,13 +12,13 @@
 #define SAADC_SAMPLES 5
 static nrf_saadc_value_t m_saadc_buffers[2][SAADC_SAMPLES];
 
-APP_TIMER_DEF(m_battery_delay_timer_id)                             /**< Turn battery on delay timer. */
+APP_TIMER_DEF(m_battery_sample_timer_id)                             /**< battery voltage sampling timer. */
 APP_TIMER_DEF(m_battery_timer_id);                                  /**< Battery timer. */
 BLE_BAS_DEF(m_bas);                                                 /**< Structure used to identify the battery service. */
 
 static void battery_level_update(uint8_t level);
 static void battery_level_meas_timeout_handler(void* p_context);
-static void battery_level_delay_timeout_handler(void* p_context);
+static void battery_level_sample_timeout_handler(void* p_context);
 
 static void battery_saadc_init(void);
 static void battery_saadc_handler(nrf_drv_saadc_evt_t const * p_event);
@@ -44,13 +44,13 @@ void ble_bat_service_init(void) {
 
     // Create battery timer.
     err_code = app_timer_create(&m_battery_timer_id,
-                                APP_TIMER_MODE_SINGLE_SHOT,
+                                APP_TIMER_MODE_REPEATED,
                                 battery_level_meas_timeout_handler);
     APP_ERROR_CHECK(err_code);
 
-    err_code = app_timer_create(&m_battery_delay_timer_id,
-                                APP_TIMER_MODE_SINGLE_SHOT,
-                                battery_level_delay_timeout_handler);
+    err_code = app_timer_create(&m_battery_sample_timer_id,
+                                APP_TIMER_MODE_REPEATED,
+                                battery_level_sample_timeout_handler);
     APP_ERROR_CHECK(err_code);
 
     battery_saadc_init();
@@ -77,21 +77,25 @@ static void battery_level_update(uint8_t level) {
        ) {
         APP_ERROR_HANDLER(err_code);
     }
+    NRF_LOG_INFO("battery level update result: %d", err_code);
 }
 
 
-static void battery_level_delay_timeout_handler(void* p_context)
+static void battery_level_sample_timeout_handler(void* p_context)
 {
     UNUSED_PARAMETER(p_context);
-    nrf_drv_saadc_sample();
-    NRF_LOG_INFO("battery sampling started.");
+    ret_code_t err_code;
+    err_code = nrf_drv_saadc_sample();
+    APP_ERROR_CHECK(err_code);
+    NRF_LOG_INFO("battery sampling triggered.");
 }
 
 static void battery_level_meas_timeout_handler(void * p_context) {
     UNUSED_PARAMETER(p_context);
-    // turn battery on and kick off delay timer
+    // turn battery on and kick off sampling timer
     nrf_gpio_pin_set(BATTERY_SAADC_ENABLE_PIN);
-    app_timer_start(m_battery_delay_timer_id, BATTERY_LEVEL_MEAS_DELAY, NULL);
+    app_timer_start(m_battery_sample_timer_id, BATTERY_LEVEL_MEAS_SAMPLE, NULL);
+    NRF_LOG_INFO("battery measurement started.");
 }
 
 typedef struct {
@@ -152,6 +156,7 @@ static void battery_process_saadc_result(uint32_t result)
 
 static void battery_saadc_handler(nrf_drv_saadc_evt_t const * p_event)
 {
+    NRF_LOG_INFO("battery saadc handler event type: %d", p_event->type);
     if (p_event->type == NRF_DRV_SAADC_EVT_DONE) {
         ret_code_t err_code;
 
@@ -164,13 +169,16 @@ static void battery_saadc_handler(nrf_drv_saadc_evt_t const * p_event)
 
         err_code = nrf_drv_saadc_buffer_convert(p_event->data.done.p_buffer, SAADC_SAMPLES);
         APP_ERROR_CHECK(err_code);
-        // turn of battery and kick off next measurement timer
+        // turn of battery and sampling timer
         nrf_gpio_pin_clear(BATTERY_SAADC_ENABLE_PIN);
-        app_timer_start(m_battery_timer_id, BATTERY_LEVEL_MEAS_INTERVAL, NULL);
+        app_timer_stop(m_battery_sample_timer_id);
     }
 }
 
-static void battery_saadc_init(void) {
+static void battery_saadc_init(void)
+{
+    NRF_LOG_INFO("batter sampling enable pin: %d, ADC pin: %d", BATTERY_SAADC_ENABLE_PIN, BATTERY_SAADC_PIN);
+
     ret_code_t err_code;
     nrf_saadc_channel_config_t channel_config = NRF_DRV_SAADC_DEFAULT_CHANNEL_CONFIG_SE(BATTERY_SAADC_PIN);
     channel_config.gain = NRF_SAADC_GAIN1_4;

@@ -97,9 +97,7 @@ void ble_keyboard_init(void)
     host_set_driver(&kbd_driver);
     keyboard_timer_init();
     keyboard_pins_init();
-    if (0) {
     uart_init();
-    }
     //nrf_pwr_mgmt_feed();
 }
 
@@ -384,7 +382,7 @@ static void keyboard_matrix_trigger_start(void)
     nrf_drv_gpiote_in_config_t in_config = GPIOTE_CONFIG_IN_SENSE_LOTOHI(true);
     in_config.pull = NRF_GPIO_PIN_PULLDOWN;
     for (uint32_t i = 0; i < MATRIX_ROWS; i++) {
-        NRF_LOG_INFO("trigger init: pin=%d", row_pins[i]);
+        //NRF_LOG_INFO("trigger init: pin=%d", row_pins[i]);
         err_code = nrf_drv_gpiote_in_init(row_pins[i], &in_config, pin_event_handler);
         APP_ERROR_CHECK(err_code);
         nrf_drv_gpiote_in_event_enable(row_pins[i], true);
@@ -404,7 +402,7 @@ static void keyboard_matrix_trigger_stop(void)
     }
 
     for (uint32_t i = 0; i < MATRIX_ROWS; i++) {
-        NRF_LOG_INFO("trigger uninit: pin=%d", row_pins[i]);
+        //NRF_LOG_INFO("trigger uninit: pin=%d", row_pins[i]);
         nrf_drv_gpiote_in_event_disable(row_pins[i]);
         nrf_drv_gpiote_in_uninit(row_pins[i]);
     }
