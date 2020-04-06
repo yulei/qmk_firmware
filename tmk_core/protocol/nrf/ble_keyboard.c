@@ -46,6 +46,7 @@ NRF_PWR_MGMT_HANDLER_REGISTER(keyboard_pwr_mgmt_shutdown_handler, NRF_PWR_MGMT_C
 
 static void keyboard_pins_init(void);
 static void keyboard_timer_init(void);
+static void sense_pins_init(void);
 
 static void keyboard_timout_handler(void *p_context);
 static void keybaord_timer_start(void);
@@ -53,7 +54,7 @@ static void keybaord_timer_stop(void);
 
 static void pin_event_handler(nrf_drv_gpiote_pin_t pin, nrf_gpiote_polarity_t action);
 
-static void usb_sense_init(void);
+static void vbus_detect_init(void);
 
 static void uart_init(void);
 static void uart_uninit(void);
@@ -65,7 +66,6 @@ extern uint32_t row_pins[];
 extern uint32_t col_pins[];
 static bool matrix_trigger_enabled = false;
 
-static void keyboard_matrix_trigger_init(void);
 static void keyboard_matrix_trigger_start(void);
 static void keyboard_matrix_trigger_stop(void);
 static void keyboard_matrix_scan_init(void);
@@ -108,8 +108,7 @@ void ble_keyboard_start(void)
 
 void keyboard_pins_init(void)
 {
-    usb_sense_init();
-    keyboard_matrix_trigger_init();
+    vbus_detect_init();
 }
 
 static void keyboard_timer_init(void)
@@ -246,11 +245,13 @@ static void send_consumer(uint16_t data) { (void)data; }
 static void pin_event_handler(nrf_drv_gpiote_pin_t pin, nrf_gpiote_polarity_t action)
 {
     NRF_LOG_INFO("PIN EVENT: pin=%d, action=%d", pin, action);
-    if (pin == USB_SENSE_PIN) {
-        if (nrf_drv_gpiote_in_is_set(USB_SENSE_PIN)) {
-            ble_driver.usb_enabled = 1;
+    if (pin == VBUS_DETECT_PIN) {
+        if (nrf_drv_gpiote_in_is_set(VBUS_DETECT_PIN)) {
+            ble_driver.vbus_enabled = 1;
+            ble_driver.output_target = OUTPUT_USB;
         } else {
-            ble_driver.usb_enabled = 0;
+            ble_driver.vbus_enabled = 0;
+            ble_driver.output_target = OUTPUT_BLE;
         }
     } else if (action == NRF_GPIOTE_POLARITY_LOTOHI) {
         bool row_pressed = false;
@@ -269,13 +270,13 @@ static void pin_event_handler(nrf_drv_gpiote_pin_t pin, nrf_gpiote_polarity_t ac
     }
 }
 
-static void usb_sense_init(void)
+static void vbus_detect_init(void)
 {
     ret_code_t err_code;
     nrf_drv_gpiote_in_config_t in_config = GPIOTE_CONFIG_IN_SENSE_TOGGLE(true);
-    err_code = nrf_drv_gpiote_in_init(USB_SENSE_PIN, &in_config, pin_event_handler);
+    err_code = nrf_drv_gpiote_in_init(VBUS_DETECT_PIN, &in_config, pin_event_handler);
     APP_ERROR_CHECK(err_code);
-    nrf_drv_gpiote_in_event_enable(USB_SENSE_PIN, true);
+    nrf_drv_gpiote_in_event_enable(VBUS_DETECT_PIN, true);
 }
 
 static volatile bool uart_tx_done = false;
@@ -364,8 +365,18 @@ static uint8_t compute_checksum(const uint8_t* data, uint32_t size)
     return checksum;
 }
 
-static void keyboard_matrix_trigger_init(void)
+static void sense_pins_init(void)
 {
+    for (uint32_t i = 0; i < MATRIX_COLS; i++) {
+        nrf_gpio_cfg_output(col_pins[i]);
+        nrf_gpio_pin_set(col_pins[i]);
+    }
+
+    for (uint8_t i = 0; i < MATRIX_ROWS; i++) {
+        nrf_gpio_cfg_sense_input(row_pins[i], NRF_GPIO_PIN_PULLDOWN, NRF_GPIO_PIN_SENSE_HIGH);
+    }
+    // vbus detect
+    nrf_gpio_cfg_sense_input(VBUS_DETECT_PIN, NRF_GPIO_PIN_PULLDOWN, NRF_GPIO_PIN_SENSE_HIGH);
 }
 
 static void keyboard_matrix_trigger_start(void)
@@ -438,10 +449,9 @@ static bool keyboard_pwr_mgmt_shutdown_handler(nrf_pwr_mgmt_evt_t event)
     uart_uninit();
     // stop all timer
     app_timer_stop_all();
-
-    // turn matrix to trigger mode
-    keyboard_matrix_trigger_start();
-
+    // turn matrix to sense mode
+    keyboard_matrix_trigger_stop();
+    sense_pins_init();
     return true;
 }
 
@@ -475,18 +485,11 @@ static void send_reboot_cmd(void)
 bool command_extra(uint8_t code)
 {
     switch (code) {
-        case MAGIC_KC(CMD_BLE_TOGGLE):
-            if (ble_driver.output_target&OUTPUT_BLE) {
-                ble_driver.output_target &= ~OUTPUT_BLE;
+        case MAGIC_KC(CMD_OUTPUT_TOGGLE):
+            if (ble_driver.output_target == OUTPUT_BLE) {
+                ble_driver.output_target = OUTPUT_USB;
             } else {
-                ble_driver.output_target |= OUTPUT_BLE;
-            }
-            break;
-        case MAGIC_KC(CMD_USB_TOGGLE):
-            if (ble_driver.output_target&OUTPUT_USB) {
-                ble_driver.output_target &= ~OUTPUT_USB;
-            } else {
-                ble_driver.output_target |= OUTPUT_USB;
+                ble_driver.output_target = OUTPUT_BLE;
             }
             break;
         case MAGIC_KC(CMD_ERASE_BOND):

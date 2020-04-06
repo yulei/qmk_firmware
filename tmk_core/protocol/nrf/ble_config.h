@@ -31,8 +31,8 @@
     #define MANUFACTURER                    astro
 #endif
 
-#ifndef USB_SENSE_PIN
-    #define USB_SENSE_PIN                   26                                          /**< Default pin for usb sense */
+#ifndef VBUS_DETECT_PIN
+    #define VBUS_DETECT_PIN                 26                                          /**< Default pin for usb sense */
 #endif
 
 #ifndef UART_RX_PIN
@@ -55,11 +55,8 @@
 #define MANUFACTURER_NAME                   NRF_NAME(MANUFACTURER)                      /**< Manufacturer. Will be passed to Device Information Service. */
 
 #if COMMAND_ENABLE
-#ifndef CMD_BLE_TOGGLE
-    #define CMD_BLE_TOGGLE     F        // toggle the ble output
-#endif
-#ifndef CMD_USB_TOGGLE
-    #define CMD_USB_TOGGLE     G        // toggle the usb output
+#ifndef CMD_OUTPUT_TOGGLE
+    #define CMD_OUTPUT_TOGGLE  F        // toggle the output target
 #endif
 #ifndef CMD_ERASE_BOND
     #define CMD_ERASE_BOND     O        // erase bonding, which will cause a full reset
@@ -180,7 +177,7 @@ typedef struct {
     run_mode_t      run_mode;       /**< current running mode */
     uint16_t        conn_handle;    /**< Handle of the current connection. */
     uint8_t         keyboard_led;   /**< keyboard led status */
-    uint8_t         usb_enabled;    /**< usb status */
+    uint8_t         vbus_enabled;   /**< vbus status */
     uint8_t         uart_enabled;   /**< uart status */
     uint8_t         output_target;  /**< target of output */
 } ble_driver_t;

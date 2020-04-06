@@ -108,7 +108,7 @@ static void on_adv_evt(ble_adv_evt_t ble_adv_evt) {
         break;
 
     case BLE_ADV_EVT_IDLE:
-        if (ble_driver.usb_enabled) {
+        if (ble_driver.vbus_enabled) {
             ble_advertising_start(&m_advertising, BLE_ADV_MODE_SLOW);
         } else {
             sleep_mode_enter();
