@@ -276,6 +276,7 @@ static void vbus_detect_init(void)
     nrf_drv_gpiote_in_config_t in_config = GPIOTE_CONFIG_IN_SENSE_TOGGLE(true);
     err_code = nrf_drv_gpiote_in_init(VBUS_DETECT_PIN, &in_config, pin_event_handler);
     APP_ERROR_CHECK(err_code);
+    ble_driver.vbus_enabled = nrf_drv_gpiote_in_is_set(VBUS_DETECT_PIN);
     nrf_drv_gpiote_in_event_enable(VBUS_DETECT_PIN, true);
 }
 
