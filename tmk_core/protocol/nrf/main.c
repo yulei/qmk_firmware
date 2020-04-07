@@ -226,7 +226,7 @@ static void idle_state_handle(void)
  */
 int main(void)
 {
-    bool erase_bonds = true;
+    bool erase_bonds = false;
     uint32_t reason = 0;
 #if CONFIG_JLINK_MONITOR_ENABLED
     NVIC_SetPriority(DebugMonitor_IRQn, _PRIO_SD_LOW);

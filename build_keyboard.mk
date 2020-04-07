@@ -238,7 +238,7 @@ else ifdef ARM_ATSAM
     FIRMWARE_FORMAT=bin
 else ifdef NRF_MCU
 	PLATFORM=NRF
-    FIRMWARE_FORMAT=bin
+    FIRMWARE_FORMAT=hex
 else
     PLATFORM=AVR
     FIRMWARE_FORMAT?=hex

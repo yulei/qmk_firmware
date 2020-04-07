@@ -236,6 +236,6 @@ sdk_config:
 
 HEX = $(OBJCOPY) -O $(FORMAT)
 
-bin: $(BUILD_DIR)/$(TARGET).hex
-	$(OBJCOPY) -Iihex -Obinary $(BUILD_DIR)/$(TARGET).hex $(BUILD_DIR)/$(TARGET).bin
-	$(COPY) $(BUILD_DIR)/$(TARGET).bin $(TARGET).bin
+BIN = $(OBJCOPY) -O $(FORMAT)
+
+bin: $(BUILD_DIR)/$(TARGET).bin

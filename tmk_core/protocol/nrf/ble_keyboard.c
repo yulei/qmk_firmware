@@ -456,11 +456,7 @@ static bool keyboard_pwr_mgmt_shutdown_handler(nrf_pwr_mgmt_evt_t event)
     return true;
 }
 
-//static void keyboard_matrix_scan_uninit(void) {}
-#ifdef COMMAND_ENABLE
-#include "command.h"
 #include "nrf_delay.h"
-
 static void send_reboot_cmd(void)
 {
     if (!ble_driver.uart_enabled) {
@@ -477,33 +473,37 @@ static void send_reboot_cmd(void)
     while(!uart_tx_done) {
         nrf_delay_ms(1);
     }
-    sd_power_gpregret_set(RST_REGISTER, RST_BOOTLOADER);
-    sd_nvic_SystemReset();
+    //sd_power_gpregret_set(RST_REGISTER, RST_BOOTLOADER);
+    //sd_nvic_SystemReset();
 }
 
-// bluetooth control command, try to not confilict with the pre-defined key in command.h
-
-bool command_extra(uint8_t code)
+// bluetooth control command
+// F21 for toggle usb/ble output
+// F22 for erase bond
+// F23 for enter bootloader mode
+bool process_record_kb(uint16_t keycode, keyrecord_t *record)
 {
-    switch (code) {
-        case MAGIC_KC(CMD_OUTPUT_TOGGLE):
+    if (record->event.pressed) {
+        switch(keycode) {
+        case KC_F21: // toggle usb/ble output
             if (ble_driver.output_target == OUTPUT_BLE) {
                 ble_driver.output_target = OUTPUT_USB;
             } else {
                 ble_driver.output_target = OUTPUT_BLE;
             }
-            break;
-        case MAGIC_KC(CMD_ERASE_BOND):
+            return false;
+
+        case KC_F22: // reset to erase bond mode
             sd_power_gpregret_set(RST_REGISTER, RST_ERASE_BOND);
             sd_nvic_SystemReset();
-            break;
-        case MAGIC_KC(CMD_BOOTLOADER):
-            // send reboot command to peer mcu
+            return false;
+
+        case KC_F23: // usb mcu to bootloader mode
             send_reboot_cmd();
-            break;
+            return false;
         default:
             break;
+        }
     }
-    return false;
+    return true;
 }
-#endif
