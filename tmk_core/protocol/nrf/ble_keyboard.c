@@ -61,6 +61,7 @@ static void uart_uninit(void);
 static void uart_event_handle(app_uart_evt_t * p_event);
 static void uart_send_cmd(command_t cmd, const uint8_t* report, uint32_t size);
 static uint8_t compute_checksum(const uint8_t* data, uint32_t size);
+static void send_reboot_cmd(void);
 
 extern uint32_t row_pins[];
 extern uint32_t col_pins[];
@@ -104,6 +105,11 @@ void ble_keyboard_init(void)
 void ble_keyboard_start(void)
 {
     keyboard_matrix_trigger_start();
+}
+
+void ble_keyboard_jump_bootloader(void)
+{
+    send_reboot_cmd();
 }
 
 void keyboard_pins_init(void)
@@ -507,3 +513,4 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record)
     }
     return true;
 }
+

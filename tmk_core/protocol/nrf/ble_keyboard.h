@@ -1,6 +1,6 @@
 /**
  * @file ble_keybaord.h
- * @brief keyboard implementation 
+ * @brief keyboard implementation
  */
 
 #pragma once
@@ -9,3 +9,4 @@
 
 void ble_keyboard_init(void);
 void ble_keyboard_start(void);
+void ble_keyboard_jump_bootloader(void);

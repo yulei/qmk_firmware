@@ -21,8 +21,8 @@
 
 #define __INCLUDE_FROM_USB_DRIVER
 #define __INCLUDE_FROM_HID_DRIVER
-#include "LUFA/Drivers/USB/Class/Common/HIDClassCommon.h"
-#include "LUFA/Drivers/USB/Class/Common/HIDReportData.h"
+#include "lib/lufa/LUFA/Drivers/USB/Class/Common/HIDClassCommon.h"
+#include "lib/lufa/LUFA/Drivers/USB/Class/Common/HIDReportData.h"
 const static uint8_t hid_report_descriptor [] = {
     HID_RI_USAGE_PAGE(8, 0x01), /* Generic Desktop */
     HID_RI_USAGE(8, 0x06), /* Keyboard */
