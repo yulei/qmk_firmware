@@ -39,3 +39,4 @@ i2c_status_t i2c_receive(uint8_t address, uint8_t* data, uint16_t length, uint16
 i2c_status_t i2c_writeReg(uint8_t devaddr, uint8_t regaddr, const uint8_t* data, uint16_t length, uint16_t timeout);
 i2c_status_t i2c_readReg(uint8_t devaddr, uint8_t regaddr, uint8_t* data, uint16_t length, uint16_t timeout);
 void         i2c_stop(void);
+void         i2c_uninit(void);

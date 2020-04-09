@@ -62,7 +62,7 @@ void i2c_init(void)
 
 i2c_status_t i2c_start(uint8_t address)
 {
-    //nrf_drv_twi_enable(&m_twi);
+    if (!twi_ready) i2c_init();
     return I2C_STATUS_SUCCESS;
 }
 
@@ -109,4 +109,11 @@ i2c_status_t i2c_readReg(uint8_t devaddr, uint8_t regaddr, uint8_t* data, uint16
 void i2c_stop(void)
 {
     //nrf_drv_twi_disable(&m_twi);
+}
+
+void i2c_uninit(void)
+{
+    if (!twi_ready) return;
+
+    nrf_drv_twi_disable(&m_twi);
 }

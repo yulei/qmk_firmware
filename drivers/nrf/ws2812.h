@@ -9,3 +9,5 @@
 #include "color.h"
 
 void ws2812_setleds(LED_TYPE* leds, uint16_t number);
+
+void ws2812_shutdown(void);

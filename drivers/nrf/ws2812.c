@@ -101,3 +101,12 @@ void ws2812_setleds(LED_TYPE* leds, uint16_t number)
         NRF_LOG_INFO("ws2812 setleds playback: number: %d", number);
     }
 }
+
+void ws2812_shutdown(void)
+{
+    if (!ws2812_ready) return;
+
+    nrfx_pwm_uninit(&ws2812_pwm);
+    nrf_gpio_pin_set(WS2812_EN_PIN);
+    ws2812_ready = false;
+}
