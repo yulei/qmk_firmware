@@ -51,13 +51,14 @@
 
 ble_driver_t ble_driver = {
     .peer_id = PM_PEER_ID_INVALID,
-    .run_mode = RUN_MODE_INTERRUPT,
     .conn_handle = BLE_CONN_HANDLE_INVALID,
     .keyboard_led = 0,
     .vbus_enabled = 0,
     .uart_enabled = 0,
     //.output_target = OUTPUT_USB,
     .output_target = OUTPUT_BLE,
+    .matrix_changed = 0,
+    .battery_power = 100,
 };
 
 /**@brief Callback function for asserts in the SoftDevice.

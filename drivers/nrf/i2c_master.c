@@ -116,4 +116,6 @@ void i2c_uninit(void)
     if (!twi_ready) return;
 
     nrf_drv_twi_disable(&m_twi);
+    nrfx_twi_uninit(&m_twi);
+    twi_ready = false;
 }

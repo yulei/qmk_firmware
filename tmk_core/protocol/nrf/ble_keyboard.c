@@ -126,18 +126,57 @@ static void keyboard_timer_init(void)
     APP_ERROR_CHECK(err_code);
 }
 
+/** this should implemented at keyboard level */
+__attribute__((weak)) void keyboard_turnoff_leds(void)
+{
+#ifdef RGBLIGHT_ENABLE
+    rgblight_disable();
+    ws2812_uninit();
+#endif
+
+#ifdef RGB_MATRIX_ENABLE
+    rgb_matrix_disable();
+    // shutdown issi
+    #ifdef IS31FL3731
+        #ifdef DRIVER_ADDR_1
+        //IS31FL3731_write_register(DRIVER_ADDR_1, 0x0A, 0);
+        #endif
+        #ifdef DRIVER_ADDR_2
+        //IS31FL3731_write_register(DRIVER_ADDR_2, 0x0A, 0);
+        #endif
+    #endif
+#endif
+}
+
+static bool keyboard_rgb_on(void)
+{
+#if defined(RGBLIGHT_ENABLE)
+    extern rgblight_config_t rgblight_config;
+    if (rgblight_config.enable ) return true;
+#endif
+
+#if defined(RGBLIGHT_ENABLE)
+    extern rgb_config_t rgb_matrix_config;
+    if (rgb_matrix_config.enable) return true;
+#endif
+    return false;
+}
+
 static void keyboard_timout_handler(void *p_context)
 {
-
-#ifdef RGBLIGHT_ENABLE
-    extern rgblight_config_t rgblight_config;
-    if ( !rgblight_config.enable) {
-#endif
-        scan_count++;
-#ifdef RGBLIGHT_ENABLE
-    }
-#endif
     keyboard_task();
+
+    if (ble_driver.matrix_changed) {
+        scan_count = 0;
+        ble_driver.matrix_changed = false;
+    } else {
+        if (!keyboard_rgb_on()) {
+            scan_count++;
+        } else if (ble_driver.battery_power <= BATTERY_LED_THRESHHOLD) {
+            keyboard_turnoff_leds();
+        }
+    }
+
     // scan count overflow, switch to trigger mode
     if (scan_count >= MAX_SCAN_COUNT) {
         keybaord_timer_stop();
@@ -184,8 +223,6 @@ static void send_keyboard(report_keyboard_t *report)
             NRF_LOG_INFO("0x%x", report->raw[i]);
         }
     }
-
-    scan_count = 0;
 }
 
 #ifdef MOUSEKEY_ENABLE
@@ -272,6 +309,8 @@ static void pin_event_handler(nrf_drv_gpiote_pin_t pin, nrf_gpiote_polarity_t ac
             keyboard_matrix_trigger_stop();
             keyboard_matrix_scan_init();
             keybaord_timer_start();
+            keyboard_task();
+            scan_count = 0;
         }
     }
 }
@@ -284,6 +323,12 @@ static void vbus_detect_init(void)
     APP_ERROR_CHECK(err_code);
     ble_driver.vbus_enabled = nrf_drv_gpiote_in_is_set(VBUS_DETECT_PIN);
     nrf_drv_gpiote_in_event_enable(VBUS_DETECT_PIN, true);
+
+    if (ble_driver.vbus_enabled) {
+        ble_driver.output_target = OUTPUT_USB;
+    } else {
+        ble_driver.output_target = OUTPUT_BLE;
+    }
 }
 
 static volatile bool uart_tx_done = false;

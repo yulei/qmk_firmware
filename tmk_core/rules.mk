@@ -426,7 +426,8 @@ check-size:
 	fi
 else
 check-size:
-	$(SILENT) || echo "(Firmware size check does not yet support $(MCU) microprocessors; skipping.)"
+	#$(SILENT) || echo "(Firmware size check does not yet support $(MCU) microprocessors; skipping.)"
+	$(SILENT) || $(SIZE) $(BUILD_DIR)/$(TARGET).elf;
 endif
 
 # Create build directory

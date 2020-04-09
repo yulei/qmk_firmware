@@ -12,6 +12,7 @@
 #include "wait.h"
 #include "timer.h"
 #include "debounce.h"
+#include "ble_config.h"
 
 uint32_t row_pins[] = MATRIX_ROW_PINS;
 uint32_t col_pins[] = MATRIX_COL_PINS;
@@ -92,6 +93,7 @@ uint8_t matrix_scan(void)
     }
 
     debounce(raw_matrix, matrix, MATRIX_ROWS, changed);
+    ble_driver.matrix_changed = changed ? 1 : 0;
 
     matrix_scan_quantum();
     return 1;

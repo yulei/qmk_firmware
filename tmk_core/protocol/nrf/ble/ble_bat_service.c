@@ -129,6 +129,7 @@ static uint32_t compute_percent(uint32_t value, uint32_t index)
     percent += (value-cur.value)*(prev.percent-cur.percent) / (prev.value-cur.value);
     return percent;
 }
+
 static void battery_process_saadc_result(uint32_t result)
 {
     // as in PS. result = ((VP-VN) * GAIN) / REFERENCE) * (2^(RESOLUTION - m))
@@ -151,6 +152,7 @@ static void battery_process_saadc_result(uint32_t result)
     }
 
     NRF_LOG_INFO("battery sampling finished: value=%d, mV=%d, percent=%d.", result, mv, percent);
+    ble_driver.battery_power = percent;
     battery_level_update(percent);
 }
 
