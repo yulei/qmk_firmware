@@ -538,18 +538,22 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record)
         switch(keycode) {
         case KC_F21: // toggle usb/ble output
             if (ble_driver.output_target == OUTPUT_BLE) {
+                NRF_LOG_INFO("set output to USB");
                 ble_driver.output_target = OUTPUT_USB;
             } else {
+                NRF_LOG_INFO("set output to BLE");
                 ble_driver.output_target = OUTPUT_BLE;
             }
             return false;
 
         case KC_F22: // reset to erase bond mode
+            NRF_LOG_INFO("reset to erase bond");
             sd_power_gpregret_set(RST_REGISTER, RST_ERASE_BOND);
             sd_nvic_SystemReset();
             return false;
 
         case KC_F23: // usb mcu to bootloader mode
+            NRF_LOG_INFO("send reboot command");
             send_reboot_cmd();
             return false;
         default:

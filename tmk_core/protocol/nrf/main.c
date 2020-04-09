@@ -254,6 +254,7 @@ int main(void)
         }
         sd_power_gpregret_clr(RST_REGISTER, RST_BOOTLOADER);
     } else if (reason & RST_ERASE_BOND) {
+        NRF_LOG_INFO("RESET reason: erase bonds");
         erase_bonds = true;
         sd_power_gpregret_clr(RST_REGISTER, RST_ERASE_BOND);
     }
