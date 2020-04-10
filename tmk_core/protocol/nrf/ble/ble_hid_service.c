@@ -102,9 +102,9 @@ void ble_hid_service_init(void) {
     static ble_hids_outp_rep_init_t    output_report_array[1];
     static ble_hids_feature_rep_init_t feature_report_array[1];
 
-    memset((void *)input_report_array, 0, sizeof(ble_hids_inp_rep_init_t));
-    memset((void *)output_report_array, 0, sizeof(ble_hids_outp_rep_init_t));
-    memset((void *)feature_report_array, 0, sizeof(ble_hids_feature_rep_init_t));
+    memset((void *)input_report_array, 0, sizeof(input_report_array));
+    memset((void *)output_report_array, 0, sizeof(output_report_array));
+    memset((void *)feature_report_array, 0, sizeof(feature_report_array));
 
     for (int i = 0; i < NRF_REPORT_ID_MAX; i++) {
         // Initialize HID Service
@@ -186,17 +186,14 @@ void ble_hid_service_flush(bool send) {
  * @param[in]   report_data     data of the report.
  */
 void ble_hid_service_send_report(uint8_t report_id, uint8_t* report_data) {
-    ret_code_t err_code;
-    uint8_t    report_index;
-    uint8_t    report_len;
     if (report_id > NRF_REPORT_ID_MAX) {
         NRF_LOG_WARNING("Invalid report_id: %d", report_id);
         return;
     }
-    report_index  = REPORT_ID_TO_INDEX(report_entries[REPORT_ID_TO_INDEX(report_id)].report_id);
-    report_len    = report_entries[REPORT_ID_TO_INDEX(report_id)].report_len;
+    uint8_t report_index  = REPORT_ID_TO_INDEX(report_id);
+    uint8_t report_len    = report_entries[report_index].report_len;
 
-    err_code = send_report(&m_hids, report_index, report_data, report_len);
+    ret_code_t err_code = send_report(&m_hids, report_index, report_data, report_len);
 
     if (err_code == NRF_ERROR_RESOURCES) {
         // if report can't sent due to the resource limitation, we buffered
@@ -230,13 +227,15 @@ void ble_hid_service_send_report(uint8_t report_id, uint8_t* report_data) {
  *
  */
 static uint32_t send_report(ble_hids_t * p_hids, uint8_t report_index, uint8_t* report_data, uint8_t report_len) {
-    ret_code_t err_code;
+    ret_code_t err_code = NRF_SUCCESS;
 
     if (!m_in_boot_mode) {
         err_code = ble_hids_inp_rep_send(p_hids, report_index, report_len, report_data, ble_driver.conn_handle);
     } else {
         // in boot mode, only keyboard report was supported
-        err_code = ble_hids_boot_kb_inp_rep_send(p_hids, report_len, report_data, ble_driver.conn_handle);
+        if (report_index == 0) {
+            err_code = ble_hids_boot_kb_inp_rep_send(p_hids, report_len, report_data, ble_driver.conn_handle);
+        }
     }
 
     if (err_code != NRF_SUCCESS) {
@@ -402,7 +401,10 @@ static void on_hids_evt(ble_hids_t * p_hids, ble_hids_evt_t * p_evt) {
         on_hid_rep_char_write(p_evt);
         break;
 
-    case BLE_HIDS_EVT_NOTIF_ENABLED:
+    case BLE_HIDS_EVT_HOST_SUSP:                         /**< Suspend command received. */
+    case BLE_HIDS_EVT_HOST_EXIT_SUSP:                    /**< Exit suspend command received. */
+    case BLE_HIDS_EVT_NOTIF_ENABLED:                     /**< Notification enabled event. */
+    case BLE_HIDS_EVT_NOTIF_DISABLED:                    /**< Notification disabled event. */
         break;
 
     default:

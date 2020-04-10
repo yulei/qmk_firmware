@@ -111,6 +111,7 @@ static void on_adv_evt(ble_adv_evt_t ble_adv_evt) {
         if (ble_driver.vbus_enabled) {
             ble_advertising_start(&m_advertising, BLE_ADV_MODE_SLOW);
         } else {
+            NRF_LOG_INFO("Enter sleep mode.");
             sleep_mode_enter();
         }
         break;
@@ -158,12 +159,15 @@ static void on_adv_evt(ble_adv_evt_t ble_adv_evt) {
     }
 }
 
+extern void ble_keyboard_sleep_prepare(void);
 /**@brief Function for putting the chip into sleep mode.
  *
  * @note This function will not return.
  */
 static void sleep_mode_enter(void) {
 
+    // prepare sleep
+    ble_keyboard_sleep_prepare();
     // try to go to system-off mode
     nrf_pwr_mgmt_shutdown(NRF_PWR_MGMT_SHUTDOWN_GOTO_SYSOFF);
 }

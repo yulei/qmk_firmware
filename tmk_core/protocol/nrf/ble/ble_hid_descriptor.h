@@ -53,12 +53,19 @@ const static uint8_t hid_report_descriptor [] = {
 
         HID_RI_USAGE_PAGE(8, 0x07), /* Keyboard */
         HID_RI_USAGE_MINIMUM(8, 0x00), /* Reserved (no event indicated) */
-        HID_RI_USAGE_MAXIMUM(8, 0xFF), /* Keyboard Application */
+        HID_RI_USAGE_MAXIMUM(8, 0x65), /* Keyboard Application */
         HID_RI_LOGICAL_MINIMUM(8, 0x00),
-        HID_RI_LOGICAL_MAXIMUM(16, 0x00FF),
+        HID_RI_LOGICAL_MAXIMUM(8, 0x65),
         HID_RI_REPORT_COUNT(8, 0x06),
         HID_RI_REPORT_SIZE(8, 0x08),
         HID_RI_INPUT(8, HID_IOF_DATA | HID_IOF_ARRAY | HID_IOF_ABSOLUTE),
+
+        HID_RI_USAGE(8, 0x05),              // Usage (Vendor Defined)
+        HID_RI_LOGICAL_MINIMUM(8, 0x00),
+        HID_RI_LOGICAL_MAXIMUM(16, 0x00FF),
+        HID_RI_REPORT_COUNT(8, 0x02),
+        HID_RI_REPORT_SIZE(8, 0x08),
+        HID_RI_FEATURE(8, HID_IOF_DATA | HID_IOF_VARIABLE | HID_IOF_ABSOLUTE),
     HID_RI_END_COLLECTION(0),
 
 #ifdef MOUSE_ENABLE

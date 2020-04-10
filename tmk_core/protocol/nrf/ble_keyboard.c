@@ -107,6 +107,17 @@ void ble_keyboard_start(void)
     keyboard_matrix_trigger_start();
 }
 
+void ble_keyboard_sleep_prepare(void)
+{
+    // stop uart
+    uart_uninit();
+    // stop all timer
+    app_timer_stop_all();
+    // turn matrix to sense mode
+    keyboard_matrix_trigger_stop();
+    sense_pins_init();
+}
+
 void ble_keyboard_jump_bootloader(void)
 {
     send_reboot_cmd();
@@ -292,9 +303,11 @@ static void pin_event_handler(nrf_drv_gpiote_pin_t pin, nrf_gpiote_polarity_t ac
         if (nrf_drv_gpiote_in_is_set(VBUS_DETECT_PIN)) {
             ble_driver.vbus_enabled = 1;
             ble_driver.output_target = OUTPUT_USB;
+            NRF_LOG_INFO("VBUS on, set output to USB");
         } else {
             ble_driver.vbus_enabled = 0;
             ble_driver.output_target = OUTPUT_BLE;
+            NRF_LOG_INFO("VBUS off, set output to BLE");
         }
     } else if (action == NRF_GPIOTE_POLARITY_LOTOHI) {
         bool row_pressed = false;
@@ -497,13 +510,7 @@ static bool keyboard_pwr_mgmt_shutdown_handler(nrf_pwr_mgmt_evt_t event)
         default:
             break;
     }
-    // stop uart
-    uart_uninit();
-    // stop all timer
-    app_timer_stop_all();
-    // turn matrix to sense mode
-    keyboard_matrix_trigger_stop();
-    sense_pins_init();
+    ble_keyboard_sleep_prepare();
     return true;
 }
 
@@ -562,4 +569,3 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record)
     }
     return true;
 }
-
