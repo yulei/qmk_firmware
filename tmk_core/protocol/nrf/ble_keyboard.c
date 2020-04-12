@@ -517,10 +517,16 @@ static bool keyboard_pwr_mgmt_shutdown_handler(nrf_pwr_mgmt_evt_t event)
 #include "nrf_delay.h"
 static void send_reboot_cmd(void)
 {
+    if (!ble_driver.vbus_enabled) {
+        NRF_LOG_INFO("vbus not enable, can't reboot the usb controller");
+        return;
+    }
+
     if (!ble_driver.uart_enabled) {
         NRF_LOG_INFO("uart not enabled, can't send reboot command");
         return;
     }
+
     uint8_t checksum = CMD_RESET_TO_BOOTLOADER;
     uart_tx_done = false;
     app_uart_put(SYNC_BYTE_1);
@@ -528,9 +534,11 @@ static void send_reboot_cmd(void)
     app_uart_put(3);
     app_uart_put(checksum);
     app_uart_put(CMD_RESET_TO_BOOTLOADER);
-    while(!uart_tx_done) {
+    /*while(!uart_tx_done) {
         nrf_delay_ms(1);
-    }
+    }*/
+    NRF_LOG_INFO("send reboot command to usb controller, set output to ble");
+    ble_driver.output_target = OUTPUT_BLE;
     //sd_power_gpregret_set(RST_REGISTER, RST_BOOTLOADER);
     //sd_nvic_SystemReset();
 }
@@ -545,8 +553,12 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record)
         switch(keycode) {
         case KC_F21: // toggle usb/ble output
             if (ble_driver.output_target == OUTPUT_BLE) {
-                NRF_LOG_INFO("set output to USB");
-                ble_driver.output_target = OUTPUT_USB;
+                if (ble_driver.vbus_enabled) {
+                    NRF_LOG_INFO("set output to USB");
+                    ble_driver.output_target = OUTPUT_USB;
+                } else {
+                    NRF_LOG_INFO("vbus not enabled, still using BLE");
+                }
             } else {
                 NRF_LOG_INFO("set output to BLE");
                 ble_driver.output_target = OUTPUT_BLE;

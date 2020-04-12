@@ -80,6 +80,13 @@ static bool              m_in_boot_mode = false;                    /**< Current
 BLE_HIDS_DEF(m_hids,                                                /**< Structure used to identify the HID service. */
              NRF_SDH_BLE_TOTAL_LINK_COUNT,
              NRF_INPUT_REPORT_KEYBOARD_MAX_LEN,
+            #ifdef MOUSE_ENABLE
+             NRF_INPUT_REPORT_MOUSE_MAX_LEN,
+            #endif
+            #ifdef EXTRAKEY_ENABLE
+             NRF_INPUT_REPORT_SYSTEM_MAX_LEN,
+             NRF_INPUT_REPORT_CONSUMER_MAX_LEN,
+            #endif
              OUTPUT_REPORT_MAX_LEN,
              FEATURE_REPORT_MAX_LEN);
 
@@ -228,6 +235,8 @@ void ble_hid_service_send_report(uint8_t report_id, uint8_t* report_data) {
  */
 static uint32_t send_report(ble_hids_t * p_hids, uint8_t report_index, uint8_t* report_data, uint8_t report_len) {
     ret_code_t err_code = NRF_SUCCESS;
+
+    NRF_LOG_INFO("BLE report: index=%d, size=%d", report_index, report_len);
 
     if (!m_in_boot_mode) {
         err_code = ble_hids_inp_rep_send(p_hids, report_index, report_len, report_data, ble_driver.conn_handle);
