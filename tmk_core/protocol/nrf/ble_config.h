@@ -140,7 +140,7 @@
 #define RST_ERASE_BOND  0x02
 
 typedef enum {
-#if WITH_LUFA
+#if 1
     NRF_REPORT_ID_KEYBOARD = 1,
 #else
     NRF_REPORT_ID_KEYBOARD = 0,

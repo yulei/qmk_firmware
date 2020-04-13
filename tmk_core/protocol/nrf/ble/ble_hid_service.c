@@ -23,7 +23,7 @@ static report_entry_t report_entries[NRF_REPORT_ID_MAX] = {
 #endif
     };
 
-#if WITH_LUFA
+#if 1
 #define REPORT_ID_TO_INDEX(x) ((x)-1)
 #else
 #define REPORT_ID_TO_INDEX(x) (x)
