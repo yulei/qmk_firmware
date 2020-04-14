@@ -98,6 +98,7 @@ void ble_keyboard_init(void)
     host_set_driver(&kbd_driver);
     keyboard_timer_init();
     keyboard_pins_init();
+    if (0)
     uart_init();
     //nrf_pwr_mgmt_feed();
 }
@@ -142,7 +143,7 @@ __attribute__((weak)) void keyboard_turnoff_leds(void)
 {
 #ifdef RGBLIGHT_ENABLE
     rgblight_disable();
-    ws2812_uninit();
+    ws2812_shutdown();
 #endif
 
 #ifdef RGB_MATRIX_ENABLE
@@ -166,7 +167,7 @@ static bool keyboard_rgb_on(void)
     if (rgblight_config.enable ) return true;
 #endif
 
-#if defined(RGBLIGHT_ENABLE)
+#if defined(RGB_MATRIX_ENABLE)
     extern rgb_config_t rgb_matrix_config;
     if (rgb_matrix_config.enable) return true;
 #endif
