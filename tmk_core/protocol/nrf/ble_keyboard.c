@@ -98,6 +98,7 @@ void ble_keyboard_init(void)
     host_set_driver(&kbd_driver);
     keyboard_timer_init();
     keyboard_pins_init();
+    uart_init();
 }
 
 void ble_keyboard_start(void)
@@ -224,11 +225,12 @@ static void send_keyboard(report_keyboard_t *report)
     }
     if ((ble_driver.output_target & OUTPUT_USB) && ble_driver.vbus_enabled) {
         if (!ble_driver.uart_enabled) {
-            uart_init();
+            return;
+            /*uart_init();
             if (!ble_driver.uart_enabled) {
                 NRF_LOG_WARNING("Failed to initialize uart");
                 return;
-            }
+            }*/
         }
 
         uart_send_cmd(CMD_KEY_REPORT, (uint8_t*)report, sizeof(*report));
@@ -248,11 +250,12 @@ static void send_mouse(report_mouse_t *report)
     }
     if ((ble_driver.output_target & OUTPUT_USB) && ble_driver.vbus_enabled) {
         if (!ble_driver.uart_enabled) {
-            uart_init();
+            return;
+            /*uart_init();
             if (!ble_driver.uart_enabled) {
                 NRF_LOG_WARNING("Failed to initialize uart");
                 return;
-            }
+            }*/
         }
 
         uart_send_cmd(CMD_MOUSE_REPORT, (uint8_t*)report, sizeof(*report));
@@ -275,11 +278,12 @@ static void send_system(uint16_t data)
     }
     if ((ble_driver.output_target & OUTPUT_USB) && ble_driver.vbus_enabled) {
         if (!ble_driver.uart_enabled) {
-            uart_init();
+            return;
+            /*uart_init();
             if (!ble_driver.uart_enabled) {
                 NRF_LOG_WARNING("Failed to initialize uart");
                 return;
-            }
+            }*/
         }
         uart_send_cmd(CMD_SYSTEM_REPORT, (uint8_t*) &data, sizeof(data));
         NRF_LOG_INFO("system report: 0x%x", data);
@@ -294,11 +298,12 @@ static void send_consumer(uint16_t data)
 
     if ((ble_driver.output_target & OUTPUT_USB) && ble_driver.vbus_enabled) {
         if (!ble_driver.uart_enabled) {
-            uart_init();
+            return;
+            /*uart_init();
             if (!ble_driver.uart_enabled) {
                 NRF_LOG_WARNING("Failed to initialize uart");
                 return;
-            }
+            }*/
         }
         uart_send_cmd(CMD_CONSUMER_REPORT, (uint8_t*) &data, sizeof(data));
         NRF_LOG_INFO("sonsumer report: 0x%x", data);

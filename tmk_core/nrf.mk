@@ -192,7 +192,7 @@ COMMON_FLAGS += -DSOFTDEVICE_PRESENT
 # C flags common to all targets
 CFLAGS += $(COMMON_FLAGS) $(MCU_FLAGS)
 #CFLAGS += $(OPT)
-#CFLAGS += -DDEBUG
+CFLAGS += -DDEBUG
 CFLAGS += -Wall -Werror
 # keep every function in a separate section, this allows linker to discard unused ones
 CFLAGS += -ffunction-sections -fdata-sections -fno-strict-aliasing

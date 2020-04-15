@@ -7222,7 +7222,7 @@
 // <e> NRF_PWR_MGMT_CONFIG_STANDBY_TIMEOUT_ENABLED - Enable standby timeout.
 //==========================================================
 #ifndef NRF_PWR_MGMT_CONFIG_STANDBY_TIMEOUT_ENABLED
-#define NRF_PWR_MGMT_CONFIG_STANDBY_TIMEOUT_ENABLED 1
+#define NRF_PWR_MGMT_CONFIG_STANDBY_TIMEOUT_ENABLED 0
 #endif
 // <o> NRF_PWR_MGMT_CONFIG_STANDBY_TIMEOUT_S - Standby timeout (in seconds).
 // <i> Shutdown procedure will begin no earlier than after this number of seconds.
