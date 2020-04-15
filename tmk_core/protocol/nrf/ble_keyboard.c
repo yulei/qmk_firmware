@@ -98,9 +98,6 @@ void ble_keyboard_init(void)
     host_set_driver(&kbd_driver);
     keyboard_timer_init();
     keyboard_pins_init();
-    if (0)
-    uart_init();
-    //nrf_pwr_mgmt_feed();
 }
 
 void ble_keyboard_start(void)
@@ -110,6 +107,7 @@ void ble_keyboard_start(void)
 
 void ble_keyboard_sleep_prepare(void)
 {
+    NRF_LOG_INFO("power down sleep preparing");
     // stop uart
     uart_uninit();
     // stop all timer
@@ -143,7 +141,7 @@ __attribute__((weak)) void keyboard_turnoff_leds(void)
 {
 #ifdef RGBLIGHT_ENABLE
     rgblight_disable();
-    ws2812_shutdown();
+    ws2812_uninit();
 #endif
 
 #ifdef RGB_MATRIX_ENABLE
@@ -224,9 +222,13 @@ static void send_keyboard(report_keyboard_t *report)
     if (ble_driver.output_target & OUTPUT_BLE) {
         ble_hid_service_send_report(NRF_REPORT_ID_KEYBOARD, &(report->raw[0]));
     }
-    if (ble_driver.output_target & OUTPUT_USB) {
-        if ( !ble_driver.uart_enabled) {
-            return;
+    if ((ble_driver.output_target & OUTPUT_USB) && ble_driver.vbus_enabled) {
+        if (!ble_driver.uart_enabled) {
+            uart_init();
+            if (!ble_driver.uart_enabled) {
+                NRF_LOG_WARNING("Failed to initialize uart");
+                return;
+            }
         }
 
         uart_send_cmd(CMD_KEY_REPORT, (uint8_t*)report, sizeof(*report));
@@ -244,9 +246,13 @@ static void send_mouse(report_mouse_t *report)
     if (ble_driver.output_target & OUTPUT_BLE) {
         ble_hid_service_send_report(NRF_REPORT_ID_MOUSE, (uint8_t *)report);
     }
-    if (ble_driver.output_target & OUTPUT_USB) {
-        if ( !ble_driver.uart_enabled) {
-            return;
+    if ((ble_driver.output_target & OUTPUT_USB) && ble_driver.vbus_enabled) {
+        if (!ble_driver.uart_enabled) {
+            uart_init();
+            if (!ble_driver.uart_enabled) {
+                NRF_LOG_WARNING("Failed to initialize uart");
+                return;
+            }
         }
 
         uart_send_cmd(CMD_MOUSE_REPORT, (uint8_t*)report, sizeof(*report));
@@ -267,9 +273,13 @@ static void send_system(uint16_t data)
     if (ble_driver.output_target & OUTPUT_BLE) {
         ble_hid_service_send_report(NRF_REPORT_ID_SYSTEM, (uint8_t *)&data);
     }
-    if (ble_driver.output_target & OUTPUT_USB) {
-        if ( !ble_driver.uart_enabled) {
-            return;
+    if ((ble_driver.output_target & OUTPUT_USB) && ble_driver.vbus_enabled) {
+        if (!ble_driver.uart_enabled) {
+            uart_init();
+            if (!ble_driver.uart_enabled) {
+                NRF_LOG_WARNING("Failed to initialize uart");
+                return;
+            }
         }
         uart_send_cmd(CMD_SYSTEM_REPORT, (uint8_t*) &data, sizeof(data));
         NRF_LOG_INFO("system report: 0x%x", data);
@@ -281,9 +291,14 @@ static void send_consumer(uint16_t data)
     if (ble_driver.output_target & OUTPUT_BLE) {
         ble_hid_service_send_report(NRF_REPORT_ID_CONSUMER, (uint8_t *)&data);
     }
-    if (ble_driver.output_target & OUTPUT_USB) {
-        if ( !ble_driver.uart_enabled) {
-            return;
+
+    if ((ble_driver.output_target & OUTPUT_USB) && ble_driver.vbus_enabled) {
+        if (!ble_driver.uart_enabled) {
+            uart_init();
+            if (!ble_driver.uart_enabled) {
+                NRF_LOG_WARNING("Failed to initialize uart");
+                return;
+            }
         }
         uart_send_cmd(CMD_CONSUMER_REPORT, (uint8_t*) &data, sizeof(data));
         NRF_LOG_INFO("sonsumer report: 0x%x", data);
@@ -304,10 +319,12 @@ static void pin_event_handler(nrf_drv_gpiote_pin_t pin, nrf_gpiote_polarity_t ac
         if (nrf_drv_gpiote_in_is_set(VBUS_DETECT_PIN)) {
             ble_driver.vbus_enabled = 1;
             ble_driver.output_target = OUTPUT_USB;
+            //uart_init();
             NRF_LOG_INFO("VBUS on, set output to USB");
         } else {
             ble_driver.vbus_enabled = 0;
             ble_driver.output_target = OUTPUT_BLE;
+            uart_uninit();
             NRF_LOG_INFO("VBUS off, set output to BLE");
         }
     } else if (action == NRF_GPIOTE_POLARITY_LOTOHI) {
@@ -327,6 +344,9 @@ static void pin_event_handler(nrf_drv_gpiote_pin_t pin, nrf_gpiote_polarity_t ac
             scan_count = 0;
         }
     }
+
+    // feed the power manager
+    nrf_pwr_mgmt_feed();
 }
 
 static void vbus_detect_init(void)
@@ -535,13 +555,8 @@ static void send_reboot_cmd(void)
     app_uart_put(3);
     app_uart_put(checksum);
     app_uart_put(CMD_RESET_TO_BOOTLOADER);
-    /*while(!uart_tx_done) {
-        nrf_delay_ms(1);
-    }*/
     NRF_LOG_INFO("send reboot command to usb controller, set output to ble");
     ble_driver.output_target = OUTPUT_BLE;
-    //sd_power_gpregret_set(RST_REGISTER, RST_BOOTLOADER);
-    //sd_nvic_SystemReset();
 }
 
 // bluetooth control command

@@ -49,7 +49,11 @@ static void pwm_handler(nrfx_pwm_evt_type_t event_type)
 void ws2812_init(void)
 {
     nrf_gpio_pin_clear(WS2812_RGB_PIN);
+#ifdef WS2812_EN_HIGH
+    nrf_gpio_pin_set(WS2812_EN_PIN);
+#else
     nrf_gpio_pin_clear(WS2812_EN_PIN);
+#endif
     nrf_gpio_cfg_output(WS2812_RGB_PIN);
     nrf_gpio_cfg_output(WS2812_EN_PIN);
 
@@ -102,11 +106,15 @@ void ws2812_setleds(LED_TYPE* leds, uint16_t number)
     }
 }
 
-void ws2812_shutdown(void)
+void ws2812_uninit(void)
 {
     if (!ws2812_ready) return;
 
     nrfx_pwm_uninit(&ws2812_pwm);
+#ifdef WS2812_EN_HIGH
+    nrf_gpio_pin_clear(WS2812_EN_PIN);
+#else
     nrf_gpio_pin_set(WS2812_EN_PIN);
+#endif
     ws2812_ready = false;
 }

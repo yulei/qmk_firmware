@@ -206,6 +206,7 @@ static void power_management_init(void)
     ret_code_t err_code;
     err_code = nrf_pwr_mgmt_init();
     APP_ERROR_CHECK(err_code);
+    sd_power_dcdc_mode_set(NRF_POWER_DCDC_ENABLE);
 }
 
 
@@ -246,18 +247,17 @@ int main(void)
     NRF_LOG_INFO("NRF BLE Keyboard started.");
     sd_power_gpregret_get(RST_REGISTER, &reason);
     if (reason & RST_BOOTLOADER) {
-        NRF_LOG_INFO("reset for bootloader");
-        if (ble_driver.vbus_enabled) {
+        NRF_LOG_INFO("reset to bootloader");
 
-        } else {
-            NRF_LOG_INFO("USB cable not plugged, do nothing");
-        }
         sd_power_gpregret_clr(RST_REGISTER, RST_BOOTLOADER);
-    } else if (reason & RST_ERASE_BOND) {
+    }
+
+    if (reason & RST_ERASE_BOND) {
         NRF_LOG_INFO("RESET reason: erase bonds");
         erase_bonds = true;
         sd_power_gpregret_clr(RST_REGISTER, RST_ERASE_BOND);
     }
+
     ble_services_start(erase_bonds);
     ble_keyboard_start();
 

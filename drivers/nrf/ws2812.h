@@ -10,4 +10,4 @@
 
 void ws2812_setleds(LED_TYPE* leds, uint16_t number);
 
-void ws2812_shutdown(void);
+void ws2812_uninit(void);
