@@ -164,7 +164,9 @@ static void on_adv_evt(ble_adv_evt_t ble_adv_evt) {
  * @note This function will not return.
  */
 static void sleep_mode_enter(void) {
+    extern void ble_keyboard_sleep_prepare(void);
 
+    ble_keyboard_sleep_prepare();
     // try to go to system-off mode
     nrf_pwr_mgmt_shutdown(NRF_PWR_MGMT_SHUTDOWN_GOTO_SYSOFF);
 }

@@ -324,7 +324,7 @@ static void pin_event_handler(nrf_drv_gpiote_pin_t pin, nrf_gpiote_polarity_t ac
         if (nrf_drv_gpiote_in_is_set(VBUS_DETECT_PIN)) {
             ble_driver.vbus_enabled = 1;
             ble_driver.output_target = OUTPUT_USB;
-            //uart_init();
+            uart_init();
             NRF_LOG_INFO("VBUS on, set output to USB");
         } else {
             ble_driver.vbus_enabled = 0;
