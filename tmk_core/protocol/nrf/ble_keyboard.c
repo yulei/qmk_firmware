@@ -195,8 +195,7 @@ static void keyboard_timout_handler(void *p_context)
         NRF_LOG_INFO("keyboard matrix swtiched to trigger mode");
         scan_count = 0;
     }
-    // feed the power manager
-    nrf_pwr_mgmt_feed();
+    ble_driver.sleep_count = 0;
 }
 
 static void keybaord_timer_start(void)
@@ -347,11 +346,9 @@ static void pin_event_handler(nrf_drv_gpiote_pin_t pin, nrf_gpiote_polarity_t ac
             keybaord_timer_start();
             keyboard_task();
             scan_count = 0;
+            ble_driver.sleep_count = 0;
         }
     }
-
-    // feed the power manager
-    nrf_pwr_mgmt_feed();
 }
 
 static void vbus_detect_init(void)

@@ -9,6 +9,8 @@
 #include "nrf_gpio.h"
 #include "nrf_drv_saadc.h"
 
+#include "nrf_pwr_mgmt.h"
+
 #define SAADC_SAMPLES 5
 static nrf_saadc_value_t m_saadc_buffers[2][SAADC_SAMPLES];
 
@@ -84,10 +86,16 @@ static void battery_level_update(uint8_t level) {
 static void battery_level_sample_timeout_handler(void* p_context)
 {
     UNUSED_PARAMETER(p_context);
-    ret_code_t err_code;
-    err_code = nrf_drv_saadc_sample();
-    APP_ERROR_CHECK(err_code);
-    NRF_LOG_INFO("battery sampling triggered.");
+    if (ble_driver.sleep_count >= SLEEP_COUNT_THRESHHOLD) {
+        NRF_LOG_INFO("Sleep count overflow, goto system off mode");
+        nrf_pwr_mgmt_shutdown(NRF_PWR_MGMT_SHUTDOWN_GOTO_SYSOFF);
+    } else {
+        ret_code_t err_code;
+        err_code = nrf_drv_saadc_sample();
+        APP_ERROR_CHECK(err_code);
+        NRF_LOG_INFO("battery sampling triggered.");
+        ble_driver.sleep_count++;
+    }
 }
 
 static void battery_level_meas_timeout_handler(void * p_context) {

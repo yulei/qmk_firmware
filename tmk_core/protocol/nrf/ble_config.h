@@ -90,6 +90,9 @@
 #define BATTERY_LEVEL_MEAS_SAMPLE           APP_TIMER_TICKS(2)                         /**< Battery level measurement sampling (ticks). */
 #define BATTERY_LEVEL_MEAS_INTERVAL         APP_TIMER_TICKS(60*1000)                   /**< Battery level measurement interval (ticks). */
 
+// sleep count threadhold
+#define SLEEP_COUNT_THRESHHOLD              10                                         /**< In minutes */
+
 /*lint -emacro(524, MIN_CONN_INTERVAL) // Loss of precision */
 #define MIN_CONN_INTERVAL                   MSEC_TO_UNITS(7.5, UNIT_1_25_MS)           /**< Minimum connection interval (7.5 ms) */
 #define MAX_CONN_INTERVAL                   MSEC_TO_UNITS(30, UNIT_1_25_MS)            /**< Maximum connection interval (30 ms). */
@@ -133,6 +136,7 @@
 // battery threshhold
 #define BATTERY_LED_THRESHHOLD              20                                         /**< Turn off leds if battery power under this */
 #define BATTERY_SHUTDOWN_THRESHHOLD         5                                          /**< Turn off keyboard if battery power under this */
+
 
 // reset reason
 #define RST_REGISTER    0x00
@@ -180,6 +184,7 @@ typedef struct {
     uint8_t         output_target;  /**< target of output */
     uint8_t         matrix_changed; /**< matrix has changed */
     uint8_t         battery_power;  /**< power of the battery */
+    uint8_t         sleep_count;    /**< count for sleep or not, based on the battery sampling timer */
 } ble_driver_t;
 
 extern ble_driver_t ble_driver;

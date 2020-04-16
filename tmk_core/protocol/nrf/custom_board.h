@@ -46,22 +46,6 @@ extern "C" {
 
 #include "nrf_gpio.h"
 
-#ifndef NRF_RX_PIN
-    #define NRF_RX_PIN  24       // UART RX pin number
-#endif
-
-#ifndef NRF_TX_PIN
-    #define NRF_TX_PIN  23       // UART TX pin number
-#endif
-
-#ifndef NRF_SDA_PIN
-    #define NRF_SDA_PIN 19       // I2C SDA pin number
-#endif
-
-#ifndef NRF_SCL_PIN
-    #define NRF_SCL_PIN 18       // I2C SCL pin number
-#endif
-
 #ifdef __cplusplus
 }
 #endif

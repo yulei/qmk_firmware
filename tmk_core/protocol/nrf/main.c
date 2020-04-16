@@ -59,6 +59,7 @@ ble_driver_t ble_driver = {
     .output_target = OUTPUT_BLE,
     .matrix_changed = 0,
     .battery_power = 100,
+    .sleep_count = 0,
 };
 
 /**@brief Callback function for asserts in the SoftDevice.
