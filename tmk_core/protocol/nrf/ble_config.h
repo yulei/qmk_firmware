@@ -54,18 +54,6 @@
 #define DEVICE_NAME                         NRF_NAME(PRODUCT)                           /**< Name of device. Will be included in the advertising data. */
 #define MANUFACTURER_NAME                   NRF_NAME(MANUFACTURER)                      /**< Manufacturer. Will be passed to Device Information Service. */
 
-#if COMMAND_ENABLE
-#ifndef CMD_OUTPUT_TOGGLE
-    #define CMD_OUTPUT_TOGGLE  F        // toggle the output target
-#endif
-#ifndef CMD_ERASE_BOND
-    #define CMD_ERASE_BOND     O        // erase bonding, which will cause a full reset
-#endif
-#ifndef CMD_BOOTLOADER
-    #define CMD_BOOTLOADER     P        // reset the system to bootloader
-#endif
-#endif
-
 #define VENDOR_ID_SOURCE                    0x02                                       /**< Vendor ID Source. */
 #ifndef VENDER_ID
     #define VENDER_ID                       0x4154                                     /**< Vendor ID. */
@@ -137,18 +125,33 @@
 #define BATTERY_LED_THRESHHOLD              20                                         /**< Turn off leds if battery power under this */
 #define BATTERY_SHUTDOWN_THRESHHOLD         5                                          /**< Turn off keyboard if battery power under this */
 
+// matrix scanning parameters
+#define MAX_SCAN_COUNT 100                                                             /**< Maximum scan count before turn to trigger mode */
+#define KEYBOARD_SCAN_INTERVAL              APP_TIMER_TICKS(10)                        /**< Normal keyboard scan interval */
+#define KEYBOARD_SLOW_SCAN_INTERVAL         APP_TIMER_TICKS(100)                       /**< Slow keyboard scan interval */
 
-// reset reason
-#define RST_REGISTER    0x00
-#define RST_BOOTLOADER  0x01
-#define RST_ERASE_BOND  0x02
+// UART communication
+#define SYNC_BYTE_1 0xAA
+#define SYNC_BYTE_2 0x55
 
 typedef enum {
-#if 1
+  CMD_KEY_REPORT,
+  CMD_MOUSE_REPORT,
+  CMD_SYSTEM_REPORT,
+  CMD_CONSUMER_REPORT,
+  CMD_RESET_TO_BOOTLOADER,
+} command_t;
+
+#define UART_TX_BUF_SIZE                    128                                        /**< UART TX buffer size. */
+#define UART_RX_BUF_SIZE                    128                                        /**< UART RX buffer size. */
+
+// reset reason
+#define RST_REGISTER                        0x00                                       /**< id of the retain register */
+#define RST_BOOTLOADER                      0x01                                       /**< reset to bootloader ? */
+#define RST_ERASE_BOND                      0x02                                       /**< reset to erase all bond */
+
+typedef enum {
     NRF_REPORT_ID_KEYBOARD = 1,
-#else
-    NRF_REPORT_ID_KEYBOARD = 0,
-#endif
 
 #ifdef MOUSEKEY_ENABLE
     NRF_REPORT_ID_MOUSE,
@@ -178,6 +181,7 @@ typedef enum {
 typedef struct {
     pm_peer_id_t    peer_id;        /**< Device reference handle to the current bonded central. */
     uint16_t        conn_handle;    /**< Handle of the current connection. */
+
     uint8_t         keyboard_led;   /**< keyboard led status */
     uint8_t         vbus_enabled;   /**< vbus status */
     uint8_t         uart_enabled;   /**< uart status */
@@ -185,6 +189,7 @@ typedef struct {
     uint8_t         matrix_changed; /**< matrix has changed */
     uint8_t         battery_power;  /**< power of the battery */
     uint8_t         sleep_count;    /**< count for sleep or not, based on the battery sampling timer */
+    uint32_t        scan_count;     /**< idle scan count */
 } ble_driver_t;
 
 extern ble_driver_t ble_driver;

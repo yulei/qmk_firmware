@@ -175,11 +175,15 @@ static void battery_saadc_handler(nrf_drv_saadc_evt_t const * p_event)
             value += p_event->data.done.p_buffer[i];
         }
         value /= p_event->data.done.size;
+        if (value < 0) {
+            NRF_LOG_INFO("Battery sampling value maybe incorrect: %d", value);
+            value = 0;
+        }
         battery_process_saadc_result(value);
 
         err_code = nrf_drv_saadc_buffer_convert(p_event->data.done.p_buffer, SAADC_SAMPLES);
         APP_ERROR_CHECK(err_code);
-        // turn of battery and sampling timer
+        // turn off battery and sampling timer
         nrf_gpio_pin_clear(BATTERY_SAADC_ENABLE_PIN);
         app_timer_stop(m_battery_sample_timer_id);
     }

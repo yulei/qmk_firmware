@@ -23,11 +23,7 @@ static report_entry_t report_entries[NRF_REPORT_ID_MAX] = {
 #endif
     };
 
-#if 1
 #define REPORT_ID_TO_INDEX(x) ((x)-1)
-#else
-#define REPORT_ID_TO_INDEX(x) (x)
-#endif
 
 /**Buffer queue access macros
  *
@@ -209,7 +205,6 @@ void ble_hid_service_send_report(uint8_t report_id, uint8_t* report_data) {
         UNUSED_VARIABLE(buffer_enqueue(&m_hids, report_index, report_data, report_len));
     }
 
-
     if ((err_code != NRF_SUCCESS) &&
         (err_code != NRF_ERROR_INVALID_STATE) &&
         (err_code != NRF_ERROR_RESOURCES) &&
@@ -248,7 +243,7 @@ static uint32_t send_report(ble_hids_t * p_hids, uint8_t report_index, uint8_t* 
     }
 
     if (err_code != NRF_SUCCESS) {
-        NRF_LOG_WARNING("send report: %d\n", err_code);
+        NRF_LOG_WARNING("send report error: %d\n", err_code);
     }
     return err_code;
 }

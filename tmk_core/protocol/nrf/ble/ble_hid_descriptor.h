@@ -7,7 +7,8 @@
 
 #include "ble_config.h"
 
-#if 1
+#define WITH_LUFA 1
+#if WITH_LUFA
 #define ATTR_PACKED __attribute__((packed))
 #define CONCAT(x, y) x##y
 #define CONCAT_EXPANDED(x, y) CONCAT(x, y)

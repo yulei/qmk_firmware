@@ -21,24 +21,7 @@
 #include "rgblight.h"
 #endif
 
-#define MAX_SCAN_COUNT 100
-static volatile uint32_t scan_count = 0;
 
-#define SYNC_BYTE_1 0xAA
-#define SYNC_BYTE_2 0x55
-
-typedef enum {
-  CMD_KEY_REPORT,
-  CMD_MOUSE_REPORT,
-  CMD_SYSTEM_REPORT,
-  CMD_CONSUMER_REPORT,
-  CMD_RESET_TO_BOOTLOADER,
-} command_t;
-
-#define UART_TX_BUF_SIZE 128                        /**< UART TX buffer size. */
-#define UART_RX_BUF_SIZE 128                        /**< UART RX buffer size. */
-
-#define KEYBOARD_SCAN_INTERVAL APP_TIMER_TICKS(10) // keyboard scan interval
 APP_TIMER_DEF(m_keyboard_timer_id); // keyboard scan timer id
 
 static bool keyboard_pwr_mgmt_shutdown_handler(nrf_pwr_mgmt_evt_t event);
@@ -49,8 +32,8 @@ static void keyboard_timer_init(void);
 static void sense_pins_init(void);
 
 static void keyboard_timout_handler(void *p_context);
-static void keybaord_timer_start(void);
-static void keybaord_timer_stop(void);
+static void keyboard_timer_start(void);
+static void keyboard_timer_stop(void);
 
 static void pin_event_handler(nrf_drv_gpiote_pin_t pin, nrf_gpiote_polarity_t action);
 
@@ -69,7 +52,9 @@ static bool matrix_trigger_enabled = false;
 
 static void keyboard_matrix_trigger_start(void);
 static void keyboard_matrix_trigger_stop(void);
-static void keyboard_matrix_scan_init(void);
+
+static void keyboard_matrix_scan_start(void);
+static void keyboard_matrix_scan_stop(void);
 
 /* Host driver */
 static uint8_t keyboard_leds(void);
@@ -98,7 +83,7 @@ void ble_keyboard_init(void)
     host_set_driver(&kbd_driver);
     keyboard_timer_init();
     keyboard_pins_init();
-    uart_init();
+    //uart_init();
 }
 
 void ble_keyboard_start(void)
@@ -178,27 +163,28 @@ static void keyboard_timout_handler(void *p_context)
     keyboard_task();
 
     if (ble_driver.matrix_changed) {
-        scan_count = 0;
+        ble_driver.scan_count = 0;
         ble_driver.matrix_changed = false;
     } else {
         if (!keyboard_rgb_on()) {
-            scan_count++;
+            ble_driver.scan_count++;
         } else if (ble_driver.battery_power <= BATTERY_LED_THRESHHOLD) {
             keyboard_turnoff_leds();
         }
     }
 
     // scan count overflow, switch to trigger mode
-    if (scan_count >= MAX_SCAN_COUNT) {
-        keybaord_timer_stop();
+    if (ble_driver.scan_count >= MAX_SCAN_COUNT) {
+        keyboard_matrix_scan_stop();
         keyboard_matrix_trigger_start();
+
         NRF_LOG_INFO("keyboard matrix swtiched to trigger mode");
-        scan_count = 0;
+        ble_driver.scan_count = 0;
     }
     ble_driver.sleep_count = 0;
 }
 
-static void keybaord_timer_start(void)
+static void keyboard_timer_start(void)
 {
     ret_code_t err_code;
 
@@ -206,7 +192,7 @@ static void keybaord_timer_start(void)
     APP_ERROR_CHECK(err_code);
 }
 
-static void keybaord_timer_stop(void)
+static void keyboard_timer_stop(void)
 {
     ret_code_t err_code;
 
@@ -222,16 +208,7 @@ static void send_keyboard(report_keyboard_t *report)
     if (ble_driver.output_target & OUTPUT_BLE) {
         ble_hid_service_send_report(NRF_REPORT_ID_KEYBOARD, &(report->raw[0]));
     }
-    if ((ble_driver.output_target & OUTPUT_USB) && ble_driver.vbus_enabled) {
-        if (!ble_driver.uart_enabled) {
-            return;
-            /*uart_init();
-            if (!ble_driver.uart_enabled) {
-                NRF_LOG_WARNING("Failed to initialize uart");
-                return;
-            }*/
-        }
-
+    if (ble_driver.output_target & OUTPUT_USB) {
         uart_send_cmd(CMD_KEY_REPORT, (uint8_t*)report, sizeof(*report));
         NRF_LOG_INFO("Key report:");
         for (int i = 0; i < sizeof(*report); i++) {
@@ -247,16 +224,7 @@ static void send_mouse(report_mouse_t *report)
     if (ble_driver.output_target & OUTPUT_BLE) {
         ble_hid_service_send_report(NRF_REPORT_ID_MOUSE, (uint8_t *)report);
     }
-    if ((ble_driver.output_target & OUTPUT_USB) && ble_driver.vbus_enabled) {
-        if (!ble_driver.uart_enabled) {
-            return;
-            /*uart_init();
-            if (!ble_driver.uart_enabled) {
-                NRF_LOG_WARNING("Failed to initialize uart");
-                return;
-            }*/
-        }
-
+    if (ble_driver.output_target & OUTPUT_USB) {
         uart_send_cmd(CMD_MOUSE_REPORT, (uint8_t*)report, sizeof(*report));
         NRF_LOG_INFO("mouse report: 0x%x,0x%x,0x%x,0x%x,0x%x", report->buttons, report->x, report->y, report->v, report->h);
     }
@@ -275,15 +243,7 @@ static void send_system(uint16_t data)
     if (ble_driver.output_target & OUTPUT_BLE) {
         ble_hid_service_send_report(NRF_REPORT_ID_SYSTEM, (uint8_t *)&data);
     }
-    if ((ble_driver.output_target & OUTPUT_USB) && ble_driver.vbus_enabled) {
-        if (!ble_driver.uart_enabled) {
-            return;
-            /*uart_init();
-            if (!ble_driver.uart_enabled) {
-                NRF_LOG_WARNING("Failed to initialize uart");
-                return;
-            }*/
-        }
+    if (ble_driver.output_target & OUTPUT_USB) {
         uart_send_cmd(CMD_SYSTEM_REPORT, (uint8_t*) &data, sizeof(data));
         NRF_LOG_INFO("system report: 0x%x", data);
     }
@@ -295,15 +255,7 @@ static void send_consumer(uint16_t data)
         ble_hid_service_send_report(NRF_REPORT_ID_CONSUMER, (uint8_t *)&data);
     }
 
-    if ((ble_driver.output_target & OUTPUT_USB) && ble_driver.vbus_enabled) {
-        if (!ble_driver.uart_enabled) {
-            return;
-            /*uart_init();
-            if (!ble_driver.uart_enabled) {
-                NRF_LOG_WARNING("Failed to initialize uart");
-                return;
-            }*/
-        }
+    if (ble_driver.output_target & OUTPUT_USB) {
         uart_send_cmd(CMD_CONSUMER_REPORT, (uint8_t*) &data, sizeof(data));
         NRF_LOG_INFO("sonsumer report: 0x%x", data);
     }
@@ -342,10 +294,10 @@ static void pin_event_handler(nrf_drv_gpiote_pin_t pin, nrf_gpiote_polarity_t ac
         if (row_pressed) {
             // disable row event
             keyboard_matrix_trigger_stop();
-            keyboard_matrix_scan_init();
-            keybaord_timer_start();
+            keyboard_matrix_scan_start();
+
             keyboard_task();
-            scan_count = 0;
+            ble_driver.scan_count = 0;
             ble_driver.sleep_count = 0;
         }
     }
@@ -360,10 +312,12 @@ static void vbus_detect_init(void)
     ble_driver.vbus_enabled = nrf_drv_gpiote_in_is_set(VBUS_DETECT_PIN);
     nrf_drv_gpiote_in_event_enable(VBUS_DETECT_PIN, true);
 
+    ble_driver.output_target = OUTPUT_BLE;
     if (ble_driver.vbus_enabled) {
-        ble_driver.output_target = OUTPUT_USB;
-    } else {
-        ble_driver.output_target = OUTPUT_BLE;
+        uart_init();
+        if (ble_driver.uart_enabled) {
+            ble_driver.output_target = OUTPUT_USB;
+        }
     }
 }
 
@@ -432,6 +386,14 @@ static void uart_uninit(void)
 
 static void uart_send_cmd(command_t cmd, const uint8_t* report, uint32_t size)
 {
+    if (!ble_driver.vbus_enabled) {
+        NRF_LOG_INFO("No VBUS power, can send command through UART");
+        return;
+    }
+    if (!ble_driver.uart_enabled) {
+        uart_init();
+    }
+
     uint8_t checksum = cmd;
     checksum += compute_checksum(report, size);
     app_uart_put(SYNC_BYTE_1);
@@ -510,9 +472,15 @@ static void keyboard_matrix_trigger_stop(void)
 }
 
 extern void matrix_init(void);
-static void keyboard_matrix_scan_init(void)
+static void keyboard_matrix_scan_start(void)
 {
     matrix_init();
+    keyboard_timer_start();
+}
+
+static void keyboard_matrix_scan_stop(void)
+{
+    keyboard_timer_stop();
 }
 
 static bool keyboard_pwr_mgmt_shutdown_handler(nrf_pwr_mgmt_evt_t event)

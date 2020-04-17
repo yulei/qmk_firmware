@@ -60,6 +60,7 @@ ble_driver_t ble_driver = {
     .matrix_changed = 0,
     .battery_power = 100,
     .sleep_count = 0,
+    .scan_count = 0,
 };
 
 /**@brief Callback function for asserts in the SoftDevice.
