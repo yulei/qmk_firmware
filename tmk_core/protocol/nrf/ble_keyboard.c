@@ -88,7 +88,8 @@ void ble_keyboard_init(void)
 
 void ble_keyboard_start(void)
 {
-    keyboard_matrix_trigger_start();
+    keyboard_matrix_scan_start();
+    ble_driver.scan_count = 0;
 }
 
 void ble_keyboard_sleep_prepare(void)
@@ -321,8 +322,6 @@ static void vbus_detect_init(void)
     }
 }
 
-static volatile bool uart_tx_done = false;
-
 static void uart_event_handle(app_uart_evt_t *p_event)
 {
     switch (p_event->evt_type) {
@@ -335,7 +334,6 @@ static void uart_event_handle(app_uart_evt_t *p_event)
         case APP_UART_DATA_READY:
             break;
         case APP_UART_TX_EMPTY:
-            uart_tx_done = true;
             break;
         default:
             break;
@@ -519,7 +517,6 @@ static void send_reboot_cmd(void)
     }
 
     uint8_t checksum = CMD_RESET_TO_BOOTLOADER;
-    uart_tx_done = false;
     app_uart_put(SYNC_BYTE_1);
     app_uart_put(SYNC_BYTE_2);
     app_uart_put(3);
