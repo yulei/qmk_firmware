@@ -3,7 +3,7 @@
  */
 
 #include "ble_keyboard.h"
-#include "ble_hid_service.h"
+#include "ble_hids_service.h"
 #include "app_timer.h"
 #include "app_uart.h"
 #include "nrf_gpio.h"
@@ -207,7 +207,7 @@ static uint8_t keyboard_leds(void) { return ble_driver.keyboard_led; }
 static void send_keyboard(report_keyboard_t *report)
 {
     if (ble_driver.output_target & OUTPUT_BLE) {
-        ble_hid_service_send_report(NRF_REPORT_ID_KEYBOARD, &(report->raw[0]));
+        ble_hids_service_send_report(NRF_REPORT_ID_KEYBOARD, &(report->raw[0]));
     }
     if (ble_driver.output_target & OUTPUT_USB) {
         uart_send_cmd(CMD_KEY_REPORT, (uint8_t*)report, sizeof(*report));
@@ -223,7 +223,7 @@ static void send_keyboard(report_keyboard_t *report)
 static void send_mouse(report_mouse_t *report)
 {
     if (ble_driver.output_target & OUTPUT_BLE) {
-        ble_hid_service_send_report(NRF_REPORT_ID_MOUSE, (uint8_t *)report);
+        ble_hids_service_send_report(NRF_REPORT_ID_MOUSE, (uint8_t *)report);
     }
     if (ble_driver.output_target & OUTPUT_USB) {
         uart_send_cmd(CMD_MOUSE_REPORT, (uint8_t*)report, sizeof(*report));
@@ -242,7 +242,7 @@ static void send_mouse(report_mouse_t *report) { (void)report; }
 static void send_system(uint16_t data)
 {
     if (ble_driver.output_target & OUTPUT_BLE) {
-        ble_hid_service_send_report(NRF_REPORT_ID_SYSTEM, (uint8_t *)&data);
+        ble_hids_service_send_report(NRF_REPORT_ID_SYSTEM, (uint8_t *)&data);
     }
     if (ble_driver.output_target & OUTPUT_USB) {
         uart_send_cmd(CMD_SYSTEM_REPORT, (uint8_t*) &data, sizeof(data));
@@ -253,7 +253,7 @@ static void send_system(uint16_t data)
 static void send_consumer(uint16_t data)
 {
     if (ble_driver.output_target & OUTPUT_BLE) {
-        ble_hid_service_send_report(NRF_REPORT_ID_CONSUMER, (uint8_t *)&data);
+        ble_hids_service_send_report(NRF_REPORT_ID_CONSUMER, (uint8_t *)&data);
     }
 
     if (ble_driver.output_target & OUTPUT_USB) {

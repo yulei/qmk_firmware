@@ -46,7 +46,7 @@
 #include "app_scheduler.h"
 #include "ble_services.h"
 #include "ble_adv_service.h"
-#include "ble_hid_service.h"
+#include "ble_hids_service.h"
 #include "ble_keyboard.h"
 
 ble_driver_t ble_driver = {
@@ -99,7 +99,7 @@ static void ble_evt_handler(ble_evt_t const * p_ble_evt, void * p_context)
         case BLE_GAP_EVT_DISCONNECTED:
             NRF_LOG_INFO("Disconnected");
             // Dequeue all keys without transmission.
-            ble_hid_service_flush(false);
+            ble_hids_service_flush(false);
 
             ble_driver.conn_handle = BLE_CONN_HANDLE_INVALID;
 
@@ -119,7 +119,7 @@ static void ble_evt_handler(ble_evt_t const * p_ble_evt, void * p_context)
 
         case BLE_GATTS_EVT_HVN_TX_COMPLETE:
             // Send next key event
-            ble_hid_service_flush(true);
+            ble_hids_service_flush(true);
             break;
 
         case BLE_GATTC_EVT_TIMEOUT:

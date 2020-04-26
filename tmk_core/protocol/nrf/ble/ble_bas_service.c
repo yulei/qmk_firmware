@@ -1,10 +1,10 @@
 /**
- * @file ble_bat_service.h
+ * @file ble_bas_service.h
  * @brief ble battery service
  */
 
 #include "ble_bas.h"
-#include "ble_bat_service.h"
+#include "ble_bas_service.h"
 
 #include "nrf_gpio.h"
 #include "nrf_drv_saadc.h"
@@ -26,7 +26,7 @@ static void battery_saadc_init(void);
 static void battery_saadc_handler(nrf_drv_saadc_evt_t const * p_event);
 static void battery_process_saadc_result(uint32_t result);
 
-void ble_bat_service_init(void) {
+void ble_bas_service_init(void) {
     ret_code_t     err_code;
     ble_bas_init_t bas_init_obj;
 
@@ -58,7 +58,7 @@ void ble_bat_service_init(void) {
     battery_saadc_init();
 }
 
-void ble_bat_service_start(void) {
+void ble_bas_service_start(void) {
     ret_code_t     err_code;
     err_code = app_timer_start(m_battery_timer_id, BATTERY_LEVEL_MEAS_INTERVAL, NULL);
     APP_ERROR_CHECK(err_code);

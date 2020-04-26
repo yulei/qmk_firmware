@@ -10,8 +10,8 @@
 #include "ble_conn_state.h"
 #include "ble_dis.h"
 #include "ble_adv_service.h"
-#include "ble_bat_service.h"
-#include "ble_hid_service.h"
+#include "ble_bas_service.h"
+#include "ble_hids_service.h"
 #include "ble_services.h"
 
 NRF_BLE_GATT_DEF(m_gatt);                                           /**< GATT module instance. */
@@ -37,8 +37,8 @@ void ble_services_init(void) {
     qwr_init();
     dis_init();
 
-    ble_bat_service_init();
-    ble_hid_service_init();
+    ble_bas_service_init();
+    ble_hids_service_init();
 
     conn_params_init();
     peer_manager_init();
@@ -46,8 +46,8 @@ void ble_services_init(void) {
 
 void ble_services_start(bool erase_bond) {
     ble_adv_service_start(erase_bond);
-    ble_bat_service_start();
-    ble_hid_service_start();
+    ble_bas_service_start();
+    ble_hids_service_start();
 }
 
 /**@brief Function for setting filtered whitelist.

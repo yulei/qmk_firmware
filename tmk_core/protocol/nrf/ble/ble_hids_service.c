@@ -1,11 +1,11 @@
 /**
- * @file ble_hid_service.c
+ * @file ble_hids_service.c
  * @brief hid service implementation
  */
 
 #include "ble_hids.h"
-#include "ble_hid_service.h"
-#include "ble_hid_descriptor.h"
+#include "ble_hids_service.h"
+#include "ble_hids_descriptor.h"
 
 typedef struct {
     uint8_t report_id;
@@ -94,7 +94,7 @@ static void     buffer_init(void);
 static uint32_t buffer_enqueue(ble_hids_t *p_hids, uint8_t report_index, uint8_t *report_data, uint8_t report_len);
 static uint32_t buffer_dequeue(bool tx_flag);
 
-void ble_hid_service_init(void) {
+void ble_hids_service_init(void) {
     ret_code_t                    err_code;
     ble_hids_init_t               hids_init_obj;
     ble_hids_inp_rep_init_t     * p_input_report;
@@ -176,9 +176,9 @@ void ble_hid_service_init(void) {
     buffer_init();
 }
 
-void ble_hid_service_start(void) {}
+void ble_hids_service_start(void) {}
 
-void ble_hid_service_flush(bool send) {
+void ble_hids_service_flush(bool send) {
     // flusing the pending report
     buffer_dequeue(send);
 }
@@ -188,7 +188,7 @@ void ble_hid_service_flush(bool send) {
  * @param[in]   report_id       id of the report.
  * @param[in]   report_data     data of the report.
  */
-void ble_hid_service_send_report(uint8_t report_id, uint8_t* report_data) {
+void ble_hids_service_send_report(uint8_t report_id, uint8_t* report_data) {
     if (report_id > NRF_REPORT_ID_MAX) {
         NRF_LOG_WARNING("Invalid report_id: %d", report_id);
         return;

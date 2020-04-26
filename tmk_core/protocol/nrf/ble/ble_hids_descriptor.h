@@ -1,5 +1,5 @@
 /**
- * @file ble_hid_descriptor.h
+ * @file ble_hids_descriptor.h
  * @brief definition of hid descriptor
  */
 
