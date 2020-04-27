@@ -7,11 +7,10 @@
 #ifdef RGBLIGHT_ENABLE
 #include <string.h>
 #include "rgblight.h"
-#include "ws2812_f4.h"
-#include "eeprom.h"
+#include "ws2812.h"
+#include "eeconfig.h"
 extern rgblight_config_t rgblight_config;
-#define EECONFIG_NOAH_MODE  64
-static bool noah_led_mode;
+static uint32_t noah_led_mode;
 // led 0 for caps lock, led 1 for scroll lock, led 3 for num lock
 // led 4 for layer 1, led 5 for layer 2, led 6 for layer 3, led 7 for layer 4
 #if RGBLED_NUM < 7
@@ -53,26 +52,19 @@ void rgblight_set(void) {
 }
 #endif
 
-__attribute__((weak))
-void matrix_scan_kb(void) { matrix_scan_user(); }
-
-void matrix_init_kb(void) {
-#ifdef RGBLIGHT_ENABLE
-    noah_led_mode = eeprom_read_byte((uint8_t*)(uint32_t*)EECONFIG_NOAH_MODE);
-    ws2812_init();
-    rgblight_set();
-#endif
+void matrix_init_kb(void)
+{
+    noah_led_mode = eeconfig_read_kb();
     matrix_init_user();
 }
-__attribute__((weak))
-void matrix_init_user(void) {
-
-}
 
 __attribute__((weak))
-void matrix_scan_user(void) {
-}
+void matrix_init_user(void) { }
 
+void matrix_scan_kb(void) { matrix_scan_user(); }
+
+__attribute__((weak))
+void matrix_scan_user(void) { }
 
 #ifdef RGB_MATRIX_ENABLE
 const is31_led g_is31_leds[DRIVER_LED_TOTAL] = {
@@ -221,38 +213,38 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
   if (record->event.pressed) {
     switch(keycode) {
     #ifdef RGBLIGHT_ENABLE
-        case KC_F24: // switch the led mode on or off
-        noah_led_mode = !noah_led_mode;
-        eeprom_write_byte((uint8_t*)(uint32_t*)EECONFIG_NOAH_MODE, noah_led_mode);
-        rgblight_set();
-        return false;
+        case KC_F24: // toggle the led mode
+            noah_led_mode = !noah_led_mode;
+            eeconfig_update_kb(noah_led_mode);
+            rgblight_set();
+            return false;
 
-    #ifdef RGB_MATRIX_ENABLE
+        #ifdef RGB_MATRIX_ENABLE
         case KC_F13: // toggle rgb matrix
-        rgb_matrix_toggle();
-        return false;
+            rgb_matrix_toggle();
+            return false;
         case KC_F14:
-        rgb_matrix_step();
-        return false;
+            rgb_matrix_step();
+            return false;
         case KC_F15:
-        rgb_matrix_increase_hue();
-        return false;
+            rgb_matrix_increase_hue();
+            return false;
         case KC_F16:
-        rgb_matrix_increase_sat();
-        return false;
+            rgb_matrix_increase_sat();
+            return false;
         case KC_F17:
-        rgb_matrix_increase_val();
-        return false;
+            rgb_matrix_increase_val();
+            return false;
         case KC_F18:
-        rgb_matrix_decrease_hue();
-        return false;
+            rgb_matrix_decrease_hue();
+            return false;
         case KC_F19:
-        rgb_matrix_decrease_sat();
-        return false;
+            rgb_matrix_decrease_sat();
+            return false;
         case KC_F20:
-        rgb_matrix_decrease_val();
-        return false;
-    #endif
+            rgb_matrix_decrease_val();
+            return false;
+        #endif
     #endif
         default:
         break;
