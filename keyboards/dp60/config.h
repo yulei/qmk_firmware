@@ -35,6 +35,7 @@
 //#define NO_PRINT
 
 //rgb light setting
+#define RGBLIGHT_LIMIT_VAL 128
 #define RGBLED_NUM      18
 #define RGB_DI_PIN      D7
 #define RGBLIGHT_ANIMATIONS
