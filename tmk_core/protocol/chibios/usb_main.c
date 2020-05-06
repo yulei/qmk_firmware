@@ -161,6 +161,22 @@ static const USBEndpointConfig shared_ep_config = {
 };
 #endif
 
+#ifdef WEBUSB_ENABLE
+/** Microsoft OS 2.0 Descriptor. This is used by Windows to select the USB driver for the device.
+ *
+ *  For WebUSB in Chrome, the correct driver is WinUSB, which is selected via CompatibleID.
+ *
+ *  Additionally, while Chrome is built using libusb, a magic registry key needs to be set containing a GUID for
+ *  the device.
+ */
+const MS_OS_20_Descriptor_t PROGMEM MS_OS_20_Descriptor = MS_OS_20_DESCRIPTOR;
+
+/** URL descriptor string. This is a UTF-8 string containing a URL excluding the prefix. At least one of these must be
+ * 	defined and returned when the Landing Page descriptor index is requested.
+ */
+const WebUSB_URL_Descriptor_t PROGMEM WebUSB_LandingPage = WEBUSB_URL_DESCRIPTOR(WEBUSB_LANDING_PAGE_URL);
+#endif
+
 #if STM32_USB_USE_OTG1
 typedef struct {
     size_t              queue_capacity_in;
@@ -302,6 +318,9 @@ typedef struct {
 #if defined(RAW_ENABLE)
             usb_driver_config_t raw_driver;
 #endif
+#ifdef WEBUSB_ENABLE
+            usb_driver_config_t webusb_driver;
+#endif
 #ifdef MIDI_ENABLE
             usb_driver_config_t midi_driver;
 #endif
@@ -327,7 +346,14 @@ static usb_driver_configs_t drivers = {
 #    define RAW_IN_MODE USB_EP_MODE_TYPE_INTR
 #    define RAW_OUT_MODE USB_EP_MODE_TYPE_INTR
     .raw_driver = QMK_USB_DRIVER_CONFIG(RAW, 0, false),
+#endif
 
+#ifdef WEBUSB_ENABLE
+#  define WEBUSB_IN_CAPACITY 4
+#  define WEBUSB_OUT_CAPACITY 4
+#  define WEBUSB_IN_MODE USB_EP_MODE_TYPE_INTR
+#  define WEBUSB_OUT_MODE USB_EP_MODE_TYPE_INTR
+    .webusb_driver = QMK_USB_DRIVER_CONFIG(WEBUSB, 0, false),
 #endif
 
 #ifdef MIDI_ENABLE
@@ -562,6 +588,28 @@ static bool usb_request_hook_cb(USBDriver *usbp) {
                 break;
         }
     }
+
+#ifdef WEBUSB_ENABLE
+    switch (usbp->setup[1]) {
+        case WEBUSB_VENDOR_CODE:
+            if (usbp->setup[4] == WebUSB_RTYPE_GetURL) {
+                if (usbp->setup[2] == WEBUSB_LANDING_PAGE_INDEX) {
+                    usbSetupTransfer(usbp, (uint8_t *)&WebUSB_LandingPage, WebUSB_LandingPage.Header.Size, NULL);
+                    return TRUE;
+                    break;
+                }
+            }
+            break;
+
+        case MS_OS_20_VENDOR_CODE:
+            if (usbp->setup[4] == MS_OS_20_DESCRIPTOR_INDEX) {
+                usbSetupTransfer(usbp, (uint8_t *)&MS_OS_20_Descriptor, MS_OS_20_Descriptor.Header.TotalLength, NULL);
+                return TRUE;
+                break;
+            }
+            break;
+    }
+#endif
 
     /* Handle the Get_Descriptor Request for HID class (not handled by the default hook) */
     if ((usbp->setup[0] == 0x81) && (usbp->setup[1] == USB_REQ_GET_DESCRIPTOR)) {
@@ -901,6 +949,29 @@ void raw_hid_task(void) {
     } while (size > 0);
 }
 
+#endif
+
+#ifdef WEBUSB_ENABLE
+void webusb_send(uint8_t *data, uint8_t length) {
+
+    chnWriteTimeout(&drivers.webusb_driver.driver, data, length, TIME_IMMEDIATE);
+}
+
+__attribute__((weak)) void webusb_receive(uint8_t *data, uint8_t length) {
+    // Users should #include "webusb.h" in their own code
+    // and implement this function there. Leave this as weak linkage
+    // so users can opt to not handle data coming in.
+}
+void webusb_task(void) {
+    uint8_t buffer[WEBUSB_EPSIZE];
+    size_t  size = 0;
+    do {
+        size_t size = chnReadTimeout(&drivers.webusb_driver.driver, buffer, sizeof(buffer), TIME_IMMEDIATE);
+        if (size > 0) {
+            webusb_receive(buffer, size);
+        }
+    } while (size > 0);
+}
 #endif
 
 #ifdef MIDI_ENABLE

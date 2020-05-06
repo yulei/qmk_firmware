@@ -79,6 +79,10 @@ void virtser_task(void);
 void raw_hid_task(void);
 #endif
 
+#ifdef WEBUSB_ENABLE
+void webusb_task(void);
+#endif
+
 #ifdef CONSOLE_ENABLE
 void console_task(void);
 #endif
@@ -260,5 +264,9 @@ int main(void) {
 #ifdef RAW_ENABLE
         raw_hid_task();
 #endif
+#ifdef WEBUSB_ENABLE
+        webusb_task();
+#endif
+
     }
 }
