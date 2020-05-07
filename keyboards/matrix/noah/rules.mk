@@ -45,10 +45,8 @@ NKRO_ENABLE = no            # USB Nkey Rollover
 NO_USB_STARTUP_CHECK = yes	# Disable initialization only when usb is plugged in
 
 RGB_MATRIX_ENABLE = yes
-
 RGBLIGHT_ENABLE = yes
-RGBLIGHT_CUSTOM_DRIVER = yes
 
 CUSTOM_MATRIX = yes
 # project specific files
-SRC += ws2812.c matrix.c
+SRC += matrix.c

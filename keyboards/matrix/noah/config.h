@@ -42,8 +42,3 @@
 #define RGBLED_NUM 7
 #define RGB_DI_PIN B1
 #define RGBLIGHT_ANIMATIONS
-
-// tapping setting
-//#define TAPPING_TERM 200
-//#define RETRO_TAPPING
-//#define PERMISSIVE_HOLD

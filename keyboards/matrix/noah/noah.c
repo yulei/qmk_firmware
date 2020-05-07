@@ -6,6 +6,7 @@
 
 #ifdef RGBLIGHT_ENABLE
 #include <string.h>
+#include "rgblight_list.h"
 #include "rgblight.h"
 #include "ws2812.h"
 #include "eeconfig.h"
@@ -17,44 +18,38 @@ static uint32_t noah_led_mode;
 #error "MUST set the RGBLED_NUM bigger than 7"
 #endif
 LED_TYPE noah_leds[RGBLED_NUM];
-void rgblight_set(void) {
-    memset(&noah_leds[0], 0, sizeof(noah_leds));
-    if (!rgblight_config.enable) {
-        for (uint8_t i = 0; i < RGBLED_NUM; i++) {
-            led[i].r = 0;
-            led[i].g = 0;
-            led[i].b = 0;
-        }
-    }
+void rgblight_call_driver(LED_TYPE *start_led, uint8_t num_leds)
+{
     if (noah_led_mode) {
-      uint8_t ind_led = host_keyboard_leds();
-      if (IS_LED_ON(ind_led, USB_LED_CAPS_LOCK)) {
-        noah_leds[6] = led[0];
-      }
-      if (IS_LED_ON(ind_led, USB_LED_SCROLL_LOCK)) {
-        noah_leds[5] = led[1];
-      }
-      if (IS_LED_ON(ind_led, USB_LED_NUM_LOCK)) {
-        noah_leds[4] = led[2];
-      }
-      for (int32_t i = 0; i < 4; i++) {
-        if(layer_state_is(i+1)) {
-          noah_leds[3 - i] = led[i + 3];
+        memset(&noah_leds[0], 0, sizeof(noah_leds));
+        uint8_t ind_led = host_keyboard_leds();
+        if (IS_LED_ON(ind_led, USB_LED_CAPS_LOCK)) {
+            noah_leds[6] = led[0];
         }
-      }
+        if (IS_LED_ON(ind_led, USB_LED_SCROLL_LOCK)) {
+            noah_leds[5] = led[1];
+        }
+        if (IS_LED_ON(ind_led, USB_LED_NUM_LOCK)) {
+            noah_leds[4] = led[2];
+        }
+        for (int32_t i = 0; i < 4; i++) {
+            if(layer_state_is(i+1)) {
+                noah_leds[3 - i] = led[i + 3];
+            }
+        }
+        ws2812_setleds(noah_leds, RGBLED_NUM);
     } else {
-        for(uint8_t i = 0; i < RGBLED_NUM; i++) {
-            noah_leds[RGBLED_NUM-i-1] = led[i];
-        }
+        ws2812_setleds(start_led, num_leds);
     }
-
-  ws2812_setleds(noah_leds, RGBLED_NUM);
 }
+
 #endif
 
 void matrix_init_kb(void)
 {
+#ifdef RGBLIGHT_ENABLE
     noah_led_mode = eeconfig_read_kb();
+#endif
     matrix_init_user();
 }
 
