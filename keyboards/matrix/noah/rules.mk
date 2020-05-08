@@ -47,6 +47,6 @@ NO_USB_STARTUP_CHECK = yes	# Disable initialization only when usb is plugged in
 RGB_MATRIX_ENABLE = yes
 RGBLIGHT_ENABLE = yes
 
-CUSTOM_MATRIX = yes
+CUSTOM_MATRIX = lite
 # project specific files
 SRC += matrix.c

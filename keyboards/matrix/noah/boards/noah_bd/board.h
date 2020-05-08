@@ -65,9 +65,9 @@
 #define GPIOA_PIN2                  2U
 #define GPIOA_PIN3                  3U
 #define GPIOA_PIN4                  4U
-#define GPIOA_SCK                   5U
-#define GPIOA_MISO                  6U
-#define GPIOA_MOSI                  7U
+#define GPIOA_PIN5                  5U
+#define GPIOA_PIN6                  6U
+#define GPIOA_PIN7                  7U
 #define GPIOA_PIN8                  8U
 #define GPIOA_PIN9                  9U
 #define GPIOA_PIN10                 10U
@@ -214,39 +214,6 @@
 #define GPIOI_PIN15                 15U
 
 /*
- * IO lines assignments.
- */
-#define LINE_ROW_1                  PAL_LINE(GPIOB, 0U)
-#define LINE_ROW_2                  PAL_LINE(GPIOA, 1U)
-#define LINE_ROW_3                  PAL_LINE(GPIOC, 14U)
-#define LINE_ROW_4                  PAL_LINE(GPIOC, 13U)
-#define LINE_ROW_5                  PAL_LINE(GPIOA, 0U)
-
-#define LINE_COL_1                  PAL_LINE(GPIOC, 15U)
-#define LINE_COL_2                  PAL_LINE(GPIOB, 10U)
-#define LINE_COL_3                  PAL_LINE(GPIOB, 7U)
-#define LINE_COL_4                  PAL_LINE(GPIOB, 6U)
-#define LINE_COL_5                  PAL_LINE(GPIOB, 5U)
-#define LINE_COL_6                  PAL_LINE(GPIOB, 4U)
-#define LINE_COL_7                  PAL_LINE(GPIOA, 15U)
-#define LINE_COL_8                  PAL_LINE(GPIOA, 10U)
-#define LINE_COL_9                  PAL_LINE(GPIOA, 9U)
-#define LINE_COL_10                 PAL_LINE(GPIOA, 8U)
-#define LINE_COL_11                 PAL_LINE(GPIOB, 15U)
-#define LINE_COL_12                 PAL_LINE(GPIOB, 14U)
-#define LINE_COL_13                 PAL_LINE(GPIOB, 13U)
-#define LINE_COL_14                 PAL_LINE(GPIOB, 12U)
-#define LINE_COL_15                 PAL_LINE(GPIOB, 2U)
-
-// u2u lines
-#define LINE_U2U_RST                PAL_LINE(GPIOA, 2U)
-#define LINE_U2U_IRQ                PAL_LINE(GPIOA, 3U)
-#define LINE_U2U_CS                 PAL_LINE(GPIOA, 4U)
-#define LINE_U2U_SCK                PAL_LINE(GPIOA, 5U)
-#define LINE_U2U_MISO               PAL_LINE(GPIOA, 6U)
-#define LINE_U2U_MOSI               PAL_LINE(GPIOA, 7U)
-
-/*
  * I/O ports initial setup, this configuration is established soon after reset
  * in the initialization code.
  * Please refer to the STM32 Reference Manual for details.
@@ -276,9 +243,9 @@
  * PA2  -                           (input pullup).
  * PA3  -                           (input pullup).
  * PA4  -                           (input pullup).
- * PA5  - SPI SCK                   (alternate 5).
- * PA6  - SPI MISO                  (alternate 5).
- * PA7  - SPI MOSI                  (alternate 5).
+ * PA5  -                           (input pullup).
+ * PA6  -                           (input pullup).
+ * PA7  -                           (input pullup).
  * PA8  -                           (input pullup).
  * PA9  -                           (input pullup).
  * PA10 -                           (input pullup).
@@ -293,9 +260,9 @@
                                      PIN_MODE_INPUT(GPIOA_PIN2) |     \
                                      PIN_MODE_INPUT(GPIOA_PIN3) |     \
                                      PIN_MODE_INPUT(GPIOA_PIN4) |         \
-                                     PIN_MODE_ALTERNATE(GPIOA_SCK) |     \
-                                     PIN_MODE_ALTERNATE(GPIOA_MISO) |        \
-                                     PIN_MODE_ALTERNATE(GPIOA_MOSI) |        \
+                                     PIN_MODE_INPUT(GPIOA_PIN5) |     \
+                                     PIN_MODE_INPUT(GPIOA_PIN6) |        \
+                                     PIN_MODE_INPUT(GPIOA_PIN7) |        \
                                      PIN_MODE_INPUT(GPIOA_PIN8) |         \
                                      PIN_MODE_INPUT(GPIOA_PIN9) |         \
                                      PIN_MODE_INPUT(GPIOA_PIN10) |         \
@@ -309,9 +276,9 @@
                                      PIN_OTYPE_PUSHPULL(GPIOA_PIN2) |     \
                                      PIN_OTYPE_PUSHPULL(GPIOA_PIN3) |     \
                                      PIN_OTYPE_PUSHPULL(GPIOA_PIN4) |     \
-                                     PIN_OTYPE_PUSHPULL(GPIOA_SCK) |  \
-                                     PIN_OTYPE_PUSHPULL(GPIOA_MISO) |    \
-                                     PIN_OTYPE_PUSHPULL(GPIOA_MOSI) |    \
+                                     PIN_OTYPE_PUSHPULL(GPIOA_PIN5) |  \
+                                     PIN_OTYPE_PUSHPULL(GPIOA_PIN6) |    \
+                                     PIN_OTYPE_PUSHPULL(GPIOA_PIN7) |    \
                                      PIN_OTYPE_PUSHPULL(GPIOA_PIN8) |     \
                                      PIN_OTYPE_PUSHPULL(GPIOA_PIN9) |     \
                                      PIN_OTYPE_PUSHPULL(GPIOA_PIN10) |     \
@@ -325,9 +292,9 @@
                                      PIN_OSPEED_VERYLOW(GPIOA_PIN2) |      \
                                      PIN_OSPEED_VERYLOW(GPIOA_PIN3) |      \
                                      PIN_OSPEED_VERYLOW(GPIOA_PIN4) |        \
-                                     PIN_OSPEED_HIGH(GPIOA_SCK) |   \
-                                     PIN_OSPEED_HIGH(GPIOA_MISO) |       \
-                                     PIN_OSPEED_HIGH(GPIOA_MOSI) |       \
+                                     PIN_OSPEED_VERYLOW(GPIOA_PIN5) |   \
+                                     PIN_OSPEED_VERYLOW(GPIOA_PIN6) |       \
+                                     PIN_OSPEED_VERYLOW(GPIOA_PIN7) |       \
                                      PIN_OSPEED_VERYLOW(GPIOA_PIN8) |        \
                                      PIN_OSPEED_VERYLOW(GPIOA_PIN9) |        \
                                      PIN_OSPEED_VERYLOW(GPIOA_PIN10) |        \
@@ -341,9 +308,9 @@
                                      PIN_PUPDR_PULLUP(GPIOA_PIN2) |     \
                                      PIN_PUPDR_PULLUP(GPIOA_PIN3) |     \
                                      PIN_PUPDR_PULLUP(GPIOA_PIN4) |       \
-                                     PIN_PUPDR_PULLUP(GPIOA_SCK) |  \
-                                     PIN_PUPDR_PULLUP(GPIOA_MISO) |      \
-                                     PIN_PUPDR_PULLUP(GPIOA_MOSI) |      \
+                                     PIN_PUPDR_PULLUP(GPIOA_PIN5) |  \
+                                     PIN_PUPDR_PULLUP(GPIOA_PIN6) |      \
+                                     PIN_PUPDR_PULLUP(GPIOA_PIN7) |      \
                                      PIN_PUPDR_PULLUP(GPIOA_PIN8) |       \
                                      PIN_PUPDR_PULLUP(GPIOA_PIN9) |       \
                                      PIN_PUPDR_PULLUP(GPIOA_PIN10) |       \
@@ -357,9 +324,9 @@
                                      PIN_ODR_HIGH(GPIOA_PIN2) |           \
                                      PIN_ODR_HIGH(GPIOA_PIN3) |           \
                                      PIN_ODR_HIGH(GPIOA_PIN4) |           \
-                                     PIN_ODR_HIGH(GPIOA_SCK) |         \
-                                     PIN_ODR_HIGH(GPIOA_MISO) |          \
-                                     PIN_ODR_HIGH(GPIOA_MOSI) |          \
+                                     PIN_ODR_HIGH(GPIOA_PIN5) |         \
+                                     PIN_ODR_HIGH(GPIOA_PIN6) |          \
+                                     PIN_ODR_HIGH(GPIOA_PIN7) |          \
                                      PIN_ODR_HIGH(GPIOA_PIN8) |           \
                                      PIN_ODR_HIGH(GPIOA_PIN9) |           \
                                      PIN_ODR_HIGH(GPIOA_PIN10) |           \
@@ -373,9 +340,9 @@
                                      PIN_AFIO_AF(GPIOA_PIN2, 0U) |        \
                                      PIN_AFIO_AF(GPIOA_PIN3, 0U) |        \
                                      PIN_AFIO_AF(GPIOA_PIN4, 0U) |        \
-                                     PIN_AFIO_AF(GPIOA_SCK, 5U) |     \
-                                     PIN_AFIO_AF(GPIOA_MISO, 5U) |       \
-                                     PIN_AFIO_AF(GPIOA_MOSI, 5U))
+                                     PIN_AFIO_AF(GPIOA_PIN5, 0U) |     \
+                                     PIN_AFIO_AF(GPIOA_PIN6, 0U) |       \
+                                     PIN_AFIO_AF(GPIOA_PIN7, 0U))
 #define VAL_GPIOA_AFRH              (PIN_AFIO_AF(GPIOA_PIN8, 0U) |        \
                                      PIN_AFIO_AF(GPIOA_PIN9, 0U) |        \
                                      PIN_AFIO_AF(GPIOA_PIN10, 0U) |        \
