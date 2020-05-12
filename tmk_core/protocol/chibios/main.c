@@ -33,6 +33,9 @@
 #include "debug.h"
 #include "printf.h"
 
+#define SEGGER_RTT_ENABLE
+#include "rtt/rtt.h"
+
 #ifndef EARLY_INIT_PERFORM_BOOTLOADER_JUMP
 // Change this to be TRUE once we've migrated keyboards to the new init system
 #    define EARLY_INIT_PERFORM_BOOTLOADER_JUMP FALSE
@@ -229,6 +232,7 @@ int main(void) {
 #    endif
             while (USB_DRIVER.state == USB_SUSPENDED) {
                 /* Do this in the suspended state */
+                rtt_printf(0, "in suspended state\r\n");
 #    ifdef SERIAL_LINK_ENABLE
                 serial_link_update();
 #    endif
@@ -236,6 +240,7 @@ int main(void) {
                 /* Remote wakeup */
                 if (suspend_wakeup_condition()) {
                     usbWakeupHost(&USB_DRIVER);
+                    rtt_printf(0, "wakeup usb\r\n");
                 }
             }
             /* Woken up */

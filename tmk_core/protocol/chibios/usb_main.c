@@ -41,6 +41,9 @@
 #include "usb_descriptor.h"
 #include "usb_driver.h"
 
+#define SEGGER_RTT_ENABLE
+#include "rtt/rtt.h"
+
 #ifdef NKRO_ENABLE
 #    include "keycode_config.h"
 
@@ -383,6 +386,7 @@ static usb_driver_configs_t drivers = {
 /* Handles the USB driver global events
  * TODO: maybe disable some things when connection is lost? */
 static void usb_event_cb(USBDriver *usbp, usbevent_t event) {
+    rtt_printf(0, "usb event callback: %d\r\n", event);
     switch (event) {
         case USB_EVENT_ADDRESS:
             return;
@@ -427,10 +431,12 @@ static void usb_event_cb(USBDriver *usbp, usbevent_t event) {
                 qmkusbSuspendHookI(&drivers.array[i].driver);
                 chSysUnlockFromISR();
             }
+            rtt_printf(0, "usb event suspend, reset, unconfigured: %d\r\n", event);
             return;
 
         case USB_EVENT_WAKEUP:
             // TODO: from ISR! print("[W]");
+            rtt_printf(0, "usb event wakeup begin\r\n");
             for (int i = 0; i < NUM_USB_DRIVERS; i++) {
                 chSysLockFromISR();
                 /* Disconnection event on suspend.*/
@@ -443,6 +449,7 @@ static void usb_event_cb(USBDriver *usbp, usbevent_t event) {
             // NOTE: converters may not accept this
             led_set(host_keyboard_leds());
 #endif /* SLEEP_LED_ENABLE */
+            rtt_printf(0, "usb event wakeup end\r\n");
             return;
 
         case USB_EVENT_STALLED:
