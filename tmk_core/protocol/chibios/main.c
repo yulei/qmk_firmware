@@ -227,12 +227,16 @@ int main(void) {
 #if !defined(NO_USB_STARTUP_CHECK)
         if (USB_DRIVER.state == USB_SUSPENDED) {
             print("[s]");
+            static bool suspended = false;
 #    ifdef VISUALIZER_ENABLE
             visualizer_suspend();
 #    endif
             while (USB_DRIVER.state == USB_SUSPENDED) {
                 /* Do this in the suspended state */
-                rtt_printf(0, "in suspended state\r\n");
+                if (!suspended) {
+                    rtt_printf(0, "in suspended state\r\n");
+                    suspended = true;
+                }
 #    ifdef SERIAL_LINK_ENABLE
                 serial_link_update();
 #    endif
@@ -241,10 +245,16 @@ int main(void) {
                 if (suspend_wakeup_condition()) {
                     usbWakeupHost(&USB_DRIVER);
                     rtt_printf(0, "wakeup usb\r\n");
+                    suspended = false;
+                    /*usb_lld_disconnect_bus(&USB_DRIVER);
+                    wait_ms(1000);
+                    NVIC_SystemReset();
+                    */
                 }
             }
             /* Woken up */
             // variables has been already cleared by the wakeup hook
+            rtt_printf(0, "jump out from suspend state\r\n");
             send_keyboard_report();
 #    ifdef MOUSEKEY_ENABLE
             mousekey_send();
