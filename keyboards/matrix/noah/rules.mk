@@ -49,6 +49,6 @@ RGB_MATRIX_ENABLE = yes
 RGBLIGHT_ENABLE = yes
 RGBLIGHT_CUSTOM_DRIVER = yes
 
-CUSTOM_MATRIX = yes
+CUSTOM_MATRIX = lite
 # project specific files
 SRC += ws2812.c matrix.c
