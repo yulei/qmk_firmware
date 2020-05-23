@@ -239,3 +239,15 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
   }
   return true;
 }
+
+void early_hardware_init_pre(void)
+{
+    // prevent jump to stock bootloader
+}
+
+#define REBOOT_MAGIC 0x41544B42
+
+void shutdown_user(void)
+{
+    *(uint32_t *)(&(RTCD1.rtc->BKP0R)) = REBOOT_MAGIC;
+}
