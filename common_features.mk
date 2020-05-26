@@ -437,7 +437,7 @@ QUANTUM_SRC:= \
 
 
 
-VALID_CUSTOM_MATRIX_TYPES:= yes lite no
+VALID_CUSTOM_MATRIX_TYPES:= yes lite no gpio tc6424
 
 CUSTOM_MATRIX ?= no
 
@@ -446,18 +446,26 @@ ifneq ($(strip $(CUSTOM_MATRIX)), yes)
         $(error CUSTOM_MATRIX="$(CUSTOM_MATRIX)" is not a valid custom matrix type)
     endif
 
-    # Include common stuff for all non custom matrix users
-    QUANTUM_SRC += $(QUANTUM_DIR)/matrix_common.c
+	ifeq ($(strip $(CUSTOM_MATRIX)), gpio)
+    	OPT_DEFS += -DMATRIX_USE_GPIO
+	else
+		ifeq ($(strip $(CUSTOM_MATRIX)), tc6424)
+    		OPT_DEFS += -DMATRIX_USE_TC6424
+		else
+			# Include common stuff for all non custom matrix users
+			QUANTUM_SRC += $(QUANTUM_DIR)/matrix_common.c
 
-    # if 'lite' then skip the actual matrix implementation
-    ifneq ($(strip $(CUSTOM_MATRIX)), lite)
-        # Include the standard or split matrix code if needed
-        ifeq ($(strip $(SPLIT_KEYBOARD)), yes)
-            QUANTUM_SRC += $(QUANTUM_DIR)/split_common/matrix.c
-        else
-            QUANTUM_SRC += $(QUANTUM_DIR)/matrix.c
-        endif
-    endif
+			# if 'lite' then skip the actual matrix implementation
+			ifneq ($(strip $(CUSTOM_MATRIX)), lite)
+				# Include the standard or split matrix code if needed
+				ifeq ($(strip $(SPLIT_KEYBOARD)), yes)
+					QUANTUM_SRC += $(QUANTUM_DIR)/split_common/matrix.c
+				else
+					QUANTUM_SRC += $(QUANTUM_DIR)/matrix.c
+				endif
+			endif
+		endif
+	endif
 endif
 
 DEBOUNCE_DIR:= $(QUANTUM_DIR)/debounce

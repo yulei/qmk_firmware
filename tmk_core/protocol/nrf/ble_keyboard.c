@@ -14,6 +14,7 @@
 #include "report.h"
 #include "host.h"
 #include "keyboard.h"
+#include "matrix_driver.h"
 
 // qmk stuff
 #include "quantum.h"
@@ -34,6 +35,7 @@ static void sense_pins_init(void);
 static void keyboard_timout_handler(void *p_context);
 static void keyboard_timer_start(void);
 static void keyboard_timer_stop(void);
+static void matrix_event_handler(bool changed);
 
 static void pin_event_handler(nrf_drv_gpiote_pin_t pin, nrf_gpiote_polarity_t action);
 
@@ -46,15 +48,15 @@ static void uart_send_cmd(command_t cmd, const uint8_t* report, uint32_t size);
 static uint8_t compute_checksum(const uint8_t* data, uint32_t size);
 static void send_reboot_cmd(void);
 
-extern uint32_t row_pins[];
-extern uint32_t col_pins[];
-static bool matrix_trigger_enabled = false;
+//extern uint32_t row_pins[];
+//extern uint32_t col_pins[];
+//static bool matrix_trigger_enabled = false;
 
-static void keyboard_matrix_trigger_start(void);
-static void keyboard_matrix_trigger_stop(void);
+//static void keyboard_matrix_trigger_start(void);
+//static void keyboard_matrix_trigger_stop(void);
 
-static void keyboard_matrix_scan_start(void);
-static void keyboard_matrix_scan_stop(void);
+//static void keyboard_matrix_scan_start(void);
+//static void keyboard_matrix_scan_stop(void);
 
 /* Host driver */
 static uint8_t keyboard_leds(void);
@@ -88,7 +90,9 @@ void ble_keyboard_init(void)
 
 void ble_keyboard_start(void)
 {
-    keyboard_matrix_scan_start();
+    //keyboard_matrix_scan_start();
+    matrix_driver.scan_start();
+    keyboard_timer_start();
     ble_driver.scan_count = 0;
 }
 
@@ -100,7 +104,8 @@ void ble_keyboard_sleep_prepare(void)
     // stop all timer
     app_timer_stop_all();
     // turn matrix to sense mode
-    keyboard_matrix_trigger_stop();
+    //keyboard_matrix_trigger_stop();
+    matrix_driver.trigger_stop();
     sense_pins_init();
 }
 
@@ -176,8 +181,11 @@ static void keyboard_timout_handler(void *p_context)
 
     // scan count overflow, switch to trigger mode
     if (ble_driver.scan_count >= MAX_SCAN_COUNT) {
-        keyboard_matrix_scan_stop();
-        keyboard_matrix_trigger_start();
+        keyboard_timer_stop();
+        matrix_driver.scan_stop();
+        matrix_driver.trigger_start(matrix_event_handler);
+        //keyboard_matrix_scan_stop();
+        //keyboard_matrix_trigger_start();
 
         NRF_LOG_INFO("keyboard matrix swtiched to trigger mode");
         ble_driver.scan_count = 0;
@@ -269,6 +277,22 @@ static void send_consumer(uint16_t data) { (void)data; }
 
 #endif
 
+static void matrix_event_handler(bool changed)
+{
+    if (!changed) return;
+
+    // disable row event
+    matrix_driver.trigger_stop();
+    matrix_driver.scan_start();
+    keyboard_timer_start();
+    // keyboard_matrix_trigger_stop();
+    // keyboard_matrix_scan_start();
+
+    keyboard_task();
+    ble_driver.scan_count = 0;
+    ble_driver.sleep_count = 0;
+}
+
 static void pin_event_handler(nrf_drv_gpiote_pin_t pin, nrf_gpiote_polarity_t action)
 {
     NRF_LOG_INFO("PIN EVENT: pin=%d, action=%d", pin, action);
@@ -283,23 +307,6 @@ static void pin_event_handler(nrf_drv_gpiote_pin_t pin, nrf_gpiote_polarity_t ac
             ble_driver.output_target = OUTPUT_BLE;
             uart_uninit();
             NRF_LOG_INFO("VBUS off, set output to BLE");
-        }
-    } else if (action == NRF_GPIOTE_POLARITY_LOTOHI) {
-        bool row_pressed = false;
-        for (uint32_t i = 0; i < MATRIX_ROWS; i++) {
-            if (pin == row_pins[i]) {
-                row_pressed = true;
-                break;
-            }
-        }
-        if (row_pressed) {
-            // disable row event
-            keyboard_matrix_trigger_stop();
-            keyboard_matrix_scan_start();
-
-            keyboard_task();
-            ble_driver.scan_count = 0;
-            ble_driver.sleep_count = 0;
         }
     }
 }
@@ -415,70 +422,9 @@ static uint8_t compute_checksum(const uint8_t* data, uint32_t size)
 
 static void sense_pins_init(void)
 {
-    for (uint32_t i = 0; i < MATRIX_COLS; i++) {
-        nrf_gpio_cfg_output(col_pins[i]);
-        nrf_gpio_pin_set(col_pins[i]);
-    }
-
-    for (uint8_t i = 0; i < MATRIX_ROWS; i++) {
-        nrf_gpio_cfg_sense_input(row_pins[i], NRF_GPIO_PIN_PULLDOWN, NRF_GPIO_PIN_SENSE_HIGH);
-    }
+    matrix_driver.prepare_sleep();
     // vbus detect
     nrf_gpio_cfg_sense_input(VBUS_DETECT_PIN, NRF_GPIO_PIN_PULLDOWN, NRF_GPIO_PIN_SENSE_HIGH);
-}
-
-static void keyboard_matrix_trigger_start(void)
-{
-    if (matrix_trigger_enabled) {
-        return;
-    }
-
-    for (int i = 0; i < MATRIX_COLS; i++) {
-        nrf_gpio_pin_set(col_pins[i]);
-    }
-
-    ret_code_t err_code;
-    nrf_drv_gpiote_in_config_t in_config = GPIOTE_CONFIG_IN_SENSE_LOTOHI(true);
-    in_config.pull = NRF_GPIO_PIN_PULLDOWN;
-    for (uint32_t i = 0; i < MATRIX_ROWS; i++) {
-        //NRF_LOG_INFO("trigger init: pin=%d", row_pins[i]);
-        err_code = nrf_drv_gpiote_in_init(row_pins[i], &in_config, pin_event_handler);
-        APP_ERROR_CHECK(err_code);
-        nrf_drv_gpiote_in_event_enable(row_pins[i], true);
-    }
-    matrix_trigger_enabled = true;
-    NRF_LOG_INFO("keyboard matrix trigger mode started");
-}
-
-static void keyboard_matrix_trigger_stop(void)
-{
-    if (!matrix_trigger_enabled) {
-        return;
-    }
-
-    for (int i = 0; i < MATRIX_COLS; i++) {
-        nrf_gpio_pin_clear(col_pins[i]);
-    }
-
-    for (uint32_t i = 0; i < MATRIX_ROWS; i++) {
-        //NRF_LOG_INFO("trigger uninit: pin=%d", row_pins[i]);
-        nrf_drv_gpiote_in_event_disable(row_pins[i]);
-        nrf_drv_gpiote_in_uninit(row_pins[i]);
-    }
-    matrix_trigger_enabled = false;
-    NRF_LOG_INFO("keyboard matrix trigger mode stopped");
-}
-
-extern void matrix_init(void);
-static void keyboard_matrix_scan_start(void)
-{
-    matrix_init();
-    keyboard_timer_start();
-}
-
-static void keyboard_matrix_scan_stop(void)
-{
-    keyboard_timer_stop();
 }
 
 static bool keyboard_pwr_mgmt_shutdown_handler(nrf_pwr_mgmt_evt_t event)
