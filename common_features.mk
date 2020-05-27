@@ -449,8 +449,10 @@ ifneq ($(strip $(CUSTOM_MATRIX)), yes)
 	ifeq ($(strip $(CUSTOM_MATRIX)), gpio)
     	OPT_DEFS += -DMATRIX_USE_GPIO
 	else
-		ifeq ($(strip $(CUSTOM_MATRIX)), tc6424)
-    		OPT_DEFS += -DMATRIX_USE_TC6424
+		ifeq ($(strip $(CUSTOM_MATRIX)), tca6424)
+    		OPT_DEFS += -DMATRIX_USE_TCA6424
+    		QUANTUM_LIB_SRC += i2c_master.c
+    		SRC += tca6424.c
 		else
 			# Include common stuff for all non custom matrix users
 			QUANTUM_SRC += $(QUANTUM_DIR)/matrix_common.c
