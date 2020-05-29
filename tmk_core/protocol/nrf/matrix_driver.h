@@ -15,8 +15,6 @@ typedef void (*matrix_trigger_stop_f)(void);
 typedef void (*matrix_scan_start_f)(void);
 typedef void (*matrix_scan_stop_f)(void);
 
-typedef void (*matrix_scan_init_f)(void);
-typedef bool (*matrix_scan_task_f)(void);
 typedef void (*matrix_prepare_sleep_f)(void);
 
 typedef struct {
@@ -24,9 +22,8 @@ typedef struct {
     matrix_trigger_stop_f   trigger_stop;
     matrix_scan_start_f     scan_start;
     matrix_scan_stop_f      scan_stop;
-    matrix_scan_init_f      scan_init;
-    matrix_scan_task_f      scan_task;
     matrix_prepare_sleep_f  prepare_sleep;
+    matrix_event_callback_f event_callback;
     bool                    trigger_mode;
 } matrix_driver_t;
 

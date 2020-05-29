@@ -132,8 +132,8 @@ static void keyboard_timer_init(void)
 __attribute__((weak)) void keyboard_turnoff_leds(void)
 {
 #ifdef RGBLIGHT_ENABLE
-    rgblight_disable();
-    ws2812_uninit();
+    //rgblight_disable();
+    //ws2812_uninit();
 #endif
 
 #ifdef RGB_MATRIX_ENABLE
@@ -508,5 +508,5 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record)
             break;
         }
     }
-    return true;
+    return process_record_user(keycode, record);
 }

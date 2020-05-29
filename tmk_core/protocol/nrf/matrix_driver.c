@@ -10,23 +10,31 @@
 #include "nrf_gpio.h"
 #include "nrf_drv_gpiote.h"
 
+#ifdef MATRIX_USE_TCA6424
+#   include "tca6424.h"
+#endif
+
+#ifndef MATRIX_PIN
+#   define MATRIX_PIN uint32_t
+#endif
+
+MATRIX_PIN row_pins[] = MATRIX_ROW_PINS;
+MATRIX_PIN col_pins[] = MATRIX_COL_PINS;
+
 /* matrix state(1:on, 0:off) */
 static matrix_row_t raw_matrix[MATRIX_ROWS];    //raw values
 static matrix_row_t matrix[MATRIX_ROWS];        //debounced values
+
 matrix_driver_t matrix_driver;
 
 #if defined(MATRIX_USE_GPIO)
-typedef uint32_t pin_t;
-pin_t row_pins[] = MATRIX_ROW_PINS;
-pin_t col_pins[] = MATRIX_COL_PINS;
-matrix_event_callback_f event_cb = NULL;
 
 static void matrix_pin_event_handler(nrf_drv_gpiote_pin_t pin, nrf_gpiote_polarity_t action)
 {
     if (action == NRF_GPIOTE_POLARITY_LOTOHI) {
         for (int i = 0; i < MATRIX_ROWS; i++) {
             if (pin == row_pins[i]) {
-                if (event_cb) event_cb(true);
+                if (matrix_driver.event_callback) matrix_driver.event_callback(true);
                 break;
             };
         }
@@ -37,8 +45,6 @@ static void matrix_trigger_start(matrix_event_callback_f me_cb)
     if (matrix_driver.trigger_mode) {
         return;
     }
-
-    event_cb = me_cb;
 
     for (int i = 0; i < MATRIX_COLS; i++) {
         nrf_gpio_pin_set(col_pins[i]);
@@ -54,6 +60,7 @@ static void matrix_trigger_start(matrix_event_callback_f me_cb)
         nrf_drv_gpiote_in_event_enable(row_pins[i], true);
     }
     matrix_driver.trigger_mode = true;
+    matrix_driver.event_callback = me_cb;
     NRF_LOG_INFO("keyboard matrix trigger mode started");
 }
 
@@ -73,10 +80,11 @@ static void matrix_trigger_stop(void)
         nrf_drv_gpiote_in_uninit(row_pins[i]);
     }
     matrix_driver.trigger_mode = false;
+    matrix_driver.event_callback = NULL;
     NRF_LOG_INFO("keyboard matrix trigger mode stopped");
 }
 
-static void matrix_scan_init(void)
+static void init_pins(void)
 {
     uint8_t i = 0;
     for (i = 0; i < MATRIX_COLS; i++) {
@@ -89,48 +97,19 @@ static void matrix_scan_init(void)
     }
 }
 
-static bool read_rows_on_col(matrix_row_t current_matrix[], uint8_t current_col)
+static void set_pin(MATRIX_PIN pin)
 {
-    bool matrix_changed = false;
-
-    // Select col and wait for col selecton to stabilize
-    nrf_gpio_pin_set(col_pins[current_col]);
-    wait_us(30);
-
-    // For each row...
-    for(uint8_t row_index = 0; row_index < MATRIX_ROWS; row_index++) {
-        uint8_t tmp = row_index;
-        // Store last value of row prior to reading
-        matrix_row_t last_row_value = current_matrix[tmp];
-
-        // Check row pin state
-        if (nrf_gpio_pin_read(row_pins[row_index])) {
-            // Pin HI, set col bit
-            current_matrix[tmp] |= (1 << current_col);
-        } else {
-            // Pin LOW, clear col bit
-            current_matrix[tmp] &= ~(1 << current_col);
-        }
-
-        // Determine if the matrix changed state
-        if ((last_row_value != current_matrix[tmp]) && !(matrix_changed)) {
-            matrix_changed = true;
-        }
-    }
-
-    // Unselect col
-    nrf_gpio_pin_clear(col_pins[current_col]);
-
-    return matrix_changed;
+    nrf_gpio_pin_set(pin);
 }
 
-static bool matrix_scan_task(void)
+static void clear_pin(MATRIX_PIN pin)
 {
-    bool changed = false;
-    for (int col = 0; col < MATRIX_COLS; col++) {
-        changed |= read_rows_on_col(raw_matrix, col);
-    }
-    return changed;
+    nrf_gpio_pin_clear(pin);
+}
+
+static uint8_t read_pin(MATRIX_PIN pin)
+{
+    return nrf_gpio_pin_read(pin) ? 1 : 0;
 }
 
 static void matrix_prepare_sleep(void)
@@ -145,77 +124,34 @@ static void matrix_prepare_sleep(void)
     }
 }
 
-static void matrix_scan_start(void)
-{
-    matrix_scan_init();
-}
+static void matrix_scan_start(void) { init_pins(); }
+static void matrix_scan_stop(void) { }
 
-static void matrix_scan_stop(void)
-{
-    // do nothing
-}
-
-void matrix_driver_init(void)
-{
-    matrix_driver.trigger_start = matrix_trigger_start;
-    matrix_driver.trigger_stop  = matrix_trigger_stop;
-    matrix_driver.scan_start    = matrix_scan_start;
-    matrix_driver.scan_stop     = matrix_scan_stop;
-    matrix_driver.scan_init     = matrix_scan_init;
-    matrix_driver.scan_task     = matrix_scan_task;
-    matrix_driver.prepare_sleep = matrix_prepare_sleep;
-    matrix_driver.trigger_mode  = false;
-    matrix_driver.scan_init();
-}
 
 #elif defined(MATRIX_USE_TCA6424)
-typedef union {
-    struct {
-        uint16_t port;
-        uint16_t pin;
-    };
-    uint32_t raw;
-} pin_t;
 
-pin_t row_pins[] = MATRIX_ROW_PINS;
-pin_t col_pins[] = MATRIX_COL_PINS;
-/**
- * row 1~6
- */
-pin_t row_pins[] static port_pin m_rows[] = {
-    {TCA6424_PORT2, 7},
-    {TCA6424_PORT2, 6},
-    {TCA6424_PORT2, 0},
-    {TCA6424_PORT2, 2},
-    {TCA6424_PORT2, 4},
-    {TCA6424_PORT2, 5},
-};
+#define GET_PORT(p) (((p) >> 8) & 0xFF)
+#define GET_PIN(p) ((p) & 0xFF)
 
-/**
- * col 1~16
- */
-static port_pin m_cols[] = {
-    {TCA6424_PORT2, 1},
-    {TCA6424_PORT1, 7},
-    {TCA6424_PORT1, 6},
-    {TCA6424_PORT1, 5},
-    {TCA6424_PORT1, 4},
-    {TCA6424_PORT1, 3},
-    {TCA6424_PORT1, 2},
-    {TCA6424_PORT1, 1},
-    {TCA6424_PORT1, 0},
-    {TCA6424_PORT0, 7},
-    {TCA6424_PORT0, 6},
-    {TCA6424_PORT0, 5},
-    {TCA6424_PORT0, 4},
-    {TCA6424_PORT0, 3},
-    {TCA6424_PORT0, 2},
-    {TCA6424_PORT0, 1},
-};
+static void set_pin(MATRIX_PIN pin)
+{
+    uint8_t data = tca6424_read_port(GET_PORT(pin));
+    data |= (1<<GET_PIN(pin));
+    tca6424_write_port(GET_PORT(pin), data);
+}
 
-/* matrix state(1:on, 0:off) */
-static matrix_row_t raw_matrix[MATRIX_ROWS];    //raw values
-static matrix_row_t matrix[MATRIX_ROWS];        //debounced values
+static void clear_pin(MATRIX_PIN pin)
+{
+    uint8_t data = tca6424_read_port(GET_PORT(pin));
+    data &= ~(1<<GET_PIN(pin));
+    tca6424_write_port(GET_PORT(pin), data);
+}
+
+static uint8_t read_pin(MATRIX_PIN pin)
+{
+    uint8_t data = tca6424_read_port(GET_PORT(pin));
+    return (data & (1<<GET_PIN(pin))) ? 1 : 0;
+}
 
 static void init_pins(void)
 {
@@ -233,30 +169,26 @@ static void init_pins(void)
     tca6424_write_port(TCA6424_PORT2, 0);
 }
 
-static void set_col_pin(const port_pin *pp)
-{
-    uint8_t data = tca6424_read_port(pp->port);
-    data |= (1<<pp->pin);
-    tca6424_write_port(pp->port, data);
-}
+static void matrix_trigger_start(matrix_event_callback_f event_cb)
+{}
 
-static void clear_col_pin(const port_pin *pp)
-{
-    uint8_t data = tca6424_read_port(pp->port);
-    data &= ~(1<<pp->pin);
-    tca6424_write_port(pp->port, data);
-}
+static void matrix_trigger_stop(void) {}
 
-static uint8_t read_row_pin(const port_pin *pp)
-{
-    uint8_t data = tca6424_read_port(pp->port);
-    return (data & (1<<pp->pin)) ? 1 : 0;
-}
+static void matrix_scan_start(void) { init_pins(); }
+
+static void matrix_scan_stop(void) {}
+
+static void matrix_prepare_sleep(void) {}
+
+#else
+#error "Custom matrix implementation not supported"
+#endif
+
 
 void matrix_init(void)
 {
     // init pins
-    init_pins();
+    matrix_driver_init();
 
     // initialize matrix state: all keys off
     for (uint8_t i=0; i < MATRIX_ROWS; i++) {
@@ -268,51 +200,39 @@ void matrix_init(void)
     matrix_init_quantum();
 }
 
-
-static bool read_rows_on_col(matrix_row_t current_matrix[], uint8_t current_col)
-{
-    bool matrix_changed = false;
-
-    // Select col and wait for col selecton to stabilize
-    set_col_pin(&m_cols[current_col]);
-    wait_us(30);
-
-    // For each row...
-    for(uint8_t row_index = 0; row_index < MATRIX_ROWS; row_index++) {
-        uint8_t tmp = row_index;
-        // Store last value of row prior to reading
-        matrix_row_t last_row_value = current_matrix[tmp];
-
-        // Check row pin state
-        if (read_row_pin(&m_rows[row_index])) {
-            // Pin HI, set col bit
-            current_matrix[tmp] |= (1 << current_col);
-        } else {
-            // Pin LOW, clear col bit
-            current_matrix[tmp] &= ~(1 << current_col);
-        }
-
-        // Determine if the matrix changed state
-        if ((last_row_value != current_matrix[tmp]) && !(matrix_changed)) {
-            matrix_changed = true;
-        }
-    }
-
-    // Unselect col
-    clear_col_pin(&m_cols[current_col]);
-
-    return matrix_changed;
-}
-
 uint8_t matrix_scan(void)
 {
     bool changed = false;
     for (int col = 0; col < MATRIX_COLS; col++) {
-        changed |= read_rows_on_col(raw_matrix, col);
+        set_pin(col_pins[col]);
+        wait_us(30);
+        // For each row...
+        for(uint8_t row = 0; row < MATRIX_ROWS; row++) {
+            uint8_t tmp = row;
+            // Store last value of row prior to reading
+            matrix_row_t last_row_value = raw_matrix[tmp];
+
+            // Check row pin state
+            if (read_pin(row_pins[row])) {
+                // Pin HI, set col bit
+                raw_matrix[tmp] |= (1 << col);
+            } else {
+                // Pin LOW, clear col bit
+                raw_matrix[tmp] &= ~(1 << col);
+            }
+
+            // Determine if the matrix changed state
+            if ((last_row_value != raw_matrix[tmp]) && !(changed)) {
+                changed = true;
+            }
+        }
+        // Unselect col
+        clear_pin(col_pins[col]);
     }
 
     debounce(raw_matrix, matrix, MATRIX_ROWS, changed);
 
+    ble_driver.matrix_changed = changed ? 1 : 0;
     matrix_scan_quantum();
     return 1;
 }
@@ -336,10 +256,6 @@ void matrix_print(void)
         printf("\n");
     }
 }
-
-#else
-#error "Custom matrix implementation not supported"
-#endif
 
 __attribute__((weak))
 void matrix_init_kb(void) { matrix_init_user(); }
@@ -353,48 +269,14 @@ void matrix_scan_kb(void) { matrix_scan_user(); }
 __attribute__((weak))
 void matrix_scan_user(void) {}
 
-void matrix_init(void)
+void matrix_driver_init(void)
 {
-    matrix_driver_init();
-
-    // initialize matrix state: all keys off
-    for (uint8_t i = 0; i < MATRIX_ROWS; i++) {
-        raw_matrix[i] = 0;
-        matrix[i]     = 0;
-    }
-
-    debounce_init(MATRIX_ROWS);
-    matrix_init_quantum();
-}
-
-uint8_t matrix_scan(void)
-{
-    bool changed = matrix_driver.scan_task();
-
-    debounce(raw_matrix, matrix, MATRIX_ROWS, changed);
-
-    ble_driver.matrix_changed = changed ? 1 : 0;
-
-    matrix_scan_quantum();
-    return 1;
-}
-
-bool matrix_is_on(uint8_t row, uint8_t col) { return (matrix[row] & (1<<col)); }
-
-matrix_row_t matrix_get_row(uint8_t row) { return matrix[row]; }
-
-void matrix_print(void)
-{
-    printf("\nr/c 01234567\n");
-    for (uint8_t row = 0; row < MATRIX_ROWS; row++) {
-        printf("%X0: ", row);
-        matrix_row_t data = matrix_get_row(row);
-        for (int col = 0; col < MATRIX_COLS; col++) {
-            if (data & (1<<col))
-                printf("1");
-            else
-                printf("0");
-        }
-        printf("\n");
-    }
+    matrix_driver.trigger_start     = matrix_trigger_start;
+    matrix_driver.trigger_stop      = matrix_trigger_stop;
+    matrix_driver.scan_start        = matrix_scan_start;
+    matrix_driver.scan_stop         = matrix_scan_stop;
+    matrix_driver.prepare_sleep     = matrix_prepare_sleep;
+    matrix_driver.event_callback    = NULL;
+    matrix_driver.trigger_mode      = false;
+    init_pins();
 }

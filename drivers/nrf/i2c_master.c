@@ -108,14 +108,14 @@ i2c_status_t i2c_readReg(uint8_t devaddr, uint8_t regaddr, uint8_t* data, uint16
 
 void i2c_stop(void)
 {
-    //nrf_drv_twi_disable(&m_twi);
+    //nrfx_twi_disable(&m_twi);
 }
 
 void i2c_uninit(void)
 {
     if (!twi_ready) return;
 
-    nrf_drv_twi_disable(&m_twi);
+    nrfx_twi_disable(&m_twi);
     nrfx_twi_uninit(&m_twi);
     twi_ready = false;
 }
