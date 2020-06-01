@@ -11,6 +11,10 @@
 #include "nrf_drv_gpiote.h"
 
 #ifdef MATRIX_USE_TCA6424
+#   ifndef MATRIX_DETECT_PIN
+#       error "the tca6424 interrupt detect pin must be defined first"
+#   endif
+#   include "i2c_master.h"
 #   include "tca6424.h"
 #endif
 
@@ -169,16 +173,71 @@ static void init_pins(void)
     tca6424_write_port(TCA6424_PORT2, 0);
 }
 
-static void matrix_trigger_start(matrix_event_callback_f event_cb)
-{}
+static void matrix_pin_event_handler(nrf_drv_gpiote_pin_t pin, nrf_gpiote_polarity_t action)
+{
+    if ((pin == MATRIX_DETECT_PIN) && (action == NRF_GPIOTE_POLARITY_HITOLO)) {
+        // read port will clear the interrupt event
+        tca6424_read_port(TCA6424_PORT0);
+        tca6424_read_port(TCA6424_PORT1);
+        tca6424_read_port(TCA6424_PORT2);
+        if (matrix_driver.event_callback) matrix_driver.event_callback(true);
+    }
+}
 
-static void matrix_trigger_stop(void) {}
+static void matrix_trigger_start(matrix_event_callback_f event_cb)
+{
+    if (matrix_driver.trigger_mode) {
+        return;
+    }
+
+    for (int i = 0; i < MATRIX_COLS; i++) {
+        set_pin(col_pins[i]);
+    }
+
+    ret_code_t                 err_code;
+    nrf_drv_gpiote_in_config_t in_config = GPIOTE_CONFIG_IN_SENSE_HITOLO(true);
+    in_config.pull                       = NRF_GPIO_PIN_PULLUP;
+    err_code = nrf_drv_gpiote_in_init(MATRIX_DETECT_PIN, &in_config, matrix_pin_event_handler);
+    APP_ERROR_CHECK(err_code);
+    nrf_drv_gpiote_in_event_enable(MATRIX_DETECT_PIN, true);
+    matrix_driver.trigger_mode = true;
+    matrix_driver.event_callback = event_cb;
+    i2c_uninit();
+    NRF_LOG_INFO("keyboard matrix trigger mode started");
+}
+
+static void matrix_trigger_stop(void)
+{
+    if (!matrix_driver.trigger_mode) {
+        return;
+    }
+
+    i2c_init();
+
+    for (int i = 0; i < MATRIX_COLS; i++) {
+        clear_pin(col_pins[i]);
+    }
+
+    nrf_drv_gpiote_in_event_disable(MATRIX_DETECT_PIN);
+    nrf_drv_gpiote_in_uninit(MATRIX_DETECT_PIN);
+    matrix_driver.trigger_mode = false;
+    matrix_driver.event_callback = NULL;
+    NRF_LOG_INFO("keyboard matrix trigger mode stopped");
+}
 
 static void matrix_scan_start(void) { init_pins(); }
 
 static void matrix_scan_stop(void) {}
 
-static void matrix_prepare_sleep(void) {}
+static void matrix_prepare_sleep(void)
+{
+    i2c_uninit();
+    for (uint32_t i = 0; i < MATRIX_COLS; i++) {
+        set_pin(col_pins[i]);
+    }
+
+    nrf_gpio_cfg_sense_input(MATRIX_DETECT_PIN, NRF_GPIO_PIN_PULLUP, NRF_GPIO_PIN_SENSE_LOW);
+}
 
 #else
 #error "Custom matrix implementation not supported"
