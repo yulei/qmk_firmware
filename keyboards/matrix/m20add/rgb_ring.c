@@ -349,8 +349,8 @@ void rgblight_call_driver(LED_TYPE *start_led, uint8_t num_leds)
         return;
     }
 
-    for (uint8_t i = 0; i < RGBLED_NUM; i++) {
-        IS31FL3731_set_color(i, led[i].r, led[i].g, led[i].b);
+    for (uint8_t i = 0; i < num_leds; i++) {
+        IS31FL3731_set_color(i, start_led[i].r, start_led[i].g, start_led[i].b);
     }
 }
 
@@ -443,9 +443,15 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record)
                 }
                 break;
             case KC_F24:
-                rgb_ring.state = RING_STATE_CUSTOM;
-                rgb_ring_reset();
-                return false;
+                if (rgb_ring.state == RING_STATE_QMK) {
+                    rgb_ring.state = RING_STATE_CUSTOM;
+                    rgb_ring_reset();
+                    return false;
+                } if (rgb_ring.state == RING_STATE_CUSTOM) {
+                    rgb_ring.state = RING_STATE_QMK;
+                    return false;
+                }
+                break;
             default:
                 break;
         }

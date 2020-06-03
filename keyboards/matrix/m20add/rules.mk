@@ -45,7 +45,6 @@ NKRO_ENABLE = no            # USB Nkey Rollover
 NO_USB_STARTUP_CHECK = yes	# Disable initialization only when usb is plugged in
 
 RGBLIGHT_ENABLE = yes
-#RGBLIGHT_CUSTOM_DRIVER = yes
 
 CUSTOM_MATRIX = lite
 # project specific files
