@@ -42,13 +42,11 @@ EXTRAKEY_ENABLE = yes	    # Audio control and System control
 CONSOLE_ENABLE = no         # Console for debug
 COMMAND_ENABLE = no         # Commands for debug and configuration
 NKRO_ENABLE = no            # USB Nkey Rollover
-NO_USB_STARTUP_CHECK = yes	# Disable initialization only when usb is plugged in
+NO_USB_STARTUP_CHECK = no   # Disable initialization only when usb is plugged in
 
 RGB_MATRIX_ENABLE = yes
-
 RGBLIGHT_ENABLE = yes
-RGBLIGHT_CUSTOM_DRIVER = yes
 
 CUSTOM_MATRIX = lite
 # project specific files
-SRC += ws2812.c matrix.c
+SRC += matrix.c

@@ -41,6 +41,9 @@
 #include "usb_descriptor.h"
 #include "usb_driver.h"
 
+#define SEGGER_RTT_ENABLE
+#include "rtt/rtt.h"
+
 #ifdef NKRO_ENABLE
 #    include "keycode_config.h"
 
@@ -161,6 +164,35 @@ static const USBEndpointConfig shared_ep_config = {
 };
 #endif
 
+#ifdef WEBUSB_ENABLE
+/** Microsoft OS 2.0 Descriptor. This is used by Windows to select the USB driver for the device.
+ *
+ *  For WebUSB in Chrome, the correct driver is WinUSB, which is selected via CompatibleID.
+ *
+ *  Additionally, while Chrome is built using libusb, a magic registry key needs to be set containing a GUID for
+ *  the device.
+ */
+const MS_OS_20_Descriptor_t PROGMEM MS_OS_20_Descriptor = MS_OS_20_DESCRIPTOR;
+
+/** URL descriptor string. This is a UTF-8 string containing a URL excluding the prefix. At least one of these must be
+ * 	defined and returned when the Landing Page descriptor index is requested.
+ */
+const WebUSB_URL_Descriptor_t PROGMEM WebUSB_LandingPage = WEBUSB_URL_DESCRIPTOR(WEBUSB_LANDING_PAGE_URL);
+#endif
+
+#if STM32_USB_USE_OTG1
+typedef struct {
+    size_t              queue_capacity_in;
+    size_t              queue_capacity_out;
+    USBInEndpointState  in_ep_state;
+    USBOutEndpointState out_ep_state;
+    USBInEndpointState  int_ep_state;
+    USBEndpointConfig   inout_ep_config;
+    USBEndpointConfig   int_ep_config;
+    const QMKUSBConfig  config;
+    QMKUSBDriver        driver;
+} usb_driver_config_t;
+#else
 typedef struct {
     size_t              queue_capacity_in;
     size_t              queue_capacity_out;
@@ -173,7 +205,54 @@ typedef struct {
     const QMKUSBConfig  config;
     QMKUSBDriver        driver;
 } usb_driver_config_t;
+#endif
 
+#if STM32_USB_USE_OTG1
+/* Reusable initialization structure - see USBEndpointConfig comment at top of file */
+#define QMK_USB_DRIVER_CONFIG(stream, notification, fixedsize)                                  \
+    {                                                                                           \
+        .queue_capacity_in = stream##_IN_CAPACITY, .queue_capacity_out = stream##_OUT_CAPACITY, \
+        .inout_ep_config =                                                                         \
+            {                                                                                   \
+                stream##_IN_MODE,      /* Interrupt EP */                                       \
+                NULL,                  /* SETUP packet notification callback */                 \
+                qmkusbDataTransmitted, /* IN notification callback */                           \
+                qmkusbDataReceived,    /* OUT notification callback */                             \
+                stream##_EPSIZE,       /* IN maximum packet size */                             \
+                stream##_EPSIZE,       /* OUT maximum packet size */                            \
+                NULL,                  /* IN Endpoint state */                                  \
+                NULL,                  /* OUT endpoint state */                                 \
+                2,                     /* IN multiplier */                                      \
+                NULL                   /* SETUP buffer (not a SETUP endpoint) */                \
+            },                                                                                  \
+        .int_ep_config =                                                                        \
+            {                                                                                   \
+                USB_EP_MODE_TYPE_INTR,      /* Interrupt EP */                                  \
+                NULL,                       /* SETUP packet notification callback */            \
+                qmkusbInterruptTransmitted, /* IN notification callback */                      \
+                NULL,                       /* OUT notification callback */                     \
+                CDC_NOTIFICATION_EPSIZE,    /* IN maximum packet size */                        \
+                0,                          /* OUT maximum packet size */                       \
+                NULL,                       /* IN Endpoint state */                             \
+                NULL,                       /* OUT endpoint state */                            \
+                2,                          /* IN multiplier */                                 \
+                NULL,                       /* SETUP buffer (not a SETUP endpoint) */           \
+            },                                                                                  \
+        .config = {                                                                             \
+            .usbp        = &USB_DRIVER,                                                         \
+            .bulk_in     = stream##_IN_EPNUM,                                                   \
+            .bulk_out    = stream##_OUT_EPNUM,                                                  \
+            .int_in      = notification,                                                        \
+            .in_buffers  = stream##_IN_CAPACITY,                                                \
+            .out_buffers = stream##_OUT_CAPACITY,                                               \
+            .in_size     = stream##_EPSIZE,                                                     \
+            .out_size    = stream##_EPSIZE,                                                     \
+            .fixed_size  = fixedsize,                                                           \
+            .ib          = (__attribute__((aligned(4))) uint8_t[BQ_BUFFER_SIZE(stream##_IN_CAPACITY, stream##_EPSIZE)]){},  \
+            .ob          = (__attribute__((aligned(4))) uint8_t[BQ_BUFFER_SIZE(stream##_OUT_CAPACITY, stream##_EPSIZE)]){}, \
+        }                                                                                       \
+    }
+#else
 /* Reusable initialization structure - see USBEndpointConfig comment at top of file */
 #define QMK_USB_DRIVER_CONFIG(stream, notification, fixedsize)                                                              \
     {                                                                                                                       \
@@ -231,6 +310,7 @@ typedef struct {
             .ob          = (__attribute__((aligned(4))) uint8_t[BQ_BUFFER_SIZE(stream##_OUT_CAPACITY, stream##_EPSIZE)]){}, \
         }                                                                                                                   \
     }
+#endif
 
 typedef struct {
     union {
@@ -238,8 +318,11 @@ typedef struct {
 #ifdef CONSOLE_ENABLE
             usb_driver_config_t console_driver;
 #endif
-#ifdef RAW_ENABLE
+#if defined(RAW_ENABLE)
             usb_driver_config_t raw_driver;
+#endif
+#ifdef WEBUSB_ENABLE
+            usb_driver_config_t webusb_driver;
 #endif
 #ifdef MIDI_ENABLE
             usb_driver_config_t midi_driver;
@@ -260,12 +343,20 @@ static usb_driver_configs_t drivers = {
 #    define CONSOLE_OUT_MODE USB_EP_MODE_TYPE_INTR
     .console_driver = QMK_USB_DRIVER_CONFIG(CONSOLE, 0, true),
 #endif
-#ifdef RAW_ENABLE
+#if defined(RAW_ENABLE)
 #    define RAW_IN_CAPACITY 4
 #    define RAW_OUT_CAPACITY 4
 #    define RAW_IN_MODE USB_EP_MODE_TYPE_INTR
 #    define RAW_OUT_MODE USB_EP_MODE_TYPE_INTR
     .raw_driver = QMK_USB_DRIVER_CONFIG(RAW, 0, false),
+#endif
+
+#ifdef WEBUSB_ENABLE
+#  define WEBUSB_IN_CAPACITY 4
+#  define WEBUSB_OUT_CAPACITY 4
+#  define WEBUSB_IN_MODE USB_EP_MODE_TYPE_INTR
+#  define WEBUSB_OUT_MODE USB_EP_MODE_TYPE_INTR
+    .webusb_driver = QMK_USB_DRIVER_CONFIG(WEBUSB, 0, false),
 #endif
 
 #ifdef MIDI_ENABLE
@@ -295,6 +386,7 @@ static usb_driver_configs_t drivers = {
 /* Handles the USB driver global events
  * TODO: maybe disable some things when connection is lost? */
 static void usb_event_cb(USBDriver *usbp, usbevent_t event) {
+    rtt_printf(0, "usb event callback: %d\r\n", event);
     switch (event) {
         case USB_EVENT_ADDRESS:
             return;
@@ -312,8 +404,12 @@ static void usb_event_cb(USBDriver *usbp, usbevent_t event) {
             usbInitEndpointI(usbp, SHARED_IN_EPNUM, &shared_ep_config);
 #endif
             for (int i = 0; i < NUM_USB_DRIVERS; i++) {
+                #if STM32_USB_USE_OTG1
+                usbInitEndpointI(usbp, drivers.array[i].config.bulk_in, &drivers.array[i].inout_ep_config);
+                #else
                 usbInitEndpointI(usbp, drivers.array[i].config.bulk_in, &drivers.array[i].in_ep_config);
                 usbInitEndpointI(usbp, drivers.array[i].config.bulk_out, &drivers.array[i].out_ep_config);
+                #endif
                 if (drivers.array[i].config.int_in) {
                     usbInitEndpointI(usbp, drivers.array[i].config.int_in, &drivers.array[i].int_ep_config);
                 }
@@ -335,10 +431,12 @@ static void usb_event_cb(USBDriver *usbp, usbevent_t event) {
                 qmkusbSuspendHookI(&drivers.array[i].driver);
                 chSysUnlockFromISR();
             }
+            rtt_printf(0, "usb event suspend, reset, unconfigured: %d\r\n", event);
             return;
 
         case USB_EVENT_WAKEUP:
             // TODO: from ISR! print("[W]");
+            rtt_printf(0, "usb event wakeup begin\r\n");
             for (int i = 0; i < NUM_USB_DRIVERS; i++) {
                 chSysLockFromISR();
                 /* Disconnection event on suspend.*/
@@ -351,6 +449,7 @@ static void usb_event_cb(USBDriver *usbp, usbevent_t event) {
             // NOTE: converters may not accept this
             led_set(host_keyboard_leds());
 #endif /* SLEEP_LED_ENABLE */
+            rtt_printf(0, "usb event wakeup end\r\n");
             return;
 
         case USB_EVENT_STALLED:
@@ -497,6 +596,28 @@ static bool usb_request_hook_cb(USBDriver *usbp) {
         }
     }
 
+#ifdef WEBUSB_ENABLE
+    switch (usbp->setup[1]) {
+        case WEBUSB_VENDOR_CODE:
+            if (usbp->setup[4] == WebUSB_RTYPE_GetURL) {
+                if (usbp->setup[2] == WEBUSB_LANDING_PAGE_INDEX) {
+                    usbSetupTransfer(usbp, (uint8_t *)&WebUSB_LandingPage, WebUSB_LandingPage.Header.Size, NULL);
+                    return TRUE;
+                    break;
+                }
+            }
+            break;
+
+        case MS_OS_20_VENDOR_CODE:
+            if (usbp->setup[4] == MS_OS_20_DESCRIPTOR_INDEX) {
+                usbSetupTransfer(usbp, (uint8_t *)&MS_OS_20_Descriptor, MS_OS_20_Descriptor.Header.TotalLength, NULL);
+                return TRUE;
+                break;
+            }
+            break;
+    }
+#endif
+
     /* Handle the Get_Descriptor Request for HID class (not handled by the default hook) */
     if ((usbp->setup[0] == 0x81) && (usbp->setup[1] == USB_REQ_GET_DESCRIPTOR)) {
         dp = usbp->config->get_descriptor_cb(usbp, usbp->setup[3], usbp->setup[2], get_hword(&usbp->setup[4]));
@@ -538,14 +659,22 @@ static const USBConfig usbcfg = {
  */
 void init_usb_driver(USBDriver *usbp) {
     for (int i = 0; i < NUM_USB_DRIVERS; i++) {
+        #if STM32_USB_USE_OTG1
+        QMKUSBDriver *driver                       = &drivers.array[i].driver;
+        drivers.array[i].inout_ep_config.in_state  = &drivers.array[i].in_ep_state;
+        drivers.array[i].inout_ep_config.out_state = &drivers.array[i].out_ep_state;
+        drivers.array[i].int_ep_config.in_state    = &drivers.array[i].int_ep_state;
+        qmkusbObjectInit(driver, &drivers.array[i].config);
+        qmkusbStart(driver, &drivers.array[i].config);
+        #else
         QMKUSBDriver *driver                     = &drivers.array[i].driver;
         drivers.array[i].in_ep_config.in_state   = &drivers.array[i].in_ep_state;
         drivers.array[i].out_ep_config.out_state = &drivers.array[i].out_ep_state;
         drivers.array[i].int_ep_config.in_state  = &drivers.array[i].int_ep_state;
         qmkusbObjectInit(driver, &drivers.array[i].config);
         qmkusbStart(driver, &drivers.array[i].config);
+        #endif
     }
-
     /*
      * Activates the USB driver and then the USB bus pull-up on D+.
      * Note, a delay is inserted in order to not have to disconnect the cable
@@ -827,6 +956,29 @@ void raw_hid_task(void) {
     } while (size > 0);
 }
 
+#endif
+
+#ifdef WEBUSB_ENABLE
+void webusb_send(uint8_t *data, uint8_t length) {
+
+    chnWriteTimeout(&drivers.webusb_driver.driver, data, length, TIME_IMMEDIATE);
+}
+
+__attribute__((weak)) void webusb_receive(uint8_t *data, uint8_t length) {
+    // Users should #include "webusb.h" in their own code
+    // and implement this function there. Leave this as weak linkage
+    // so users can opt to not handle data coming in.
+}
+void webusb_task(void) {
+    uint8_t buffer[WEBUSB_EPSIZE];
+    size_t  size = 0;
+    do {
+        size_t size = chnReadTimeout(&drivers.webusb_driver.driver, buffer, sizeof(buffer), TIME_IMMEDIATE);
+        if (size > 0) {
+            webusb_receive(buffer, size);
+        }
+    } while (size > 0);
+}
 #endif
 
 #ifdef MIDI_ENABLE
