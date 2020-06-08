@@ -39,6 +39,11 @@
 #include "util.h"
 #include "report.h"
 #include "usb_descriptor.h"
+#include "usb_descriptor_common.h"
+
+#ifdef WEBUSB_ENABLE
+#include "webusb_descriptor.h"
+#endif
 
 // clang-format off
 
@@ -166,10 +171,10 @@ const USB_Descriptor_HIDReport_Datatype_t PROGMEM SharedReport[] = {
     HID_RI_USAGE(8, 0x80),                // System Control
     HID_RI_COLLECTION(8, 0x01),           // Application
         HID_RI_REPORT_ID(8, REPORT_ID_SYSTEM),
-        HID_RI_USAGE_MINIMUM(16, 0x0081), // System Power Down
-        HID_RI_USAGE_MAXIMUM(16, 0x0083), // System Wake Up
-        HID_RI_LOGICAL_MINIMUM(16, 0x0001),
-        HID_RI_LOGICAL_MAXIMUM(16, 0x0003),
+        HID_RI_USAGE_MINIMUM(8, 0x01),    // Pointer
+        HID_RI_USAGE_MAXIMUM(16, 0x00B7), // System Display LCD Autoscale
+        HID_RI_LOGICAL_MINIMUM(8, 0x01),
+        HID_RI_LOGICAL_MAXIMUM(16, 0x00B7),
         HID_RI_REPORT_COUNT(8, 1),
         HID_RI_REPORT_SIZE(8, 16),
         HID_RI_INPUT(8, HID_IOF_DATA | HID_IOF_ARRAY | HID_IOF_ABSOLUTE),
@@ -179,10 +184,10 @@ const USB_Descriptor_HIDReport_Datatype_t PROGMEM SharedReport[] = {
     HID_RI_USAGE(8, 0x01),                // Consumer Control
     HID_RI_COLLECTION(8, 0x01),           // Application
         HID_RI_REPORT_ID(8, REPORT_ID_CONSUMER),
-        HID_RI_USAGE_MINIMUM(16, 0x0001), // Consumer Control
-        HID_RI_USAGE_MAXIMUM(16, 0x029C), // AC Distribute Vertically
-        HID_RI_LOGICAL_MINIMUM(16, 0x0001),
-        HID_RI_LOGICAL_MAXIMUM(16, 0x029C),
+        HID_RI_USAGE_MINIMUM(8, 0x01),    // Consumer Control
+        HID_RI_USAGE_MAXIMUM(16, 0x02A0), // AC Desktop Show All Applications
+        HID_RI_LOGICAL_MINIMUM(8, 0x01),
+        HID_RI_LOGICAL_MAXIMUM(16, 0x02A0),
         HID_RI_REPORT_COUNT(8, 1),
         HID_RI_REPORT_SIZE(8, 16),
         HID_RI_INPUT(8, HID_IOF_DATA | HID_IOF_ARRAY | HID_IOF_ABSOLUTE),
@@ -232,8 +237,8 @@ const USB_Descriptor_HIDReport_Datatype_t PROGMEM SharedReport[] = {
 
 #ifdef RAW_ENABLE
 const USB_Descriptor_HIDReport_Datatype_t PROGMEM RawReport[] = {
-    HID_RI_USAGE_PAGE(16, 0xFF60), // Vendor Defined
-    HID_RI_USAGE(8, 0x61),         // Vendor Defined
+    HID_RI_USAGE_PAGE(16, RAW_USAGE_PAGE), // Vendor Defined
+    HID_RI_USAGE(8, RAW_USAGE_ID),         // Vendor Defined
     HID_RI_COLLECTION(8, 0x01),    // Application
         // Data to host
         HID_RI_USAGE(8, 0x62),     // Vendor Defined
@@ -278,6 +283,13 @@ const USB_Descriptor_HIDReport_Datatype_t PROGMEM ConsoleReport[] = {
 };
 #endif
 
+#ifdef WEBUSB_ENABLE
+const USB_Descriptor_BOS_t PROGMEM BOSDescriptor = BOS_DESCRIPTOR(
+		(MS_OS_20_PLATFORM_DESCRIPTOR(MS_OS_20_VENDOR_CODE, MS_OS_20_DESCRIPTOR_SET_TOTAL_LENGTH))
+		(WEBUSB_PLATFORM_DESCRIPTOR(WEBUSB_VENDOR_CODE, WEBUSB_LANDING_PAGE_INDEX))
+);
+#endif
+
 /*
  * Device descriptor
  */
@@ -286,7 +298,11 @@ const USB_Descriptor_Device_t PROGMEM DeviceDescriptor = {
         .Size                   = sizeof(USB_Descriptor_Device_t),
         .Type                   = DTYPE_Device
     },
+#if WEBUSB_ENABLE
+    .USBSpecification           = VERSION_BCD(2, 1, 0),
+#else
     .USBSpecification           = VERSION_BCD(1, 1, 0),
+#endif
 
 #if VIRTSER_ENABLE
     .Class                      = USB_CSCP_IADDeviceClass,
@@ -420,6 +436,45 @@ const USB_Descriptor_Configuration_t PROGMEM ConfigurationDescriptor = {
         .Attributes             = (EP_TYPE_INTERRUPT | ENDPOINT_ATTR_NO_SYNC | ENDPOINT_USAGE_DATA),
         .EndpointSize           = RAW_EPSIZE,
         .PollingIntervalMS      = 0x01
+    },
+#endif
+
+#ifdef WEBUSB_ENABLE
+    /*
+    * Webusb
+    */
+    .WebUSB_Interface = {
+        .Header = {
+            .Size = sizeof(USB_Descriptor_Interface_t),
+            .Type = DTYPE_Interface
+        },
+        .InterfaceNumber  = INTERFACE_ID_WebUSB,
+        .AlternateSetting = 0x00,
+        .TotalEndpoints = 2,
+        .Class    = USB_CSCP_VendorSpecificClass,
+        .SubClass = 0x00,
+        .Protocol = 0x00,
+        .InterfaceStrIndex = NO_DESCRIPTOR
+    },
+   .WebUSB_DataInEndpoint = {
+        .Header = {
+            .Size = sizeof(USB_Descriptor_Endpoint_t),
+            .Type = DTYPE_Endpoint
+        },
+        .EndpointAddress   = WEBUSB_IN_EPADDR,
+        .Attributes        = (EP_TYPE_INTERRUPT | ENDPOINT_ATTR_NO_SYNC | ENDPOINT_USAGE_DATA),
+        .EndpointSize      = WEBUSB_EPSIZE,
+        .PollingIntervalMS = 0x05
+    },
+    .WebUSB_DataOutEndpoint = {
+        .Header = {
+            .Size = sizeof(USB_Descriptor_Endpoint_t),
+            .Type = DTYPE_Endpoint
+        },
+        .EndpointAddress   = WEBUSB_OUT_EPADDR,
+        .Attributes        = (EP_TYPE_INTERRUPT | ENDPOINT_ATTR_NO_SYNC | ENDPOINT_USAGE_DATA),
+        .EndpointSize      = WEBUSB_EPSIZE,
+        .PollingIntervalMS = 0x05
     },
 #endif
 
@@ -879,6 +934,14 @@ uint16_t get_usb_descriptor(const uint16_t wValue, const uint16_t wIndex, const 
             Size    = sizeof(USB_Descriptor_Configuration_t);
 
             break;
+
+#ifdef WEBUSB_ENABLE
+        case DTYPE_BOS:
+            Address = &BOSDescriptor;
+            Size = pgm_read_byte(&BOSDescriptor.TotalLength);
+
+            break;
+#endif
         case DTYPE_String:
             switch (DescriptorIndex) {
                 case 0x00:

@@ -6,74 +6,52 @@
 
 #ifdef RGBLIGHT_ENABLE
 #include <string.h>
+#include "rgblight_list.h"
 #include "rgblight.h"
-#include "ws2812_f4.h"
+#include "ws2812.h"
+#include "eeconfig.h"
 extern rgblight_config_t rgblight_config;
-
+static uint32_t noah_led_mode;
 // led 0 for caps lock, led 1 for scroll lock, led 3 for num lock
 // led 4 for layer 1, led 5 for layer 2, led 6 for layer 3, led 7 for layer 4
 #if RGBLED_NUM < 7
 #error "MUST set the RGBLED_NUM bigger than 7"
 #endif
 LED_TYPE noah_leds[RGBLED_NUM];
-static bool noah_led_mode = false;
-void rgblight_set(void) {
-    memset(&noah_leds[0], 0, sizeof(noah_leds));
-    if (!rgblight_config.enable) {
-        for (uint8_t i = 0; i < RGBLED_NUM; i++) {
-            led[i].r = 0;
-            led[i].g = 0;
-            led[i].b = 0;
-        }
-    }
+void rgblight_call_driver(LED_TYPE *start_led, uint8_t num_leds)
+{
     if (noah_led_mode) {
-      uint8_t ind_led = host_keyboard_leds();
-      if (IS_LED_ON(ind_led, USB_LED_CAPS_LOCK)) {
-        noah_leds[0] = led[0];
-      }
-      if (IS_LED_ON(ind_led, USB_LED_SCROLL_LOCK)) {
-        noah_leds[1] = led[1];
-      }
-      if (IS_LED_ON(ind_led, USB_LED_NUM_LOCK)) {
-        noah_leds[2] = led[2];
-      }
-      for (int32_t i = 0; i < 4; i++) {
-        if(layer_state_is(i+1)) {
-          noah_leds[i + 3] = led[i + 3];
+        memset(&noah_leds[0], 0, sizeof(noah_leds));
+        uint8_t ind_led = host_keyboard_leds();
+        if (IS_LED_ON(ind_led, USB_LED_CAPS_LOCK)) {
+            noah_leds[6] = led[0];
         }
-      }
+        if (IS_LED_ON(ind_led, USB_LED_SCROLL_LOCK)) {
+            noah_leds[5] = led[1];
+        }
+        if (IS_LED_ON(ind_led, USB_LED_NUM_LOCK)) {
+            noah_leds[4] = led[2];
+        }
+        for (int32_t i = 0; i < 4; i++) {
+            if(layer_state_is(i+1)) {
+                noah_leds[3 - i] = led[i + 3];
+            }
+        }
+        ws2812_setleds(noah_leds, RGBLED_NUM);
     } else {
-      memcpy(&noah_leds[0], &led[0], sizeof(noah_leds));
+        ws2812_setleds(start_led, num_leds);
     }
-
-  ws2812_setleds(noah_leds, RGBLED_NUM);
 }
+
 #endif
 
-void matrix_scan_kb(void) { matrix_scan_user(); }
-
-void matrix_init_kb(void) {
-  matrix_init_user();
-}
-__attribute__((weak))
-void matrix_init_user(void) {
+void matrix_init_kb(void)
+{
 #ifdef RGBLIGHT_ENABLE
-  ws2812_init();
-  rgblight_enable();
+    noah_led_mode = eeconfig_read_kb();
 #endif
-
-#ifdef RGB_MATRIX_ENABLE
-  rgb_matrix_disable();
-#endif
+    matrix_init_user();
 }
-
-__attribute__((weak))
-void matrix_scan_user(void) {
-#ifdef RGBLIGHT_ENABLE
-  rgblight_task();
-#endif
-}
-
 
 #ifdef RGB_MATRIX_ENABLE
 const is31_led g_is31_leds[DRIVER_LED_TOTAL] = {
@@ -185,9 +163,9 @@ led_config_t g_led_config = {
         { 20, 16},{ 42, 32},
         { 45, 16},{ 50, 16},{ 65, 16},{ 80, 16},{ 95, 16},{ 70, 32},{ 84, 32},{ 98, 32},
 
-        { 14, 32},{ 56, 32},{ 50, 48},{ 80, 48},{110, 48},{ 95, 48},{100, 64},{112, 64},
+        { 14, 32},{ 56, 32},{ 65, 48},{ 80, 48},{110, 48},{ 95, 48},{112, 64},{100, 64},
         { 42, 32},{ 38, 64},
-        {  0, 32},{ 10, 48},{  0, 48},{ 20, 48},{ 35, 48},{ 65, 48},{  0, 64},{ 19, 64},
+        {  0, 32},{ 10, 48},{  0, 48},{ 20, 48},{ 35, 48},{ 50, 48},{  0, 64},{ 19, 64},
 
         {105,  0},{120,  0},{135,  0},{150,  0},{165,  0},{180,  0},{202,  0},{224,  0},
         {110, 16},{224, 16},
@@ -222,22 +200,54 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
   if (record->event.pressed) {
     switch(keycode) {
     #ifdef RGBLIGHT_ENABLE
-        case KC_F24: // switch the led mode on or off
-        noah_led_mode = !noah_led_mode;
-        return false;
+        case KC_F24: // toggle the led mode
+            noah_led_mode = !noah_led_mode;
+            eeconfig_update_kb(noah_led_mode);
+            rgblight_set();
+            return false;
 
-    #ifdef RGB_MATRIX_ENABLE
+        #ifdef RGB_MATRIX_ENABLE
         case KC_F13: // toggle rgb matrix
-        rgb_matrix_toggle();
-        return false;
+            rgb_matrix_toggle();
+            return false;
         case KC_F14:
-        rgb_matrix_step();
-        return false;
-    #endif
+            rgb_matrix_step();
+            return false;
+        case KC_F15:
+            rgb_matrix_increase_hue();
+            return false;
+        case KC_F16:
+            rgb_matrix_increase_sat();
+            return false;
+        case KC_F17:
+            rgb_matrix_increase_val();
+            return false;
+        case KC_F18:
+            rgb_matrix_decrease_hue();
+            return false;
+        case KC_F19:
+            rgb_matrix_decrease_sat();
+            return false;
+        case KC_F20:
+            rgb_matrix_decrease_val();
+            return false;
+        #endif
     #endif
         default:
         break;
     }
   }
   return true;
+}
+
+void early_hardware_init_pre(void)
+{
+    // prevent jump to stock bootloader
+}
+
+#define REBOOT_MAGIC 0x41544B42
+
+void shutdown_user(void)
+{
+    *(uint32_t *)(&(RTCD1.rtc->BKP0R)) = REBOOT_MAGIC;
 }
