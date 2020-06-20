@@ -349,6 +349,7 @@ void rgblight_call_driver(LED_TYPE *start_led, uint8_t num_leds)
         return;
     }
 
+    ws2812_setleds(start_led, num_leds);
     for (uint8_t i = 0; i < num_leds; i++) {
         IS31FL3731_set_color(i, start_led[i].r, start_led[i].g, start_led[i].b);
     }
