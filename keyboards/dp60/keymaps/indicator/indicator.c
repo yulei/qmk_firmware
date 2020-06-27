@@ -29,7 +29,6 @@
 
 #include "rgblight_list.h"
 #include "rgblight.h"
-#include "ws2812.h"
 #include <avr/interrupt.h>
 #include <avr/io.h>
 #include <util/delay.h>
@@ -170,84 +169,76 @@ void indicator_sendarray_mask_ind(uint8_t *data, uint16_t datlen, uint8_t maskhi
     SREG = sreg_prev;
 }
 
-// caps led
-const rgblight_segment_t PROGMEM dp60_capslock_layer[] = RGBLIGHT_LAYER_SEGMENTS(
-    {18, 1, HSV_RED}
-);
+const LED_TYPE PROGMEM led_colors[RGB_INDICATOR_NUM] = {
+    {RGB_RED},
+    {RGB_GREEN},
+    {RGB_BLUE},
 
-// scroll led
-const rgblight_segment_t PROGMEM dp60_scrolllock_layer[] = RGBLIGHT_LAYER_SEGMENTS(
-    {19, 1, HSV_GREEN}
-);
+    {RGB_PURPLE},
+    {RGB_CYAN},
+    {RGB_YELLOW},
+    {RGB_PINK},
+    {RGB_ORANGE},
+};
 
-// num led
-const rgblight_segment_t PROGMEM dp60_numlock_layer[] = RGBLIGHT_LAYER_SEGMENTS(
-    {20, 1, HSV_BLUE}
-);
+static LED_TYPE indicator_leds[RGB_INDICATOR_NUM] ={{0,0,0}};
 
-// light 21 to 26 for layer 1-5
-const rgblight_segment_t PROGMEM dp60_layer1_layer[] = RGBLIGHT_LAYER_SEGMENTS(
-    {21, 1, HSV_PURPLE}
-);
-const rgblight_segment_t PROGMEM dp60_layer2_layer[] = RGBLIGHT_LAYER_SEGMENTS(
-    {22, 1, HSV_CYAN}
-);
-const rgblight_segment_t PROGMEM dp60_layer3_layer[] = RGBLIGHT_LAYER_SEGMENTS(
-    {23, 1, HSV_YELLOW}
-);
-const rgblight_segment_t PROGMEM dp60_layer4_layer[] = RGBLIGHT_LAYER_SEGMENTS(
-    {24, 1, HSV_PINK}
-);
-const rgblight_segment_t PROGMEM dp60_layer5_layer[] = RGBLIGHT_LAYER_SEGMENTS(
-    {25, 1, HSV_ORANGE}
-);
-
-// rgb light layers
-const rgblight_segment_t* const PROGMEM dp60_rgb_layers[] = RGBLIGHT_LAYERS_LIST(
-    dp60_capslock_layer,
-    dp60_scrolllock_layer,
-    dp60_numlock_layer,
-    dp60_layer1_layer,
-    dp60_layer2_layer,
-    dp60_layer3_layer,
-    dp60_layer4_layer,
-    dp60_layer5_layer
-);
-
-void keyboard_post_init_user(void) {
-    // Enable the LED layers
-    rgblight_layers = dp60_rgb_layers;
-}
-
-extern rgblight_config_t rgblight_config;
-extern void              rgblight_layers_write(void);
-
-void rgblight_call_driver(LED_TYPE *start_led, uint8_t num_leds)
+void indicator_leds_set(void)
 {
-    ws2812_setleds(led, RGBLED_NUM-RGB_INDICATOR_NUM);
-
     uint8_t pinmask = _BV(RGB_INDICATOR_PIN & 0xF);
     _SFR_IO8((RGB_INDICATOR_PIN >> 4) + 1) |= pinmask;
-    indicator_sendarray_mask_ind((uint8_t *)(&led[RGBLED_NUM-RGB_INDICATOR_NUM]), RGB_INDICATOR_NUM * sizeof(LED_TYPE), pinmask);
+    indicator_sendarray_mask_ind((uint8_t *)(&indicator_leds[0]), RGB_INDICATOR_NUM * sizeof(LED_TYPE), pinmask);
     _delay_us(50);
 }
 
 bool led_update_kb(led_t led_state) {
     bool res = led_update_user(led_state);
     if (res) {
-        rgblight_set_layer_state(0, led_state.caps_lock);
-        rgblight_set_layer_state(1, led_state.scroll_lock);
-        rgblight_set_layer_state(2, led_state.num_lock);
+        if (led_state.caps_lock) {
+            indicator_leds[0].r = led_colors[0].r;
+            indicator_leds[0].g = led_colors[0].g;
+            indicator_leds[0].b = led_colors[0].b;
+        } else {
+            indicator_leds[0].r = 0;
+            indicator_leds[0].g = 0;
+            indicator_leds[0].b = 0;
+        }
+        if (led_state.scroll_lock) {
+            indicator_leds[1].r = led_colors[1].r;
+            indicator_leds[1].g = led_colors[1].g;
+            indicator_leds[1].b = led_colors[1].b;
+        } else {
+            indicator_leds[1].r = 0;
+            indicator_leds[1].g = 0;
+            indicator_leds[1].b = 0;
+        }
+        if (led_state.num_lock) {
+            indicator_leds[2].r = led_colors[2].r;
+            indicator_leds[2].g = led_colors[2].g;
+            indicator_leds[2].b = led_colors[2].b;
+        } else {
+            indicator_leds[2].r = 0;
+            indicator_leds[2].g = 0;
+            indicator_leds[2].b = 0;
+        }
+        indicator_leds_set();
     }
     return res;
 }
 
 layer_state_t layer_state_set_kb(layer_state_t state) {
     state = layer_state_set_user(state);
-    rgblight_set_layer_state(3, layer_state_cmp(state, 1));
-    rgblight_set_layer_state(4, layer_state_cmp(state, 2));
-    rgblight_set_layer_state(5, layer_state_cmp(state, 3));
-    rgblight_set_layer_state(6, layer_state_cmp(state, 4));
-    rgblight_set_layer_state(7, layer_state_cmp(state, 5));
+    for (int i = 0; i < 5; i++) {
+        if (layer_state_cmp(state, i+1)) {
+            indicator_leds[i+3].r = led_colors[i+3].r;
+            indicator_leds[i+3].g = led_colors[i+3].g;
+            indicator_leds[i+3].b = led_colors[i+3].b;
+        } else {
+            indicator_leds[i+3].r = 0;
+            indicator_leds[i+3].g = 0;
+            indicator_leds[i+3].b = 0;
+        }
+    }
+    indicator_leds_set();
     return state;
 }
