@@ -41,7 +41,7 @@ void matrix_scan_kb(void) {
 }
 
 static uint16_t caps_lock_pin = DEF_PIN(TCA6424_PORT2, 3);
-static uint16_t scroll_lock_pin = DEF_PIN(TCA6424_PORT0, 1);
+static uint16_t scroll_lock_pin = DEF_PIN(TCA6424_PORT0, 0);
 
 bool led_update_kb(led_t led_state) {
     bool res = led_update_user(led_state);
