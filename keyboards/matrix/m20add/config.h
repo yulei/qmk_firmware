@@ -62,9 +62,13 @@
 
 // rgb light setting
 #define RGB_DI_PIN B4     // for pass the compilation
-#define RGBLED_NUM 20
+#define RGBLED_NUM 16
 #define RGBLIGHT_ANIMATIONS
+
+#define RGB_EFFECTS_LED_NUM 4
 
 #define DRIVER_ADDR_1 0b1110100
 #define DRIVER_COUNT 1
-#define DRIVER_LED_TOTAL RGBLED_NUM
+#define DRIVER_LED_TOTAL 20
+
+#define EARLY_INIT_PERFORM_BOOTLOADER_JUMP FALSE

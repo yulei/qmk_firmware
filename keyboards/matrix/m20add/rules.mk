@@ -48,4 +48,4 @@ RGBLIGHT_ENABLE = yes
 
 CUSTOM_MATRIX = lite
 # project specific files
-SRC += matrix.c tca6424.c rgb_ring.c i2c_master.c issi/is31fl3731.c
+SRC += matrix.c tca6424.c rgb_ring.c rgb_effects.c i2c_master.c issi/is31fl3731.c

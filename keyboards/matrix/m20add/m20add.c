@@ -52,11 +52,6 @@ bool led_update_kb(led_t led_state) {
     return res;
 }
 
-void early_hardware_init_pre(void)
-{
-    // disable jump to inchip system bootloader
-}
-
 #define REBOOT_MAGIC 0x41544B42
 void shutdown_user(void)
 {

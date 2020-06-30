@@ -9,6 +9,7 @@
 #include "rgblight.h"
 #include "issi/is31fl3731.h"
 #include "i2c_master.h"
+#include "rgb_effects.h"
 
 
 #ifndef RGBLIGHT_ENABLE
@@ -343,6 +344,23 @@ static void custom_effects(void)
     effect_funcs[rgb_ring.effect]();
 }
 
+void effects_set_color(uint8_t index, uint8_t hue, uint8_t sat, uint8_t val)
+{
+    HSV h = {hue, sat, val};
+    RGB c = hsv_to_rgb(h);
+    IS31FL3731_set_color(RING_INNER_BEGIN+index, c.r, c.g, c.b);
+}
+
+void effects_set_color_all(uint8_t hue, uint8_t sat, uint8_t val)
+{
+    HSV h = {hue, sat, val};
+    RGB c = hsv_to_rgb(h);
+
+    for (int i = 0; i < RING_INNER_SIZE; i++) {
+        IS31FL3731_set_color(RING_INNER_BEGIN+i, c.r, c.g, c.b);
+    }
+}
+
 void rgblight_call_driver(LED_TYPE *start_led, uint8_t num_leds)
 {
     if (rgb_ring.state != RING_STATE_QMK) {
@@ -382,6 +400,8 @@ void rgb_ring_init(void)
         IS31FL3731_set_led_control_register(index, enabled, enabled, enabled);
     }
     IS31FL3731_update_led_control_registers(DRIVER_ADDR_1, 0);
+
+    rgb_effects_init();
 }
 
 void rgb_ring_task(void)
@@ -392,6 +412,7 @@ void rgb_ring_task(void)
             break;
         case RING_STATE_QMK: // qmk effects
             //rgblight_task();
+            rgb_effects_task();
             break;
         case RING_STATE_CUSTOM: // custom effects
             custom_effects();
