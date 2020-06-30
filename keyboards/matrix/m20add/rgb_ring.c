@@ -474,6 +474,36 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record)
                     return false;
                 }
                 break;
+            case KC_F13:
+                rgb_effects_toggle();
+                return false;
+            case KC_F14:
+                rgb_effects_inc_mode();
+                return false;
+            case KC_F15:
+                rgb_effects_inc_hue();
+                return false;
+            case KC_F16:
+                rgb_effects_inc_sat();
+                return false;
+            case KC_F17:
+                rgb_effects_inc_val();
+                return false;
+            case KC_F18:
+                rgb_effects_dec_hue();
+                return false;
+            case KC_F19:
+                rgb_effects_dec_sat();
+                return false;
+            case KC_F20:
+                rgb_effects_dec_val();
+                return false;
+            case KC_F21:
+                rgb_effects_inc_speed();
+                return false;
+            case KC_F22:
+                rgb_effects_dec_speed();
+                return false;
             default:
                 break;
         }

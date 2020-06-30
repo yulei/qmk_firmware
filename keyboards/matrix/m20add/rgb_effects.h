@@ -7,14 +7,20 @@
 
 #include <stdint.h>
 
-#ifndef RGB_EFFECTS_LED_NUM
+#ifndef EFFECTS_LED_NUM
 #error "must defined the led num for rgb effects"
 #endif
 
 void rgb_effects_init(void);
-void rgb_effects_set_hue(uint8_t hue);
-void rgb_effects_set_sat(uint8_t sat);
-void rgb_effects_set_val(uint8_t val);
-void rgb_effects_set_speed(uint8_t speed);
-void rgb_effects_step_mode(void);
+void rgb_effects_inc_hue(void);
+void rgb_effects_dec_hue(void);
+void rgb_effects_inc_sat(void);
+void rgb_effects_dec_sat(void);
+void rgb_effects_inc_val(void);
+void rgb_effects_dec_val(void);
+void rgb_effects_inc_speed(void);
+void rgb_effects_dec_speed(void);
+void rgb_effects_inc_mode(void);
+void rgb_effects_dec_mode(void);
+void rgb_effects_toggle(void);
 void rgb_effects_task(void);
