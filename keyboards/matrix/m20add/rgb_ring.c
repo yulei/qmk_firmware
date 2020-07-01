@@ -88,18 +88,7 @@ typedef struct {
     bool    led_clear;
 } rgb_ring_t;
 
-static rgb_ring_t rgb_ring = {
-    .state          = RING_STATE_INIT,
-    .effect         = RING_EFFECT_1,
-    .speed          = 10,
-    .outer_index    = 0,
-    .inner_index    = 0,
-    .effect_count   = 0,
-    .led_begin      = RING_OUTER_BEGIN,
-    .led_end        = RING_OUTER_END,
-    .led_forward    = true,
-    .led_clear      = false,
-};
+static rgb_ring_t rgb_ring;
 
 static void rgb_ring_reset(void)
 {
@@ -400,6 +389,17 @@ void rgb_ring_init(void)
         IS31FL3731_set_led_control_register(index, enabled, enabled, enabled);
     }
     IS31FL3731_update_led_control_registers(DRIVER_ADDR_1, 0);
+
+    rgb_ring.state        = RING_STATE_INIT,
+    rgb_ring.effect       = RING_EFFECT_1,
+    rgb_ring.speed        = 10,
+    rgb_ring.outer_index  = 0,
+    rgb_ring.inner_index  = 0,
+    rgb_ring.effect_count = 0,
+    rgb_ring.led_begin    = RING_OUTER_BEGIN,
+    rgb_ring.led_end      = RING_OUTER_END,
+    rgb_ring.led_forward  = true,
+    rgb_ring.led_clear    = false,
 
     rgb_effects_init();
 }

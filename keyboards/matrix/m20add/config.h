@@ -61,7 +61,7 @@
 #define I2C1_DUTY_CYCLE FAST_DUTY_CYCLE_2
 
 // rgb light setting
-#define RGB_DI_PIN B4     // for pass the compilation
+#define RGB_DI_PIN B4     // reserved for future
 #define RGBLED_NUM 16
 #define RGBLIGHT_ANIMATIONS
 
