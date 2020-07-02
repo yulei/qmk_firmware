@@ -337,7 +337,7 @@ void effects_set_color(uint8_t index, uint8_t hue, uint8_t sat, uint8_t val)
 {
     HSV h = {hue, sat, val};
     RGB c = hsv_to_rgb(h);
-    IS31FL3731_set_color(RING_INNER_BEGIN+index, c.r, c.g, c.b);
+    IS31FL3731_set_color(RING_INNER_BEGIN + index, c.r, c.g, c.b);
 }
 
 void effects_set_color_all(uint8_t hue, uint8_t sat, uint8_t val)
@@ -356,7 +356,7 @@ void rgblight_call_driver(LED_TYPE *start_led, uint8_t num_leds)
         return;
     }
 
-    ws2812_setleds(start_led, num_leds);
+    //ws2812_setleds(start_led, num_leds);
     for (uint8_t i = 0; i < num_leds; i++) {
         IS31FL3731_set_color(i, start_led[i].r, start_led[i].g, start_led[i].b);
     }

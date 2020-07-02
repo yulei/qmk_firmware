@@ -17,12 +17,12 @@
 
 #define HUE_MIN 0
 #define HUE_MAX 255
-#define HUE_DEFAULT HUE_MAX
+#define HUE_DEFAULT HUE_MIN
 #define HUE_STEP 8
 
 #define SAT_MIN 0
 #define SAT_MAX 255
-#define SAT_DEFAULT SAT_MIN
+#define SAT_DEFAULT SAT_MAX
 #define SAT_STEP 8
 
 #define VAL_MIN 0
@@ -39,6 +39,8 @@ enum rgb_effects_type {
     RGB_EFFECT_GRADIENT,
     RGB_EFFECT_RANDOM,
     RGB_EFFECT_BREATH,
+    RGB_EFFECT_WIPE,
+    RGB_EFFECT_SCAN,
     RGB_EFFECT_MAX
 };
 
@@ -57,36 +59,50 @@ typedef union {
 } keyboard_config_t;
 
 typedef struct {
-    uint32_t last_ticks;
-    uint32_t counter;
-    uint32_t gradient_step;
-    uint32_t breath_step;
-    RGB_EFFECT_FUN effects[RGB_EFFECT_MAX];
+    uint32_t        last_ticks;
+    uint32_t        counter;
+    uint32_t        gradient_step;
+    uint32_t        breath_step;
+    bool            wipe_on;
+    RGB_EFFECT_FUN  effects[RGB_EFFECT_MAX];
 } rgb_effects_state_t;
 
 static keyboard_config_t effects_config;
 static rgb_effects_state_t effects_state;
 
 // utilities
-static uint8_t get_random_hue(uint8_t hue)
-{
-  uint8_t r = 0;
-  uint8_t x = 0;
-  uint8_t y = 0;
-  uint8_t d = 0;
-
-  while(d < 42) {
-    r = rand() % 360;
-    x = hue > r ? hue - r : r - hue;
-    y = 360 - x;
-    d = x > y ? y : x;
-  }
-
-  return r;
-}
+#define RANDOM_DISTANCE 17
+static uint8_t get_random_hue(uint8_t hue) { return (rand() % HUE_MAX) + RANDOM_DISTANCE; }
 
 extern void effects_set_color(uint8_t index, uint8_t hue, uint8_t sat, uint8_t val);
 extern void effects_set_color_all(uint8_t hue, uint8_t sat, uint8_t val);
+
+static void effects_mode_init(void)
+{
+    switch(effects_config.mode) {
+        case RGB_EFFECT_STATIC:
+            break;
+        case RGB_EFFECT_BLINK:
+            break;
+        case RGB_EFFECT_GRADIENT:
+            break;
+        case RGB_EFFECT_RANDOM:
+            break;
+        case RGB_EFFECT_BREATH:
+            break;
+        case RGB_EFFECT_WIPE:
+            effects_state.wipe_on = true;
+            effects_state.counter = 0;
+            effects_set_color_all(0, 0, 0);
+            break;
+        case RGB_EFFECT_SCAN:
+            effects_state.counter = 0;
+            effects_set_color_all(0, 0, 0);
+            break;
+        default:
+            break;
+    }
+}
 
 static uint32_t effects_delay(void)
 {
@@ -146,6 +162,7 @@ static void effects_mode_gradient(void)
     for (int i = 0; i < EFFECTS_LED_NUM; i++) {
         effects_set_color(i, effects_config.hue + i*step, effects_config.sat, effects_config.val);
     }
+    effects_config.hue += step;
 }
 
 static void effects_mode_breath(void)
@@ -154,6 +171,28 @@ static void effects_mode_breath(void)
 
     effects_set_color_all(effects_config.hue, effects_config.sat, effects_config.val);
     effects_config.val += breath;
+}
+
+static void effects_mode_wipe(void)
+{
+    if (effects_state.wipe_on) {
+        effects_set_color(effects_state.counter, effects_config.hue, effects_config.sat, effects_config.val);
+    } else {
+        effects_set_color(effects_state.counter, 0, 0, 0);
+    }
+    effects_state.counter++;
+    if (effects_state.counter == EFFECTS_LED_NUM) {
+        effects_state.counter = 0;
+        effects_state.wipe_on = !effects_state.wipe_on;
+    }
+}
+
+static void effects_mode_scan(void)
+{
+    uint8_t prev = (effects_state.counter == 0) ? EFFECTS_LED_NUM - 1 : effects_state.counter - 1;
+    effects_set_color(prev, 0, 0, 0);
+    effects_set_color(effects_state.counter, effects_config.hue, effects_config.sat, effects_config.val);
+    effects_state.counter = (effects_state.counter + 1) % EFFECTS_LED_NUM;
 }
 
 static void effects_set_hue(uint8_t hue)
@@ -183,6 +222,7 @@ static void effects_set_speed(uint8_t speed)
 static void effects_set_mode(uint8_t mode)
 {
     effects_config.mode = mode;
+    effects_mode_init();
     eeconfig_update_kb(effects_config.raw);
 }
 
@@ -213,16 +253,20 @@ void rgb_effects_init(void)
         effects_config.raw = eeconfig_read_kb();
     }
 
-    effects_state.counter = 0;
+    effects_state.counter       = 0;
+    effects_state.wipe_on       = true;
     effects_state.gradient_step = GRADIENT_STEP_DEFAULT;
-    effects_state.breath_step = BREATH_STEP_DEFAULT;
-    effects_state.last_ticks = timer_read();
+    effects_state.breath_step   = BREATH_STEP_DEFAULT;
+    effects_state.last_ticks    = timer_read();
     srand(effects_state.last_ticks);
     effects_state.effects[RGB_EFFECT_STATIC]    = effects_mode_static;
     effects_state.effects[RGB_EFFECT_BLINK]     = effects_mode_blink;
     effects_state.effects[RGB_EFFECT_GRADIENT]  = effects_mode_gradient;
     effects_state.effects[RGB_EFFECT_RANDOM]    = effects_mode_random;
     effects_state.effects[RGB_EFFECT_BREATH]    = effects_mode_breath;
+    effects_state.effects[RGB_EFFECT_WIPE]      = effects_mode_wipe;
+    effects_state.effects[RGB_EFFECT_SCAN]      = effects_mode_scan;
+    effects_mode_init();
 }
 
 void rgb_effects_inc_hue(void)
