@@ -382,6 +382,7 @@ void i2c_init(void)
 
 void rgb_ring_init(void)
 {
+    rgblight_init();
     i2c_init();
     IS31FL3731_init(DRIVER_ADDR_1);
     for (int index = 0; index < DRIVER_LED_TOTAL; index++) {
