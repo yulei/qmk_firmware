@@ -229,7 +229,7 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
         break;
     }
   }
-  return true;
+  return process_record_user(keycode, record);
 }
 
 void early_hardware_init_pre(void)
