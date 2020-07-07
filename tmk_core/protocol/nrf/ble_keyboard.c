@@ -129,25 +129,25 @@ static void keyboard_timer_init(void)
 }
 
 /** this should implemented at keyboard level */
-__attribute__((weak)) void keyboard_turnoff_leds(void)
+__attribute__((weak)) void keyboard_set_rgb(bool on)
 {
+    if (!on) {
 #ifdef RGBLIGHT_ENABLE
-    //rgblight_disable();
-    //ws2812_uninit();
+    rgblight_disable();
 #endif
 
 #ifdef RGB_MATRIX_ENABLE
     rgb_matrix_disable();
-    // shutdown issi
-    #ifdef IS31FL3731
-        #ifdef DRIVER_ADDR_1
-        //IS31FL3731_write_register(DRIVER_ADDR_1, 0x0A, 0);
-        #endif
-        #ifdef DRIVER_ADDR_2
-        //IS31FL3731_write_register(DRIVER_ADDR_2, 0x0A, 0);
-        #endif
-    #endif
 #endif
+    } else {
+#ifdef RGBLIGHT_ENABLE
+    rgblight_enable();
+#endif
+
+#ifdef RGB_MATRIX_ENABLE
+    rgb_matrix_enable();
+#endif
+    }
 }
 
 static bool keyboard_rgb_on(void)
@@ -175,7 +175,7 @@ static void keyboard_timout_handler(void *p_context)
         if (!keyboard_rgb_on()) {
             ble_driver.scan_count++;
         } else if (ble_driver.battery_power <= BATTERY_LED_THRESHHOLD) {
-            keyboard_turnoff_leds();
+            keyboard_set_rgb(false);
         }
     }
 
@@ -184,8 +184,6 @@ static void keyboard_timout_handler(void *p_context)
         keyboard_timer_stop();
         matrix_driver.scan_stop();
         matrix_driver.trigger_start(matrix_event_handler);
-        //keyboard_matrix_scan_stop();
-        //keyboard_matrix_trigger_start();
 
         NRF_LOG_INFO("keyboard matrix swtiched to trigger mode");
         ble_driver.scan_count = 0;
@@ -285,8 +283,6 @@ static void matrix_event_handler(bool changed)
     matrix_driver.trigger_stop();
     matrix_driver.scan_start();
     keyboard_timer_start();
-    // keyboard_matrix_trigger_stop();
-    // keyboard_matrix_scan_start();
 
     keyboard_task();
     ble_driver.scan_count = 0;
