@@ -8,6 +8,8 @@
 #include "nrf_log.h"
 #include "wait.h"
 
+#ifdef WS2812_DRIVER_ENABLE
+
 #define WS2812_VAL_0        0x8002
 #define WS2812_VAL_1        0x8008
 
@@ -118,3 +120,12 @@ void ws2812_uninit(void)
 #endif
     ws2812_ready = false;
 }
+
+#else
+
+void ws2812_setleds(LED_TYPE* leds, uint16_t number)
+{}
+void ws2812_uninit(void)
+{}
+
+#endif
