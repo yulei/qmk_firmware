@@ -161,7 +161,7 @@ static bool keyboard_rgbmatrix_on(void)
     return false;
 }
 
-static bool keyboard_rgb_on(void) { return keyboard_rgb_on() || keyboard_rgbmatrix_on(); }
+static bool keyboard_rgb_on(void) { return keyboard_rgblight_on() || keyboard_rgbmatrix_on(); }
 
 static void keyboard_timout_handler(void *p_context)
 {

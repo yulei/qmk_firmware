@@ -18,8 +18,9 @@ APP_TIMER_DEF(m_eeprom_update_timer_id);        // timer for update the eeprom
 
 static bool ee_callback_registered = false;
 static bool ee_update_timer_created = false;
-static uint8_t eeprom_buf[(EECONFIG_SIZE+3)&(~3)]; // pad to word size
 static volatile bool eeprom_dirty = false;
+
+static uint8_t eeprom_buf[(EECONFIG_SIZE+3)&(~3)]; // pad to word size
 
 static fds_record_t ee_record = {
     .file_id = EE_FILEID,
