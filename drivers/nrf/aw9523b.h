@@ -49,3 +49,5 @@ void aw9523b_init(uint8_t addr);
 void aw9523b_set_color(int index, uint8_t red, uint8_t green, uint8_t blue);
 void aw9523b_set_color_all(uint8_t red, uint8_t green, uint8_t blue);
 void aw9523b_update_pwm_buffers(uint8_t addr);
+
+void aw9523b_uninit(uint8_t addr);

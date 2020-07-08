@@ -30,9 +30,12 @@
 #define PWM2BUF(x) ((x) - AW9523B_PWM_BASE)
 static uint8_t aw9523b_pwm_buf[AW9523B_PWM_SIZE];
 static bool    aw9523b_pwm_dirty = false;
+static bool    aw9523b_ready     = false;
 
 void aw9523b_init(uint8_t addr)
 {
+    if (aw9523b_ready) return;
+
     i2c_init();
     // reset chip
     uint8_t data = 0;
@@ -50,6 +53,7 @@ void aw9523b_init(uint8_t addr)
         aw9523b_pwm_buf[i] = 0;
     }
     aw9523b_pwm_dirty = false;
+    aw9523b_ready = true;
 }
 
 void aw9523b_set_color(int index, uint8_t red, uint8_t green, uint8_t blue)
@@ -82,4 +86,11 @@ void aw9523b_update_pwm_buffers(uint8_t addr)
         }
         aw9523b_pwm_dirty = false;
     }
+}
+
+void aw9523b_uninit(uint8_t addr)
+{
+    if (!aw9523b_ready) return;
+    i2c_uninit();
+    aw9523b_ready = false;
 }

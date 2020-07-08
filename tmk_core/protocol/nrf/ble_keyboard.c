@@ -48,15 +48,30 @@ static void uart_send_cmd(command_t cmd, const uint8_t* report, uint32_t size);
 static uint8_t compute_checksum(const uint8_t* data, uint32_t size);
 static void send_reboot_cmd(void);
 
-//extern uint32_t row_pins[];
-//extern uint32_t col_pins[];
-//static bool matrix_trigger_enabled = false;
+/** the fllowing function can be overrided by the keyboard codes */
+__attribute__((weak)) void keyboard_set_rgb(bool on)
+{
+    if (!on) {
+#ifdef RGBLIGHT_ENABLE
+    rgblight_disable();
+#endif
 
-//static void keyboard_matrix_trigger_start(void);
-//static void keyboard_matrix_trigger_stop(void);
+#ifdef RGB_MATRIX_ENABLE
+    rgb_matrix_disable();
+#endif
+    } else {
+#ifdef RGBLIGHT_ENABLE
+    rgblight_enable();
+#endif
 
-//static void keyboard_matrix_scan_start(void);
-//static void keyboard_matrix_scan_stop(void);
+#ifdef RGB_MATRIX_ENABLE
+    rgb_matrix_enable();
+#endif
+    }
+}
+
+__attribute__((weak)) void keyboard_prepare_sleep(void)
+{}
 
 /* Host driver */
 static uint8_t keyboard_leds(void);
@@ -72,7 +87,6 @@ host_driver_t kbd_driver = {
     .send_system = send_system,
     .send_consumer = send_consumer,
 };
-
 
 void ble_keyboard_init(void)
 {
@@ -90,21 +104,21 @@ void ble_keyboard_init(void)
 
 void ble_keyboard_start(void)
 {
-    //keyboard_matrix_scan_start();
     matrix_driver.scan_start();
     keyboard_timer_start();
     ble_driver.scan_count = 0;
 }
 
-void ble_keyboard_sleep_prepare(void)
+void ble_keyboard_prepare_sleep(void)
 {
     NRF_LOG_INFO("power down sleep preparing");
     // stop uart
     uart_uninit();
     // stop all timer
     app_timer_stop_all();
+    // keyboard sleep
+    keyboard_prepare_sleep();
     // turn matrix to sense mode
-    //keyboard_matrix_trigger_stop();
     matrix_driver.trigger_stop();
     sense_pins_init();
 }
@@ -128,41 +142,26 @@ static void keyboard_timer_init(void)
     APP_ERROR_CHECK(err_code);
 }
 
-/** this should implemented at keyboard level */
-__attribute__((weak)) void keyboard_set_rgb(bool on)
-{
-    if (!on) {
-#ifdef RGBLIGHT_ENABLE
-    rgblight_disable();
-#endif
 
-#ifdef RGB_MATRIX_ENABLE
-    rgb_matrix_disable();
-#endif
-    } else {
-#ifdef RGBLIGHT_ENABLE
-    rgblight_enable();
-#endif
-
-#ifdef RGB_MATRIX_ENABLE
-    rgb_matrix_enable();
-#endif
-    }
-}
-
-static bool keyboard_rgb_on(void)
+static bool keyboard_rgblight_on(void)
 {
 #if defined(RGBLIGHT_ENABLE)
     extern rgblight_config_t rgblight_config;
     if (rgblight_config.enable ) return true;
 #endif
+    return false;
+}
 
+static bool keyboard_rgbmatrix_on(void)
+{
 #if defined(RGB_MATRIX_ENABLE)
     extern rgb_config_t rgb_matrix_config;
     if (rgb_matrix_config.enable) return true;
 #endif
     return false;
 }
+
+static bool keyboard_rgb_on(void) { return keyboard_rgb_on() || keyboard_rgbmatrix_on(); }
 
 static void keyboard_timout_handler(void *p_context)
 {
@@ -441,7 +440,7 @@ static bool keyboard_pwr_mgmt_shutdown_handler(nrf_pwr_mgmt_evt_t event)
         default:
             break;
     }
-    ble_keyboard_sleep_prepare();
+    ble_keyboard_prepare_sleep();
     return true;
 }
 
@@ -469,7 +468,7 @@ static void send_reboot_cmd(void)
 }
 
 // bluetooth control command
-// F21 for toggle usb/ble output
+// F21 for select usb/ble output
 // F22 for erase bond
 // F23 for enter bootloader mode
 bool process_record_kb(uint16_t keycode, keyrecord_t *record)
@@ -500,7 +499,12 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record)
             NRF_LOG_INFO("send reboot command");
             send_reboot_cmd();
             return false;
-        default:
+        #ifdef RGBLIGHT_ENABLE
+        case RGB_TOG:
+            keyboard_set_rgb(!keyboard_rgblight_on());
+            break;
+        #endif
+            default:
             break;
         }
     }
