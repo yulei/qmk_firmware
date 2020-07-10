@@ -170,9 +170,9 @@ void indicator_sendarray_mask_ind(uint8_t *data, uint16_t datlen, uint8_t maskhi
 }
 
 const LED_TYPE PROGMEM led_colors[RGB_INDICATOR_NUM] = {
-    {RGB_RED},
-    {RGB_GREEN},
     {RGB_BLUE},
+    {RGB_GREEN},
+    {RGB_RED},
 
     {RGB_PURPLE},
     {RGB_CYAN},
