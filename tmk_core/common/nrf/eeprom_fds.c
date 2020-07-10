@@ -20,7 +20,7 @@ static bool ee_callback_registered = false;
 static bool ee_update_timer_created = false;
 static volatile bool eeprom_dirty = false;
 
-static uint8_t eeprom_buf[(EECONFIG_SIZE+3)&(~3)]; // pad to word size
+static uint8_t eeprom_buf[(EECONFIG_SIZE+3)&(~3)] __attribute__((aligned(4))); // pad to word size
 
 static fds_record_t ee_record = {
     .file_id = EE_FILEID,
