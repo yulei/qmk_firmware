@@ -58,7 +58,8 @@ static void ee_evt_handler(fds_evt_t const *p_evt)
 
 void fds_eeprom_init(void)
 {
-    // fds should be already initialized on peer manager
+    fds_init();
+
     if (!ee_callback_registered) {
         fds_register(ee_evt_handler);
         ee_callback_registered = true;
