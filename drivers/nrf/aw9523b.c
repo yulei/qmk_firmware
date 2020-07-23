@@ -77,7 +77,7 @@ void aw9523b_set_color_all(uint8_t red, uint8_t green, uint8_t blue)
 
 void aw9523b_update_pwm_buffers(uint8_t addr)
 {
-    if (aw9523b_pwm_dirty) {
+    if (aw9523b_ready&&aw9523b_pwm_dirty) {
         for (uint8_t i = 0; i < AW9523B_RGB_NUM; i++){
             aw9523b_led led = g_aw9523b_leds[i];
             i2c_writeReg(addr, led.r, &aw9523b_pwm_buf[PWM2BUF(led.r)], 1, TIMEOUT);
