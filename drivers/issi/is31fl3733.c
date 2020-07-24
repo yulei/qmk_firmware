@@ -174,6 +174,14 @@ void IS31FL3733_set_color(int index, uint8_t red, uint8_t green, uint8_t blue) {
     }
 }
 
+void IS31FL3733_set_led_color(is31_led led, uint8_t red, uint8_t green, uint8_t blue)
+{
+    g_pwm_buffer[led.driver][led.r]          = red;
+    g_pwm_buffer[led.driver][led.g]          = green;
+    g_pwm_buffer[led.driver][led.b]          = blue;
+    g_pwm_buffer_update_required[led.driver] = true;
+}
+
 void IS31FL3733_set_color_all(uint8_t red, uint8_t green, uint8_t blue) {
     for (int i = 0; i < DRIVER_LED_TOTAL; i++) {
         IS31FL3733_set_color(i, red, green, blue);
@@ -183,6 +191,34 @@ void IS31FL3733_set_color_all(uint8_t red, uint8_t green, uint8_t blue) {
 void IS31FL3733_set_led_control_register(uint8_t index, bool red, bool green, bool blue) {
     is31_led led = g_is31_leds[index];
 
+    uint8_t control_register_r = led.r / 8;
+    uint8_t control_register_g = led.g / 8;
+    uint8_t control_register_b = led.b / 8;
+    uint8_t bit_r              = led.r % 8;
+    uint8_t bit_g              = led.g % 8;
+    uint8_t bit_b              = led.b % 8;
+
+    if (red) {
+        g_led_control_registers[led.driver][control_register_r] |= (1 << bit_r);
+    } else {
+        g_led_control_registers[led.driver][control_register_r] &= ~(1 << bit_r);
+    }
+    if (green) {
+        g_led_control_registers[led.driver][control_register_g] |= (1 << bit_g);
+    } else {
+        g_led_control_registers[led.driver][control_register_g] &= ~(1 << bit_g);
+    }
+    if (blue) {
+        g_led_control_registers[led.driver][control_register_b] |= (1 << bit_b);
+    } else {
+        g_led_control_registers[led.driver][control_register_b] &= ~(1 << bit_b);
+    }
+
+    g_led_control_registers_update_required[led.driver] = true;
+}
+
+void IS31FL3733_set_led_control(is31_led led, bool red, bool green, bool blue)
+{
     uint8_t control_register_r = led.r / 8;
     uint8_t control_register_g = led.g / 8;
     uint8_t control_register_b = led.b / 8;

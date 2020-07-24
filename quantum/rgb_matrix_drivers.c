@@ -37,6 +37,9 @@ static void init(void) {
     #endif
 #    elif defined(IS31FL3733)
     IS31FL3733_init(DRIVER_ADDR_1, 0);
+    #ifdef DRIVER_ADDR_2
+    IS31FL3733_init(DRIVER_ADDR_2, 0);
+    #endif
 #    else
     IS31FL3737_init(DRIVER_ADDR_1);
 #    endif
