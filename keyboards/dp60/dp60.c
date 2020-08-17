@@ -152,11 +152,29 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     switch(keycode) {
     #ifdef RGBLIGHT_ENABLE
         #ifdef RGB_MATRIX_ENABLE
-        case KC_F13: // toggle rgb matrix
+        case KC_F16: // toggle rgb matrix
             rgb_matrix_toggle();
             return false;
-        case KC_F14:
+        case KC_F17:
             rgb_matrix_step();
+            return false;
+        case KC_F18:
+            rgb_matrix_increase_hue();
+            return false;
+        case KC_F20:
+            rgb_matrix_decrease_hue();
+            return false;
+        case KC_F21:
+            rgb_matrix_increase_sat();
+            return false;
+        case KC_F22:
+            rgb_matrix_decrease_sat();
+            return false;
+        case KC_F23:
+            rgb_matrix_increase_val();
+            return false;
+        case KC_F24:
+            rgb_matrix_decrease_val();
             return false;
         #endif
     #endif
