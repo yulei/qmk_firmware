@@ -1,6 +1,6 @@
 #pragma once
 
-#define SQ60_HS
+#define SQX_HS
 
 #undef DRIVER_1_LED_TOTAL
 #define DRIVER_1_LED_TOTAL 33

@@ -1,11 +1,11 @@
 /**
- * @file sq60.c
+ * @file sqx.c
  */
 
-#include "sq60.h"
+#include "sqx.h"
 
 #ifdef RGB_MATRIX_ENABLE
-#ifndef SQ60_HS
+#ifndef SQX_HS
 const is31_led g_is31_leds[DRIVER_LED_TOTAL] = {
 /* Refer to IS31 manual for these locations
  *   driver
@@ -282,10 +282,10 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
         switch(keycode) {
         #ifdef RGBLIGHT_ENABLE
             #ifdef RGB_MATRIX_ENABLE
-            case KC_F13: // toggle rgb matrix
+            case KC_F16: // toggle rgb matrix
                 rgb_matrix_toggle();
                 return false;
-            case KC_F14:
+            case KC_F17:
                 rgb_matrix_step();
                 return false;
             #endif

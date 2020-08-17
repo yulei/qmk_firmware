@@ -1,5 +1,5 @@
 /**
-  * @file sq60.h
+  * @file sqx.h
   *
   */
 #pragma once
