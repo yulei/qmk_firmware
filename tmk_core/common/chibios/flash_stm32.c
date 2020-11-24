@@ -128,11 +128,10 @@ FLASH_Status FLASH_ErasePage(uint32_t Page) {
         /* if the previous operation is completed, proceed to erase the page */
 #if defined(EEPROM_EMU_STM32F411xE)
         FLASH->CR &= ~FLASH_CR_SNB;
-        FLASH->CR |= (Page << FLASH_CR_SNB_POS);
-        FLASH->CR |= FLASH_CR_SER;
+        FLASH->CR |= (Page << FLASH_CR_SNB_POS) | FLASH_CR_SER;
 #else
-        FLASH->AR = Page;
         FLASH->CR |= FLASH_CR_PER;
+        FLASH->AR = Page;
 #endif
         FLASH->CR |= FLASH_CR_STRT;
 
