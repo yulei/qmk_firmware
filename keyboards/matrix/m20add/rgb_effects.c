@@ -7,6 +7,9 @@
 #include "rgb_effects.h"
 #include "timer.h"
 #include "eeconfig.h"
+#include "eeprom.h"
+
+//#define EECONFIG_EFFECTS (uint32_t *)64
 
 #define DELAY_MIN   0
 #define DELAY_DEFAULT 1500
@@ -104,7 +107,7 @@ static void effects_mode_init(void)
     }
 }
 
-static uint32_t effects_delay(void)
+static uint32_t effects_mode_delay(void)
 {
     switch(effects_config.mode) {
         case RGB_EFFECT_STATIC:
@@ -124,7 +127,7 @@ static uint32_t effects_delay(void)
     return DELAY_DEFAULT;
 }
 
-static bool effects_need_update(void) { return timer_elapsed(effects_state.last_ticks)*effects_config.speed >= effects_delay(); }
+static bool effects_need_update(void) { return timer_elapsed(effects_state.last_ticks)*effects_config.speed >= effects_mode_delay(); }
 static void effects_update_timer(void) { effects_state.last_ticks = timer_read(); }
 
 //effects
@@ -151,18 +154,18 @@ static void effects_mode_random(void)
     uint8_t hue = effects_config.hue;
     for (int i = 0; i < EFFECTS_LED_NUM; i++) {
         hue = get_random_hue(hue);
-        effects_set_color_all(hue, effects_config.sat, effects_config.val);
+        effects_set_color(i, hue, effects_config.sat, effects_config.val);
     }
 }
 
 static void effects_mode_gradient(void)
 {
-    uint8_t step = HUE_MAX / effects_state.gradient_step;
+    uint8_t step = HUE_MAX / EFFECTS_LED_NUM;//effects_state.gradient_step;
 
     for (int i = 0; i < EFFECTS_LED_NUM; i++) {
         effects_set_color(i, effects_config.hue + i*step, effects_config.sat, effects_config.val);
     }
-    effects_config.hue += step;
+    //effects_config.hue += step;
 }
 
 static void effects_mode_breath(void)
@@ -175,16 +178,17 @@ static void effects_mode_breath(void)
 
 static void effects_mode_wipe(void)
 {
+    if (effects_state.counter >= EFFECTS_LED_NUM) {
+        effects_state.counter = 0;
+        effects_state.wipe_on = !effects_state.wipe_on;
+    }
+
     if (effects_state.wipe_on) {
         effects_set_color(effects_state.counter, effects_config.hue, effects_config.sat, effects_config.val);
     } else {
         effects_set_color(effects_state.counter, 0, 0, 0);
     }
     effects_state.counter++;
-    if (effects_state.counter == EFFECTS_LED_NUM) {
-        effects_state.counter = 0;
-        effects_state.wipe_on = !effects_state.wipe_on;
-    }
 }
 
 static void effects_mode_scan(void)
@@ -198,24 +202,28 @@ static void effects_mode_scan(void)
 static void effects_set_hue(uint8_t hue)
 {
     effects_config.hue = hue;
+    //eeprom_update_dword(EECONFIG_EFFECTS, effects_config.raw);
     eeconfig_update_kb(effects_config.raw);
 }
 
 static void effects_set_sat(uint8_t sat)
 {
     effects_config.sat = sat;
+    //eeprom_update_dword(EECONFIG_EFFECTS, effects_config.raw);
     eeconfig_update_kb(effects_config.raw);
 }
 
 static void effects_set_val(uint8_t val)
 {
     effects_config.val = val;
+    //eeprom_update_dword(EECONFIG_EFFECTS, effects_config.raw);
     eeconfig_update_kb(effects_config.raw);
 }
 
 static void effects_set_speed(uint8_t speed)
 {
     effects_config.speed = !speed ? 1 : speed;
+    //eeprom_update_dword(EECONFIG_EFFECTS, effects_config.raw);
     eeconfig_update_kb(effects_config.raw);
 }
 
@@ -223,33 +231,43 @@ static void effects_set_mode(uint8_t mode)
 {
     effects_config.mode = mode;
     effects_mode_init();
+    //eeprom_update_dword(EECONFIG_EFFECTS, effects_config.raw);
     eeconfig_update_kb(effects_config.raw);
 }
 
 static void effects_set_enable(uint8_t enable)
 {
     effects_config.enable = enable;
+    //eeprom_update_dword(EECONFIG_EFFECTS, effects_config.raw);
     eeconfig_update_kb(effects_config.raw);
 }
 
 static void effects_update_default(void)
 {
     effects_config.enable = 1;
-    effects_config.mode = RGB_EFFECT_STATIC;
+    effects_config.mode = RGB_EFFECT_GRADIENT;
     effects_config.speed = SPEED_DEFAULT;
     effects_config.hue = HUE_DEFAULT;
     effects_config.sat = SAT_DEFAULT;
     effects_config.val = VAL_DEFAULT;
+    //eeprom_update_dword(EECONFIG_EFFECTS, effects_config.raw);
     eeconfig_update_kb(effects_config.raw);
+}
+
+void eeconfig_init_kb(void)
+{
+    effects_update_default();
+    eeconfig_init_user();
 }
 
 // interface
 void rgb_effects_init(void)
 {
+    //effects_update_default();
     if (!eeconfig_is_enabled()) {
         eeconfig_init();
-        effects_update_default();
     } else {
+        //effects_config.raw = eeprom_read_dword(EECONFIG_EFFECTS);
         effects_config.raw = eeconfig_read_kb();
     }
 
