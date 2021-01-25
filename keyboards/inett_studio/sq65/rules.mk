@@ -21,4 +21,6 @@ RGBLIGHT_ENABLE = yes       # Enable keyboard RGB underglow
 
 LTO_ENABLE = yes            # Reducing firmware size
 
+SRC += i2c_master.c issi/is31fl3731.c
+
 LAYOUTS = 65_ansi_blocker 65_ansi_blocker_splitbs

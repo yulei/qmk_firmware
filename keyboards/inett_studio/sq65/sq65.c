@@ -18,8 +18,9 @@
  */
 
 #include "sq65.h"
+#include "i2c_master.h"
+#include "issi/is31fl3731.h"
 
-#ifdef RGB_MATRIX_ENABLE
 const is31_led g_is31_leds[DRIVER_LED_TOTAL] = {
 /* Refer to IS31 manual for these locations
  *   driver
@@ -65,4 +66,34 @@ const is31_led g_is31_leds[DRIVER_LED_TOTAL] = {
     {0, C9_16,  C7_15,  C6_15},
 };
 
-#endif  //RGB_MATRIX_ENABLE
+__attribute__((weak))
+void matrix_init_user(void) {}
+
+void matrix_init_kb(void)
+{
+    i2c_init();
+    IS31FL3731_init(DRIVER_ADDR_1);
+    for (int index = 0; index < DRIVER_LED_TOTAL; index++) {
+        bool enabled = true;
+        IS31FL3731_set_led_control_register(index, enabled, enabled, enabled);
+    }
+    IS31FL3731_update_led_control_registers(DRIVER_ADDR_1, 0);
+    matrix_init_user();
+}
+
+__attribute__((weak))
+void matrix_scan_user(void) {}
+
+void matrix_scan_kb(void)
+{
+    IS31FL3731_update_pwm_buffers(DRIVER_ADDR_1,0);
+    matrix_scan_user();
+}
+
+void rgblight_call_driver(LED_TYPE *start_led, uint8_t num_leds)
+{
+    for (uint8_t i = 0; i < 32; i++) {
+        IS31FL3731_set_color(i, start_led[i].r, start_led[i].g, start_led[i].b);
+    }
+    ws2812_setleds(start_led+32, 1);
+}
