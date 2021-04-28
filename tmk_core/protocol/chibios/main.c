@@ -244,6 +244,7 @@ int main(void) {
                 /* Remote wakeup */
                 if (suspend_wakeup_condition()) {
                     usbWakeupHost(&USB_DRIVER);
+                    restart_usb_driver();
                     rtt_printf(0, "wakeup usb\r\n");
                     suspended = false;
                     /*usb_lld_disconnect_bus(&USB_DRIVER);
